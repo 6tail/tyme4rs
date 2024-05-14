@@ -351,6 +351,28 @@ impl SolarMonth {
     let culture: AbstractCulture = self.parent.into();
     ((culture.index_of(SolarDay::from_ymd(self.year.get_year(), self.month, 1).unwrap().get_week().get_index() as isize - start as isize, 7) + self.get_day_count()) as f64 / 7f64).ceil() as usize
   }
+
+  pub fn get_season(&self) -> SolarSeason {
+    SolarSeason::from_index(self.year.get_year(), self.get_index_in_year() / 3).unwrap()
+  }
+
+  pub fn get_weeks(&self, start: usize) -> Vec<SolarWeek> {
+    let y: isize = self.get_year().get_year();
+    let mut l: Vec<SolarWeek> = Vec::new();
+    for i in 0..self.get_week_count(start) {
+      l.push(SolarWeek::from_ym(y, self.month, i, start).unwrap());
+    }
+    l
+  }
+
+  pub fn get_days(&self) -> Vec<SolarDay> {
+    let y: isize = self.get_year().get_year();
+    let mut l: Vec<SolarDay> = Vec::new();
+    for i in 0..self.get_day_count() {
+      l.push(SolarDay::from_ymd(y, self.month, i + 1).unwrap());
+    }
+    l
+  }
 }
 
 impl Display for SolarMonth {
