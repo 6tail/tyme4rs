@@ -595,10 +595,30 @@ impl LunarDay {
     }
   }
 
+  /// 农历月
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::lunar::{LunarDay, LunarMonth};
+  ///
+  /// // 正月
+  /// let lunar_month: LunarMonth = LunarDay::from_ymd(2023, 1, 1).unwrap().get_month();
+  /// ```
   pub fn get_month(&self) -> LunarMonth {
     self.month
   }
 
+  /// 日
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::lunar::LunarDay;
+  ///
+  /// // 1
+  /// let day: usize = LunarDay::from_ymd(2023, 1, 1).unwrap().get_day();
+  /// ```
   pub fn get_day(&self) -> usize {
     self.day
   }
@@ -658,6 +678,17 @@ impl LunarDay {
     Phase::from_index(self.day as isize - 1)
   }
 
+  /// 公历日
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::lunar::LunarDay;
+  /// use tyme4rs::tyme::solar::SolarDay;
+  ///
+  /// // 农历日转公历日
+  /// let solar_day: SolarDay = LunarDay::from_ymd(2023, 1, 1).unwrap().get_solar_day();
+  /// ```
   pub fn get_solar_day(&self) -> SolarDay {
     self.month.get_first_julian_day().next((self.day as isize) - 1).unwrap().get_solar_day()
   }
@@ -674,6 +705,16 @@ impl LunarDay {
     FetusDay::from_lunar_day(*self)
   }
 
+  /// 农历传统节日
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::festival::LunarFestival;
+  /// use tyme4rs::tyme::lunar::LunarDay;
+  ///
+  /// let festival: Option<LunarFestival> = LunarDay::from_ymd(2024, 1, 1).unwrap().get_festival();
+  /// ```
   pub fn get_festival(&self) -> Option<LunarFestival> {
     let m: LunarMonth = self.get_month();
     LunarFestival::from_ymd(m.get_year().get_year(), m.get_month(), self.day)

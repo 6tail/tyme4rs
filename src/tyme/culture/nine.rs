@@ -64,7 +64,7 @@ impl Into<LoopTyme> for Nine {
   }
 }
 
-/// 三伏天
+/// 数九天
 #[derive(Debug, Clone)]
 pub struct NineDay {
   parent: AbstractCultureDay,
