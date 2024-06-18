@@ -4,8 +4,8 @@ Tyme是一个非常强大的日历工具库，可以看作 [Lunar](https://6tail
 
 ## 示例
 
-    // install
-    cargo install tyme4rs
+    // add
+    cargo add tyme4rs
      
     // test.rs
     use tyme4rs::tyme::solar::SolarDay;
