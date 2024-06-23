@@ -90,17 +90,17 @@ impl HeavenStem {
   }
 
   pub fn get_ten_star(&self, target: HeavenStem) -> TenStar {
-    let host_element: Element = self.get_element();
-    let guest_element: Element = target.get_element();
+    let host: Element = self.get_element();
+    let guest: Element = target.get_element();
     let mut index: isize = 0;
     let same_yin_yang: bool = self.get_yin_yang() == target.get_yin_yang();
-    if host_element.get_reinforce() == guest_element {
+    if host.get_reinforce() == guest {
       index = 1;
-    } else if host_element.get_restrain() == guest_element {
+    } else if host.get_restrain() == guest {
       index = 2;
-    } else if guest_element.get_restrain() == host_element {
+    } else if host.get_restrained() == guest {
       index = 3;
-    } else if guest_element.get_reinforce() == host_element {
+    } else if host.get_reinforced() == guest {
       index = 4;
     }
     TenStar::from_index(index * 2 + if same_yin_yang { 0 } else { 1 })

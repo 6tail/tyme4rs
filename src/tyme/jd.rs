@@ -145,6 +145,19 @@ impl JulianDay {
     }
     SolarTime::from_ymd_hms(year, month as usize, day as usize, hour as usize, minute as usize, second as usize).unwrap()
   }
+
+  /// 儒略日相减
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::SolarDay;
+  ///
+  /// let v: f64 = SolarDay::from_ymd(2023, 1, 10).unwrap().get_julian_day().subtract(SolarDay::from_ymd(2023, 1, 1).unwrap().get_julian_day());
+  /// ```
+  pub fn subtract(&self, target: JulianDay) -> f64 {
+    self.day - target.get_day()
+  }
 }
 
 impl Display for JulianDay {

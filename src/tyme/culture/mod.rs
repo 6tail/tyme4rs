@@ -1100,6 +1100,7 @@ pub mod peng_zu;
 pub mod phenology;
 pub mod star;
 pub mod eightchar;
+pub mod plumrain;
 
 #[cfg(test)]
 mod tests {

@@ -4,6 +4,7 @@ use crate::tyme::culture::{Constellation, Week};
 use crate::tyme::culture::dog::{Dog, DogDay};
 use crate::tyme::culture::nine::{Nine, NineDay};
 use crate::tyme::culture::phenology::{Phenology, PhenologyDay};
+use crate::tyme::culture::plumrain::{PlumRain, PlumRainDay};
 use crate::tyme::festival::SolarFestival;
 use crate::tyme::holiday::LegalHoliday;
 use crate::tyme::jd::{J2000, JulianDay};
@@ -199,12 +200,11 @@ impl Culture for SolarHalfYear {
 
 impl SolarHalfYear {
   pub fn from_index(year: isize, index: usize) -> Result<Self, String> {
-    let y: SolarYear = SolarYear::from_year(year).unwrap();
     if index > 1 {
       Err(format!("illegal solar half year index: {}", index))
     } else {
       Ok(Self {
-        year: y,
+        year: SolarYear::from_year(year).unwrap(),
         index,
       })
     }
@@ -333,12 +333,11 @@ impl Culture for SolarSeason {
 
 impl SolarSeason {
   pub fn from_index(year: isize, index: usize) -> Result<Self, String> {
-    let y: SolarYear = SolarYear::from_year(year).unwrap();
     if index > 3 {
       Err(format!("illegal solar season index: {}", index))
     } else {
       Ok(Self {
-        year: y,
+        year: SolarYear::from_year(year).unwrap(),
         index,
       })
     }
@@ -456,13 +455,12 @@ impl Culture for SolarMonth {
 
 impl SolarMonth {
   pub fn from_ym(year: isize, month: usize) -> Result<Self, String> {
-    let y: SolarYear = SolarYear::from_year(year).unwrap();
     if month < 1 || month > 12 {
       Err(format!("illegal solar month: {}", month))
     } else {
       Ok(Self {
         parent: AbstractTyme::new(),
-        year: y,
+        year: SolarYear::from_year(year).unwrap(),
         month,
       })
     }
@@ -674,8 +672,7 @@ impl Tyme for SolarWeek {
       while if forward { d >= weeks_in_month } else { d < 0 } {
         if forward {
           d -= weeks_in_month;
-        }
-        if !forward {
+        } else {
           if SolarDay::from_ymd(m.get_year().get_year(), m.get_month(), 1).unwrap().get_week() != self.start {
             d += add;
           }
@@ -909,7 +906,13 @@ impl SolarDay {
   /// let index: usize = term_day.get_day_index();
   /// ```
   pub fn get_term_day(&self) -> SolarTermDay {
-    let mut term: SolarTerm = SolarTerm::from_index(self.month.get_year().get_year() + 1, 0);
+    let mut y: isize = self.month.get_year().get_year();
+    let mut i: usize = self.month.get_month() * 2;
+    if i == 24 {
+      y += 1;
+      i = 0;
+    }
+    let mut term: SolarTerm = SolarTerm::from_index(y, i as isize);
     let mut day: SolarDay = term.get_julian_day().get_solar_day();
     while self.is_before(day) {
       term = term.next(-1).unwrap();
@@ -933,47 +936,51 @@ impl SolarDay {
   }
 
   pub fn is_before(&self, target: SolarDay) -> bool {
+    let b_month: SolarMonth = target.get_month();
     let a_year: isize = self.month.get_year().get_year();
-    let target_month: SolarMonth = target.get_month();
-    let b_year: isize = target_month.get_year().get_year();
-    if a_year == b_year {
-      let a_month: usize = self.month.get_month();
-      let b_month: usize = target_month.get_month();
-      return if a_month == b_month { self.day < target.get_day() } else { a_month < b_month };
+    let b_year: isize = b_month.get_year().get_year();
+    if a_year != b_year {
+      return a_year < b_year;
     }
-    a_year < b_year
+    if self.month.get_month() != b_month.get_month() { self.month.get_month() < b_month.get_month() } else { self.day < target.get_day() }
   }
 
   pub fn is_after(&self, target: SolarDay) -> bool {
+    let b_month: SolarMonth = target.get_month();
     let a_year: isize = self.month.get_year().get_year();
-    let target_month: SolarMonth = target.get_month();
-    let b_year: isize = target_month.get_year().get_year();
-    if a_year == b_year {
-      let a_month: usize = self.month.get_month();
-      let b_month: usize = target_month.get_month();
-      return if a_month == b_month { self.day > target.get_day() } else { a_month > b_month };
+    let b_year: isize = b_month.get_year().get_year();
+    if a_year != b_year {
+      return a_year > b_year;
     }
-    a_year > b_year
+    if self.month.get_month() != b_month.get_month() { self.month.get_month() > b_month.get_month() } else { self.day > target.get_day() }
   }
 
+  /// 位于当年的索引
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::SolarDay;
+  ///
+  /// // 9
+  /// let index_in_year: usize = SolarDay::from_ymd(2023, 1, 10).unwrap().get_index_in_year();
+  /// ```
   pub fn get_index_in_year(&self) -> usize {
-    let m: usize = self.month.get_month();
-    let y: isize = self.month.get_year().get_year();
-    let mut days: usize = 0;
-    for i in 1..m {
-      days += SolarMonth::from_ym(y, i).unwrap().get_day_count();
-    }
-    let mut d: usize = self.day;
-    if 1582 == y && 10 == m {
-      if d >= 15 {
-        d -= 10;
-      }
-    }
-    return days + d - 1;
+    self.subtract(Self::from_ymd(self.month.get_year().get_year(), 1, 1).unwrap()) as usize
   }
 
+  /// 公历日相减
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::SolarDay;
+  ///
+  /// // 9
+  /// let v: isize = SolarDay::from_ymd(2023, 1, 10).unwrap().subtract(SolarDay::from_ymd(2023, 1, 1).unwrap());
+  /// ```
   pub fn subtract(&self, target: SolarDay) -> isize {
-    (self.get_julian_day().get_day() - target.get_julian_day().get_day()) as isize
+    (self.get_julian_day().subtract(target.get_julian_day())) as isize
   }
 
   /// 农历日
@@ -988,10 +995,10 @@ impl SolarDay {
   /// let lunar_day: LunarDay = SolarDay::from_ymd(1986, 5, 29).unwrap().get_lunar_day();
   /// ```
   pub fn get_lunar_day(&self) -> LunarDay {
-    let mut m: LunarMonth = LunarMonth::from_ym(self.month.get_year().get_year(), self.month.get_month() as isize).unwrap().next(-3).unwrap();
+    let mut m: LunarMonth = LunarMonth::from_ym(self.month.get_year().get_year(), self.month.get_month() as isize).unwrap();
     let mut days: isize = self.subtract(m.get_first_julian_day().get_solar_day());
-    while days >= m.get_day_count() as isize {
-      m = m.next(1).unwrap();
+    while days < 0 {
+      m = m.next(-1).unwrap();
       days = self.subtract(m.get_first_julian_day().get_solar_day());
     }
     LunarDay::from_ymd(m.get_year().get_year(), m.get_month_with_leap(), (days + 1) as usize).unwrap()
@@ -1133,6 +1140,33 @@ impl SolarDay {
     PhenologyDay::new(Phenology::from_index(term.get_index() as isize * 3 + index), day_index as usize)
   }
 
+  pub fn get_plum_rain_day(&self) -> Option<PlumRainDay> {
+    // 芒种
+    let grain_in_ear: SolarTerm = SolarTerm::from_index(self.month.get_year().get_year(), 11);
+    let mut start: SolarDay = grain_in_ear.get_julian_day().get_solar_day();
+    let mut add: isize = 2 - start.get_lunar_day().get_sixty_cycle().get_heaven_stem().get_index() as isize;
+    if add < 0 {
+      add += 10;
+    }
+    // 芒种后的第1个丙日
+    start = start.next(add).unwrap();
+
+    // 小暑
+    let slight_heat: SolarTerm = grain_in_ear.next(2).unwrap();
+    let mut end: SolarDay = slight_heat.get_julian_day().get_solar_day();
+    add = 7 - end.get_lunar_day().get_sixty_cycle().get_earth_branch().get_index() as isize;
+    if add < 0 {
+      add += 12;
+    }
+    // 小暑后的第1个未日
+    end = end.next(add).unwrap();
+
+    if self.is_before(start) || self.is_after(end) {
+      return None;
+    }
+    Some(if self.eq(&end) { PlumRainDay::new(PlumRain::from_index(1), 0) } else { PlumRainDay::new(PlumRain::from_index(0), self.subtract(start) as usize)})
+  }
+
   /// 法定假日
   ///
   /// # 示例
@@ -1144,8 +1178,7 @@ impl SolarDay {
   /// let legal_holiday: Option<LegalHoliday> = SolarDay::from_ymd(2024, 10, 1).unwrap().get_legal_holiday();
   /// ```
   pub fn get_legal_holiday(&self) -> Option<LegalHoliday> {
-    let m: SolarMonth = self.get_month();
-    LegalHoliday::from_ymd(m.get_year().get_year(), m.get_month(), self.day)
+    LegalHoliday::from_ymd(self.month.get_year().get_year(), self.month.get_month(), self.day)
   }
 
   /// 公历现代节日
@@ -1159,8 +1192,7 @@ impl SolarDay {
   /// let festival: Option<SolarFestival> = SolarDay::from_ymd(2024, 10, 1).unwrap().get_festival();
   /// ```
   pub fn get_festival(&self) -> Option<SolarFestival> {
-    let m: SolarMonth = self.get_month();
-    SolarFestival::from_ymd(m.get_year().get_year(), m.get_month(), self.day)
+    SolarFestival::from_ymd(self.month.get_year().get_year(), self.month.get_month(), self.day)
   }
 }
 
@@ -1267,24 +1299,20 @@ impl SolarTime {
     if self.day != target.get_day() {
       return self.day.is_before(target.get_day());
     }
-    let b_hour: usize = target.get_hour();
-    if self.hour == b_hour {
-      let b_minute: usize = target.get_minute();
-      return if self.minute == b_minute { self.second < target.get_second() } else { self.minute < b_minute };
+    if self.hour != target.get_hour() {
+      return self.hour < target.get_hour();
     }
-    self.hour < b_hour
+    if self.minute != target.get_minute() { self.minute < target.get_minute() } else { self.second < target.get_second() }
   }
 
   pub fn is_after(&self, target: SolarTime) -> bool {
     if self.day != target.get_day() {
       return self.day.is_after(target.get_day());
     }
-    let b_hour: usize = target.get_hour();
-    if self.hour == b_hour {
-      let b_minute: usize = target.get_minute();
-      return if self.minute == b_minute { self.second > target.get_second() } else { self.minute > b_minute };
+    if self.hour != target.get_hour() {
+      return self.hour > target.get_hour();
     }
-    self.hour > b_hour
+    if self.minute != target.get_minute() { self.minute > target.get_minute() } else { self.second > target.get_second() }
   }
 
   /// 节气
@@ -1297,7 +1325,13 @@ impl SolarTime {
   /// let term: SolarTerm = SolarTime::from_ymd_hms(2023, 12, 7, 13, 20, 0).unwrap().get_term();
   /// ```
   pub fn get_term(&self) -> SolarTerm {
-    let mut term: SolarTerm = SolarTerm::from_index(self.day.get_month().get_year().get_year() + 1, 0);
+    let mut y: isize = self.day.get_month().get_year().get_year();
+    let mut i: usize = self.day.get_month().get_month() * 2;
+    if i == 24 {
+      y += 1;
+      i = 0;
+    }
+    let mut term: SolarTerm = SolarTerm::from_index(y, i as isize);
     while self.is_before(term.get_julian_day().get_solar_time()) {
       term = term.next(-1).unwrap();
     }
@@ -1510,7 +1544,7 @@ impl Into<LoopTyme> for SolarTerm {
 pub struct SolarTermDay {
   parent: AbstractCultureDay,
   /// 节气
-  solar_term: SolarTerm
+  solar_term: SolarTerm,
 }
 
 impl Culture for SolarTermDay {
@@ -1526,7 +1560,7 @@ impl SolarTermDay {
     let culture: AbstractCulture = abstract_tyme.into();
     Self {
       parent: AbstractCultureDay::new(culture, day_index),
-      solar_term
+      solar_term,
     }
   }
 

@@ -4,7 +4,7 @@ Tyme是一个非常强大的日历工具库，可以看作 [Lunar](https://6tail
 
 ## 示例
 
-    // add
+    // install
     cargo add tyme4rs
      
     // test.rs
