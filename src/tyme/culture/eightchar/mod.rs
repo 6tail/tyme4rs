@@ -1,13 +1,14 @@
-pub mod provider;
-
 use std::fmt::{Display, Formatter};
+
 use crate::tyme::{Culture, Tyme};
 use crate::tyme::culture::Duty;
-use crate::tyme::culture::eightchar::provider::{ChildLimitProvider};
+use crate::tyme::culture::eightchar::provider::ChildLimitProvider;
 use crate::tyme::enums::{Gender, YinYang};
 use crate::tyme::lunar::LunarYear;
 use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
-use crate::tyme::solar::{SolarDay, SolarMonth, SolarTerm, SolarTime};
+use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
+
+pub mod provider;
 
 /// 八字
 #[derive(Debug, Clone)]
@@ -109,11 +110,11 @@ impl EightChar {
           term = term.next(m).unwrap();
         }
         let solar_time: SolarTime = term.get_julian_day().get_solar_time();
-        if solar_time.get_day().get_month().get_year().get_year() >= start_year {
+        if solar_time.get_year() >= start_year {
           let mut mi: usize = 0;
           let mut s: usize = 0;
           // 日干支和节令干支的偏移值
-          let mut solar_day: SolarDay = solar_time.get_day();
+          let mut solar_day: SolarDay = solar_time.get_solar_day();
           let d: isize = self.day.next(-(solar_day.get_lunar_day().get_sixty_cycle().get_index() as isize)).unwrap().get_index() as isize;
           if d > 0 {
             // 从节令推移天数
@@ -123,8 +124,7 @@ impl EightChar {
             mi = solar_time.get_minute();
             s = solar_time.get_second();
           }
-          let solar_month: SolarMonth = solar_day.get_month();
-          let time: SolarTime = SolarTime::from_ymd_hms(solar_month.get_year().get_year(), solar_month.get_month(), solar_day.get_day(), h, mi, s).unwrap();
+          let time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), h, mi, s).unwrap();
           // 验证一下
           if time.get_lunar_hour().get_eight_char() == *self {
             l.push(time);
@@ -352,7 +352,7 @@ impl DecadeFortune {
   }
 
   pub fn get_start_lunar_year(&self) -> LunarYear {
-    self.child_limit.get_end_time().get_lunar_hour().get_day().get_month().get_year().next(self.index as isize * 10).unwrap()
+    self.child_limit.get_end_time().get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year().next(self.index as isize * 10).unwrap()
   }
 
   pub fn get_end_lunar(&self) -> LunarYear {
@@ -421,7 +421,7 @@ impl Fortune {
   }
 
   pub fn get_lunar_year(&self) -> LunarYear {
-    self.child_limit.get_end_time().get_lunar_hour().get_day().get_month().get_year().next(self.index as isize).unwrap()
+    self.child_limit.get_end_time().get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year().next(self.index as isize).unwrap()
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {

@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::{Constellation, Week};
 use crate::tyme::culture::dog::{Dog, DogDay};
@@ -221,10 +222,27 @@ impl SolarHalfYear {
   /// let half_year: SolarHalfYear = SolarHalfYear::from_index(2023, 0).unwrap();
   ///
   /// // 2023年
-  /// let year: SolarYear = half_year.get_year();
+  /// let year: SolarYear = half_year.get_solar_year();
   /// ```
-  pub fn get_year(&self) -> SolarYear {
+  pub fn get_solar_year(&self) -> SolarYear {
     self.year
+  }
+
+  /// 年
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarHalfYear};
+  ///
+  /// // 2023年上半年
+  /// let half_year: SolarHalfYear = SolarHalfYear::from_index(2023, 0).unwrap();
+  ///
+  /// // 2023
+  /// let year: isize = half_year.get_year();
+  /// ```
+  pub fn get_year(&self) -> isize {
+    self.year.get_year()
   }
 
   /// 索引
@@ -256,7 +274,7 @@ impl SolarHalfYear {
   /// ```
   pub fn get_months(&self) -> Vec<SolarMonth> {
     let mut l: Vec<SolarMonth> = Vec::new();
-    let y: isize = self.year.get_year();
+    let y: isize = self.get_year();
     for i in 0..6 {
       l.push(SolarMonth::from_ym(y, self.index * 6 + i + 1).unwrap());
     }
@@ -275,7 +293,7 @@ impl SolarHalfYear {
   /// ```
   pub fn get_seasons(&self) -> Vec<SolarSeason> {
     let mut l: Vec<SolarSeason> = Vec::new();
-    let y: isize = self.year.get_year();
+    let y: isize = self.get_year();
     for i in 0..2 {
       l.push(SolarSeason::from_index(y, self.index * 2 + i).unwrap());
     }
@@ -354,10 +372,27 @@ impl SolarSeason {
   /// let season: SolarSeason = SolarSeason::from_index(2023, 0).unwrap();
   ///
   /// // 2023年
-  /// let year: SolarYear = season.get_year();
+  /// let year: SolarYear = season.get_solar_year();
   /// ```
-  pub fn get_year(&self) -> SolarYear {
+  pub fn get_solar_year(&self) -> SolarYear {
     self.year
+  }
+
+  /// 年
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarSeason};
+  ///
+  /// // 2023年一季度
+  /// let season: SolarSeason = SolarSeason::from_index(2023, 0).unwrap();
+  ///
+  /// // 2023
+  /// let year: isize = season.get_year();
+  /// ```
+  pub fn get_year(&self) -> isize {
+    self.year.get_year()
   }
 
   /// 索引
@@ -392,7 +427,7 @@ impl SolarSeason {
   /// ```
   pub fn get_months(&self) -> Vec<SolarMonth> {
     let mut l: Vec<SolarMonth> = Vec::new();
-    let y: isize = self.year.get_year();
+    let y: isize = self.get_year();
     for i in 0..3 {
       l.push(SolarMonth::from_ym(y, self.index * 3 + i + 1).unwrap());
     }
@@ -477,10 +512,27 @@ impl SolarMonth {
   /// let month: SolarMonth = SolarMonth::from_ym(2023, 1).unwrap();
   ///
   /// // 2023年
-  /// let year: SolarYear = month.get_year();
+  /// let year: SolarYear = month.get_solar_year();
   /// ```
-  pub fn get_year(&self) -> SolarYear {
+  pub fn get_solar_year(&self) -> SolarYear {
     self.year
+  }
+
+  /// 年
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarMonth};
+  ///
+  /// // 2023年1月
+  /// let month: SolarMonth = SolarMonth::from_ym(2023, 1).unwrap();
+  ///
+  /// // 2023
+  /// let year: isize = month.get_year();
+  /// ```
+  pub fn get_year(&self) -> isize {
+    self.year.get_year()
   }
 
   /// 月
@@ -514,7 +566,7 @@ impl SolarMonth {
   /// let count: usize = month.get_day_count();
   /// ```
   pub fn get_day_count(&self) -> usize {
-    if 1582 == self.year.get_year() && 10 == self.month {
+    if 1582 == self.get_year() && 10 == self.month {
       21
     } else {
       let mut d: usize = SOLAR_MONTH_DAYS[self.get_index_in_year()];
@@ -558,7 +610,7 @@ impl SolarMonth {
   /// ```
   pub fn get_week_count(&self, start: usize) -> usize {
     let culture: AbstractCulture = self.parent.into();
-    ((culture.index_of(SolarDay::from_ymd(self.year.get_year(), self.month, 1).unwrap().get_week().get_index() as isize - start as isize, 7) + self.get_day_count()) as f64 / 7f64).ceil() as usize
+    ((culture.index_of(SolarDay::from_ymd(self.get_year(), self.month, 1).unwrap().get_week().get_index() as isize - start as isize, 7) + self.get_day_count()) as f64 / 7f64).ceil() as usize
   }
 
   /// 公历季度
@@ -575,7 +627,7 @@ impl SolarMonth {
   /// let season: SolarSeason = month.get_season();
   /// ```
   pub fn get_season(&self) -> SolarSeason {
-    SolarSeason::from_index(self.year.get_year(), self.get_index_in_year() / 3).unwrap()
+    SolarSeason::from_index(self.get_year(), self.get_index_in_year() / 3).unwrap()
   }
 
   /// 公历周列表
@@ -592,7 +644,7 @@ impl SolarMonth {
   /// let weeks: Vec<SolarWeek> = month.get_weeks(0);
   /// ```
   pub fn get_weeks(&self, start: usize) -> Vec<SolarWeek> {
-    let y: isize = self.get_year().get_year();
+    let y: isize = self.get_year();
     let mut l: Vec<SolarWeek> = Vec::new();
     for i in 0..self.get_week_count(start) {
       l.push(SolarWeek::from_ym(y, self.month, i, start).unwrap());
@@ -614,7 +666,7 @@ impl SolarMonth {
   /// let days: Vec<SolarDay> = month.get_days();
   /// ```
   pub fn get_days(&self) -> Vec<SolarDay> {
-    let y: isize = self.get_year().get_year();
+    let y: isize = self.get_year();
     let mut l: Vec<SolarDay> = Vec::new();
     for i in 0..self.get_day_count() {
       l.push(SolarDay::from_ymd(y, self.month, i + 1).unwrap());
@@ -673,13 +725,13 @@ impl Tyme for SolarWeek {
         if forward {
           d -= weeks_in_month;
         } else {
-          if SolarDay::from_ymd(m.get_year().get_year(), m.get_month(), 1).unwrap().get_week() != self.start {
+          if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).unwrap().get_week() != self.start {
             d += add;
           }
         }
         m = m.next(add).unwrap();
         if forward {
-          if SolarDay::from_ymd(m.get_year().get_year(), m.get_month(), 1).unwrap().get_week() != self.start {
+          if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).unwrap().get_week() != self.start {
             d += add;
           }
         }
@@ -688,7 +740,7 @@ impl Tyme for SolarWeek {
           d += weeks_in_month;
         }
       }
-      Self::from_ym(m.get_year().get_year(), m.get_month(), d as usize, start_index)
+      Self::from_ym(m.get_year(), m.get_month(), d as usize, start_index)
     }
   }
 }
@@ -720,8 +772,55 @@ impl SolarWeek {
     }
   }
 
-  pub fn get_month(&self) -> SolarMonth {
+  /// 公历月
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarMonth, SolarWeek};
+  ///
+  /// // 2023年1月第一周
+  /// let week: SolarWeek = SolarWeek::from_ym(2023, 1, 0, 0).unwrap();
+  ///
+  /// // 2023年1月
+  /// let m: SolarMonth = week.get_solar_month();
+  /// ```
+  pub fn get_solar_month(&self) -> SolarMonth {
     self.month
+  }
+
+  /// 年
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarWeek};
+  ///
+  /// // 2023年1月第一周
+  /// let week: SolarWeek = SolarWeek::from_ym(2023, 1, 0, 0).unwrap();
+  ///
+  /// // 2023
+  /// let y: isize = week.get_year();
+  /// ```
+  pub fn get_year(&self) -> isize {
+    self.month.get_year()
+  }
+
+  /// 月
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarWeek};
+  ///
+  /// // 2023年1月第一周
+  /// let week: SolarWeek = SolarWeek::from_ym(2023, 1, 0, 0).unwrap();
+  ///
+  /// // 1
+  /// let y: usize = week.get_month();
+  /// ```
+  pub fn get_month(&self) -> usize {
+    self.month.get_month()
   }
 
   pub fn get_index(&self) -> usize {
@@ -733,8 +832,7 @@ impl SolarWeek {
   }
 
   pub fn get_first_day(&self) -> SolarDay {
-    let m: SolarMonth = self.get_month();
-    let first_day: SolarDay = SolarDay::from_ymd(m.get_year().get_year(), m.get_month(), 1).unwrap();
+    let first_day: SolarDay = SolarDay::from_ymd(self.get_year(), self.get_month(), 1).unwrap();
     let parent: AbstractTyme = self.parent.into();
     let culture: AbstractCulture = parent.into();
     first_day.next(self.index as isize * 7 - culture.index_of((first_day.get_week().get_index() as isize) - (self.start.get_index() as isize), 7) as isize).unwrap()
@@ -750,11 +848,22 @@ impl SolarWeek {
     l
   }
 
+  /// 位于当年的索引（从0开始）
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarWeek};
+  ///
+  /// // 0
+  /// let index: usize = SolarWeek::from_ym(2000, 1, 0, 0).unwrap().get_index_in_year();
+  /// ```
   pub fn get_index_in_year(&self) -> usize {
     let mut i: usize = 0;
+    let first_day: SolarDay = self.get_first_day();
     // 今年第1周
-    let mut w: SolarWeek = SolarWeek::from_ym(self.month.get_year().get_year(), 1, 0, self.start.get_index()).unwrap();
-    while w != *self {
+    let mut w: SolarWeek = SolarWeek::from_ym(self.get_year(), 1, 0, self.start.get_index()).unwrap();
+    while w.get_first_day() != first_day {
       w = w.next(1).unwrap();
       i += 1;
     }
@@ -770,7 +879,7 @@ impl Display for SolarWeek {
 
 impl PartialEq for SolarWeek {
   fn eq(&self, other: &Self) -> bool {
-    self.get_month() == other.get_month() && self.get_index() == other.get_index() && self.get_start() == other.get_start()
+    self.get_first_day() == other.get_first_day()
   }
 }
 
@@ -836,11 +945,39 @@ impl SolarDay {
   ///
   /// ```
   /// use tyme4rs::tyme::solar::{SolarDay, SolarMonth};
-  ///
-  /// let month: SolarMonth = SolarDay::from_ymd(2000, 1, 29).unwrap().get_month();
+  /// // 2000年1月
+  /// let month: SolarMonth = SolarDay::from_ymd(2000, 1, 29).unwrap().get_solar_month();
   /// ```
-  pub fn get_month(&self) -> SolarMonth {
+  pub fn get_solar_month(&self) -> SolarMonth {
     self.month
+  }
+
+  /// 年
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::SolarDay;
+  ///
+  /// // 2000
+  /// let y: isize = SolarDay::from_ymd(2000, 1, 29).unwrap().get_year();
+  /// ```
+  pub fn get_year(&self) -> isize {
+    self.month.get_year()
+  }
+
+  /// 月
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::SolarDay;
+  ///
+  /// // 1
+  /// let m: usize = SolarDay::from_ymd(2000, 1, 29).unwrap().get_month();
+  /// ```
+  pub fn get_month(&self) -> usize {
+    self.month.get_month()
   }
 
   /// 日
@@ -871,9 +1008,19 @@ impl SolarDay {
     self.get_julian_day().get_week()
   }
 
+  /// 公历周
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarDay, SolarWeek};
+  ///
+  /// // 2000年1月第一周
+  /// let week: SolarWeek = SolarDay::from_ymd(2000, 1, 1).unwrap().get_solar_week(0);
+  /// ```
   pub fn get_solar_week(&self, start: usize) -> SolarWeek {
-    let y: isize = self.month.get_year().get_year();
-    let m: usize = self.month.get_month();
+    let y: isize = self.get_year();
+    let m: usize = self.get_month();
     SolarWeek::from_ym(y, m, ((self.day + SolarDay::from_ymd(y, m, 1).unwrap().get_week().next(-(start as isize)).unwrap().get_index()) as f64 / 7.0).ceil() as usize - 1, start).unwrap()
   }
 
@@ -906,8 +1053,8 @@ impl SolarDay {
   /// let index: usize = term_day.get_day_index();
   /// ```
   pub fn get_term_day(&self) -> SolarTermDay {
-    let mut y: isize = self.month.get_year().get_year();
-    let mut i: usize = self.month.get_month() * 2;
+    let mut y: isize = self.get_year();
+    let mut i: usize = self.get_month() * 2;
     if i == 24 {
       y += 1;
       i = 0;
@@ -932,27 +1079,29 @@ impl SolarDay {
   /// let julian_day: JulianDay = SolarDay::from_ymd(2023, 12, 7).unwrap().get_julian_day();
   /// ```
   pub fn get_julian_day(&self) -> JulianDay {
-    JulianDay::from_ymd_hms(self.month.get_year().get_year(), self.month.get_month(), self.day, 0, 0, 0).unwrap()
+    JulianDay::from_ymd_hms(self.get_year(), self.get_month(), self.day, 0, 0, 0).unwrap()
   }
 
   pub fn is_before(&self, target: SolarDay) -> bool {
-    let b_month: SolarMonth = target.get_month();
-    let a_year: isize = self.month.get_year().get_year();
-    let b_year: isize = b_month.get_year().get_year();
+    let a_year: isize = self.get_year();
+    let b_year: isize = target.get_year();
     if a_year != b_year {
       return a_year < b_year;
     }
-    if self.month.get_month() != b_month.get_month() { self.month.get_month() < b_month.get_month() } else { self.day < target.get_day() }
+    let a_month: usize = self.get_month();
+    let b_month: usize = target.get_month();
+    if a_month != b_month { a_month < b_month } else { self.day < target.get_day() }
   }
 
   pub fn is_after(&self, target: SolarDay) -> bool {
-    let b_month: SolarMonth = target.get_month();
-    let a_year: isize = self.month.get_year().get_year();
-    let b_year: isize = b_month.get_year().get_year();
+    let a_year: isize = self.get_year();
+    let b_year: isize = target.get_year();
     if a_year != b_year {
       return a_year > b_year;
     }
-    if self.month.get_month() != b_month.get_month() { self.month.get_month() > b_month.get_month() } else { self.day > target.get_day() }
+    let a_month: usize = self.get_month();
+    let b_month: usize = target.get_month();
+    if a_month != b_month { a_month > b_month } else { self.day > target.get_day() }
   }
 
   /// 位于当年的索引
@@ -966,7 +1115,7 @@ impl SolarDay {
   /// let index_in_year: usize = SolarDay::from_ymd(2023, 1, 10).unwrap().get_index_in_year();
   /// ```
   pub fn get_index_in_year(&self) -> usize {
-    self.subtract(Self::from_ymd(self.month.get_year().get_year(), 1, 1).unwrap()) as usize
+    self.subtract(Self::from_ymd(self.get_year(), 1, 1).unwrap()) as usize
   }
 
   /// 公历日相减
@@ -995,13 +1144,13 @@ impl SolarDay {
   /// let lunar_day: LunarDay = SolarDay::from_ymd(1986, 5, 29).unwrap().get_lunar_day();
   /// ```
   pub fn get_lunar_day(&self) -> LunarDay {
-    let mut m: LunarMonth = LunarMonth::from_ym(self.month.get_year().get_year(), self.month.get_month() as isize).unwrap();
+    let mut m: LunarMonth = LunarMonth::from_ym(self.get_year(), self.get_month() as isize).unwrap();
     let mut days: isize = self.subtract(m.get_first_julian_day().get_solar_day());
     while days < 0 {
       m = m.next(-1).unwrap();
       days = self.subtract(m.get_first_julian_day().get_solar_day());
     }
-    LunarDay::from_ymd(m.get_year().get_year(), m.get_month_with_leap(), (days + 1) as usize).unwrap()
+    LunarDay::from_ymd(m.get_year(), m.get_month_with_leap(), (days + 1) as usize).unwrap()
   }
 
   /// 星座
@@ -1016,7 +1165,7 @@ impl SolarDay {
   /// ```
   pub fn get_constellation(&self) -> Constellation {
     let mut index: isize = 11;
-    let y: usize = self.get_month().get_month() * 100 + self.day;
+    let y: usize = self.get_month() * 100 + self.day;
     if y >= 321 && y <= 419 {
       index = 0;
     } else if y >= 420 && y <= 520 {
@@ -1054,7 +1203,7 @@ impl SolarDay {
   /// let dog_day: Option<DogDay> = SolarDay::from_ymd(2023, 9, 12).unwrap().get_dog_day();
   /// ```
   pub fn get_dog_day(&self) -> Option<DogDay> {
-    let xia_zhi: SolarTerm = SolarTerm::from_index(self.month.get_year().get_year(), 12);
+    let xia_zhi: SolarTerm = SolarTerm::from_index(self.get_year(), 12);
     // 第1个庚日
     let mut start: SolarDay = xia_zhi.get_julian_day().get_solar_day();
     let mut add: isize = 6 - start.get_lunar_day().get_sixty_cycle().get_heaven_stem().get_index() as isize;
@@ -1106,7 +1255,7 @@ impl SolarDay {
   /// let nine_day: Option<NineDay> = SolarDay::from_ymd(2023, 12, 26).unwrap().get_nine_day();
   /// ```
   pub fn get_nine_day(&self) -> Option<NineDay> {
-    let year: isize = self.month.get_year().get_year();
+    let year: isize = self.get_year();
     let mut start: SolarDay = SolarTerm::from_index(year + 1, 0).get_julian_day().get_solar_day();
     if self.is_before(start) {
       start = SolarTerm::from_index(year, 0).get_julian_day().get_solar_day();
@@ -1142,7 +1291,7 @@ impl SolarDay {
 
   pub fn get_plum_rain_day(&self) -> Option<PlumRainDay> {
     // 芒种
-    let grain_in_ear: SolarTerm = SolarTerm::from_index(self.month.get_year().get_year(), 11);
+    let grain_in_ear: SolarTerm = SolarTerm::from_index(self.get_year(), 11);
     let mut start: SolarDay = grain_in_ear.get_julian_day().get_solar_day();
     let mut add: isize = 2 - start.get_lunar_day().get_sixty_cycle().get_heaven_stem().get_index() as isize;
     if add < 0 {
@@ -1178,7 +1327,7 @@ impl SolarDay {
   /// let legal_holiday: Option<LegalHoliday> = SolarDay::from_ymd(2024, 10, 1).unwrap().get_legal_holiday();
   /// ```
   pub fn get_legal_holiday(&self) -> Option<LegalHoliday> {
-    LegalHoliday::from_ymd(self.month.get_year().get_year(), self.month.get_month(), self.day)
+    LegalHoliday::from_ymd(self.get_year(), self.get_month(), self.day)
   }
 
   /// 公历现代节日
@@ -1192,7 +1341,7 @@ impl SolarDay {
   /// let festival: Option<SolarFestival> = SolarDay::from_ymd(2024, 10, 1).unwrap().get_festival();
   /// ```
   pub fn get_festival(&self) -> Option<SolarFestival> {
-    SolarFestival::from_ymd(self.month.get_year().get_year(), self.month.get_month(), self.day)
+    SolarFestival::from_ymd(self.get_year(), self.get_month(), self.day)
   }
 }
 
@@ -1204,7 +1353,7 @@ impl Display for SolarDay {
 
 impl PartialEq for SolarDay {
   fn eq(&self, other: &Self) -> bool {
-    self.get_month() == other.get_month() && self.get_day() == other.get_day()
+    self.get_year() == other.get_year() && self.get_month() == other.get_month() && self.get_day() == other.get_day()
   }
 }
 
@@ -1249,8 +1398,7 @@ impl Tyme for SolarTime {
       }
 
       let d: SolarDay = self.day.next(td).unwrap();
-      let m: SolarMonth = d.get_month();
-      return Self::from_ymd_hms(m.get_year().get_year(), m.get_month(), d.get_day(), th as usize, tm as usize, ts as usize);
+      return Self::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), th as usize, tm as usize, ts as usize);
     }
   }
 }
@@ -1279,8 +1427,60 @@ impl SolarTime {
     }
   }
 
-  pub fn get_day(&self) -> SolarDay {
+  /// 公历日
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarDay, SolarTime};
+  ///
+  /// // 2000年1月29日
+  /// let day: SolarDay = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).unwrap().get_solar_day();
+  /// ```
+  pub fn get_solar_day(&self) -> SolarDay {
     self.day
+  }
+
+  /// 年
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarTime};
+  ///
+  /// // 2000
+  /// let y: isize = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).unwrap().get_year();
+  /// ```
+  pub fn get_year(&self) -> isize {
+    self.day.get_year()
+  }
+
+  /// 月
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarTime};
+  ///
+  /// // 1
+  /// let m: usize = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).unwrap().get_month();
+  /// ```
+  pub fn get_month(&self) -> usize {
+    self.day.get_month()
+  }
+
+  /// 日
+  ///
+  /// # 示例
+  ///
+  /// ```
+  /// use tyme4rs::tyme::solar::{SolarTime};
+  ///
+  /// // 29
+  /// let day: usize = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).unwrap().get_day();
+  /// ```
+  pub fn get_day(&self) -> usize {
+    self.day.get_day()
   }
 
   pub fn get_hour(&self) -> usize {
@@ -1296,8 +1496,8 @@ impl SolarTime {
   }
 
   pub fn is_before(&self, target: SolarTime) -> bool {
-    if self.day != target.get_day() {
-      return self.day.is_before(target.get_day());
+    if self.day != target.get_solar_day() {
+      return self.day.is_before(target.get_solar_day());
     }
     if self.hour != target.get_hour() {
       return self.hour < target.get_hour();
@@ -1306,8 +1506,8 @@ impl SolarTime {
   }
 
   pub fn is_after(&self, target: SolarTime) -> bool {
-    if self.day != target.get_day() {
-      return self.day.is_after(target.get_day());
+    if self.day != target.get_solar_day() {
+      return self.day.is_after(target.get_solar_day());
     }
     if self.hour != target.get_hour() {
       return self.hour > target.get_hour();
@@ -1325,8 +1525,8 @@ impl SolarTime {
   /// let term: SolarTerm = SolarTime::from_ymd_hms(2023, 12, 7, 13, 20, 0).unwrap().get_term();
   /// ```
   pub fn get_term(&self) -> SolarTerm {
-    let mut y: isize = self.day.get_month().get_year().get_year();
-    let mut i: usize = self.day.get_month().get_month() * 2;
+    let mut y: isize = self.get_year();
+    let mut i: usize = self.get_month() * 2;
     if i == 24 {
       y += 1;
       i = 0;
@@ -1349,12 +1549,11 @@ impl SolarTime {
   /// let jd: JulianDay = SolarTime::from_ymd_hms(2023, 12, 7, 13, 20, 0).unwrap().get_julian_day();
   /// ```
   pub fn get_julian_day(&self) -> JulianDay {
-    let month: SolarMonth = self.day.get_month();
-    JulianDay::from_ymd_hms(month.get_year().get_year(), month.get_month(), self.day.get_day(), self.hour, self.minute, self.second).unwrap()
+    JulianDay::from_ymd_hms(self.get_year(), self.get_month(), self.get_day(), self.hour, self.minute, self.second).unwrap()
   }
 
   pub fn subtract(&self, target: SolarTime) -> isize {
-    let mut days: isize = self.day.subtract(target.get_day());
+    let mut days: isize = self.day.subtract(target.get_solar_day());
     let cs: usize = self.hour * 3600 + self.minute * 60 + self.second;
     let ts: usize = target.get_hour() * 3600 + target.get_minute() * 60 + target.get_second();
     let mut seconds: isize = cs as isize - ts as isize;
@@ -1368,8 +1567,7 @@ impl SolarTime {
 
   pub fn get_lunar_hour(&self) -> LunarHour {
     let d: LunarDay = self.day.get_lunar_day();
-    let m: LunarMonth = d.get_month();
-    LunarHour::from_ymd_hms(m.get_year().get_year(), m.get_month_with_leap(), d.get_day(), self.hour, self.minute, self.second).unwrap()
+    LunarHour::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second).unwrap()
   }
 }
 
@@ -1381,7 +1579,7 @@ impl Display for SolarTime {
 
 impl PartialEq for SolarTime {
   fn eq(&self, other: &Self) -> bool {
-    self.get_day() == other.get_day() && self.get_hour() == other.get_hour() && self.get_minute() == other.get_minute() && self.get_second() == other.get_second()
+    self.get_solar_day() == other.get_solar_day() && self.get_hour() == other.get_hour() && self.get_minute() == other.get_minute() && self.get_second() == other.get_second()
   }
 }
 
@@ -1696,12 +1894,12 @@ mod tests {
 
   #[test]
   fn test22() {
-    assert_eq!("甲辰", SolarDay::from_ymd(2024, 2, 10).unwrap().get_lunar_day().get_month().get_year().get_sixty_cycle().get_name());
+    assert_eq!("甲辰", SolarDay::from_ymd(2024, 2, 10).unwrap().get_lunar_day().get_lunar_month().get_lunar_year().get_sixty_cycle().get_name());
   }
 
   #[test]
   fn test23() {
-    assert_eq!("癸卯", SolarDay::from_ymd(2024, 2, 9).unwrap().get_lunar_day().get_month().get_year().get_sixty_cycle().get_name());
+    assert_eq!("癸卯", SolarDay::from_ymd(2024, 2, 9).unwrap().get_lunar_day().get_lunar_month().get_lunar_year().get_sixty_cycle().get_name());
   }
 
   #[test]

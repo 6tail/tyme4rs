@@ -5,8 +5,8 @@ use regex::Regex;
 
 use crate::tyme::{AbstractCulture, Culture, Tyme};
 use crate::tyme::enums::FestivalType;
-use crate::tyme::lunar::{LunarDay, LunarMonth};
-use crate::tyme::solar::{SolarDay, SolarMonth, SolarTerm};
+use crate::tyme::lunar::{LunarDay};
+use crate::tyme::solar::{SolarDay, SolarTerm};
 
 pub static SOLAR_FESTIVAL_NAMES: [&str; 10] = ["元旦", "三八妇女节", "植树节", "五一劳动节", "五四青年节", "六一儿童节", "建党节", "八一建军节", "教师节", "国庆节"];
 pub static SOLAR_FESTIVAL_DATA: &str = "@00001011950@01003081950@02003121979@03005011950@04005041950@05006011950@06007011941@07008011933@08009101985@09010011950";
@@ -110,10 +110,8 @@ impl SolarFestival {
     if n == 0 {
       return Some(self.clone());
     }
-    let m: SolarMonth = self.day.get_month();
-    let year: isize = m.get_year().get_year();
     if n == 0 {
-      return Self::from_ymd(year, m.get_month(), self.day.get_day());
+      return Self::from_ymd(self.day.get_year(), self.day.get_month(), self.day.get_day());
     }
     let size: isize = SOLAR_FESTIVAL_NAMES.len() as isize;
     let mut t: isize = (self.get_index() as isize) + n;
@@ -121,7 +119,7 @@ impl SolarFestival {
     if t < 0 {
       t -= size;
     }
-    Self::from_index(year + t / size, offset)
+    Self::from_index(self.day.get_year() + t / size, offset)
   }
 }
 
@@ -162,11 +160,11 @@ impl Culture for LunarFestival {
 }
 
 impl LunarFestival {
-  pub fn from_ymd(year: isize, month: usize, day: usize) -> Option<Self> {
+  pub fn from_ymd(year: isize, month: isize, day: usize) -> Option<Self> {
     let mut reg: Regex = Regex::new(format!("{}{:0>two$}{:0>two$}", r"@\d{2}0", month, day, two = 2).as_str()).unwrap();
     if reg.is_match(LUNAR_FESTIVAL_DATA) {
       let data: &str = reg.find(LUNAR_FESTIVAL_DATA).unwrap().as_str();
-      let day: LunarDay = LunarDay::from_ymd(year, month as isize, day).unwrap();
+      let day: LunarDay = LunarDay::from_ymd(year, month, day).unwrap();
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
       return Some(Self {
@@ -185,8 +183,7 @@ impl LunarFestival {
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
       let lunar_day: LunarDay = solar_term.get_julian_day().get_solar_day().get_lunar_day();
-      let lunar_month: LunarMonth = lunar_day.get_month();
-      if lunar_month.get_year().get_year() == year && lunar_month.get_month() == month && lunar_day.get_day() == day {
+      if lunar_day.get_year() == year && lunar_day.get_month() == month && lunar_day.get_day() == day {
         return Some(Self {
           festival_type: FestivalType::TERM,
           day: lunar_day,
@@ -201,9 +198,9 @@ impl LunarFestival {
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
 
-      let lunar_day: LunarDay = LunarDay::from_ymd(year, month as isize, day).unwrap();
+      let lunar_day: LunarDay = LunarDay::from_ymd(year, month, day).unwrap();
       let next_day: LunarDay = lunar_day.next(1).unwrap();
-      if next_day.get_month().get_month() == 1 && next_day.get_day() == 1 {
+      if next_day.get_month() == 1 && next_day.get_day() == 1 {
         return Some(Self {
           festival_type: FestivalType::EVE,
           day: lunar_day,
@@ -288,8 +285,7 @@ impl LunarFestival {
     if n == 0 {
       return Some(self.clone());
     }
-    let m: LunarMonth = self.day.get_month();
-    let year: isize = m.get_year().get_year();
+    let year: isize = self.get_day().get_year();
     let size: isize = LUNAR_FESTIVAL_NAMES.len() as isize;
     let mut t: isize = (self.get_index() as isize) + n;
     let offset: usize = AbstractCulture::new().index_of(t, size as usize);
