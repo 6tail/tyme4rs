@@ -10,7 +10,7 @@ Tyme是一个非常强大的日历工具库，可以看作 [Lunar](https://6tail
     // test.rs
     use tyme4rs::tyme::solar::SolarDay;
      
-    let solar: SolarDay = SolarDay::from_ymd(1986, 5, 29).unwrap();
+    let solar: SolarDay = SolarDay::from_ymd(1986, 5, 29);
      
     // 1986年5月29日
     println!("{}", solar.to_string());
