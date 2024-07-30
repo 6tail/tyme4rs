@@ -11,8 +11,8 @@ pub struct PlumRain {
 }
 
 impl Tyme for PlumRain {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -29,10 +29,10 @@ impl PlumRain {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(PLUM_RAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(PLUM_RAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -129,12 +129,12 @@ mod tests {
 
   #[test]
   fn test1() {
-    assert_eq!(true, SolarDay::from_ymd(2024, 6, 10).unwrap().get_plum_rain_day().is_none());
+    assert_eq!(true, SolarDay::from_ymd(2024, 6, 10).get_plum_rain_day().is_none());
   }
 
   #[test]
   fn test2() {
-    let d: PlumRainDay = SolarDay::from_ymd(2024, 6, 11).unwrap().get_plum_rain_day().unwrap();
+    let d: PlumRainDay = SolarDay::from_ymd(2024, 6, 11).get_plum_rain_day().unwrap();
     assert_eq!("入梅", d.get_name());
     assert_eq!("入梅", d.get_plum_rain().to_string());
     assert_eq!("入梅第1天", d.to_string());
@@ -142,7 +142,7 @@ mod tests {
 
   #[test]
   fn test3() {
-    let d: PlumRainDay = SolarDay::from_ymd(2024, 7, 6).unwrap().get_plum_rain_day().unwrap();
+    let d: PlumRainDay = SolarDay::from_ymd(2024, 7, 6).get_plum_rain_day().unwrap();
     assert_eq!("出梅", d.get_name());
     assert_eq!("出梅", d.get_plum_rain().to_string());
     assert_eq!("出梅", d.to_string());
@@ -150,7 +150,7 @@ mod tests {
 
   #[test]
   fn test4() {
-    let d: PlumRainDay = SolarDay::from_ymd(2024, 7, 5).unwrap().get_plum_rain_day().unwrap();
+    let d: PlumRainDay = SolarDay::from_ymd(2024, 7, 5).get_plum_rain_day().unwrap();
     assert_eq!("入梅", d.get_name());
     assert_eq!("入梅", d.get_plum_rain().to_string());
     assert_eq!("入梅第25天", d.to_string());

@@ -12,8 +12,8 @@ pub struct Ecliptic {
 }
 
 impl Tyme for Ecliptic {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -30,10 +30,10 @@ impl Ecliptic {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(ECLIPTIC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(ECLIPTIC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -78,8 +78,8 @@ pub struct TwelveStar {
 }
 
 impl Tyme for TwelveStar {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -96,10 +96,10 @@ impl TwelveStar {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(TWELVE_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(TWELVE_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -143,7 +143,7 @@ mod tests {
 
   #[test]
   fn test1() {
-    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 30).unwrap().get_lunar_day().get_twelve_star();
+    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 30).get_lunar_day().get_twelve_star();
     assert_eq!("天德", star.get_name());
     assert_eq!("黄道", star.get_ecliptic().get_name());
     assert_eq!("吉", star.get_ecliptic().get_luck().get_name());
@@ -151,7 +151,7 @@ mod tests {
 
   #[test]
   fn test2() {
-    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 19).unwrap().get_lunar_day().get_twelve_star();
+    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 19).get_lunar_day().get_twelve_star();
     assert_eq!("白虎", star.get_name());
     assert_eq!("黑道", star.get_ecliptic().get_name());
     assert_eq!("凶", star.get_ecliptic().get_luck().get_name());
@@ -159,7 +159,7 @@ mod tests {
 
   #[test]
   fn test3() {
-    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 7).unwrap().get_lunar_day().get_twelve_star();
+    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 7).get_lunar_day().get_twelve_star();
     assert_eq!("天牢", star.get_name());
     assert_eq!("黑道", star.get_ecliptic().get_name());
     assert_eq!("凶", star.get_ecliptic().get_luck().get_name());
@@ -167,7 +167,7 @@ mod tests {
 
   #[test]
   fn test4() {
-    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 8).unwrap().get_lunar_day().get_twelve_star();
+    let star: TwelveStar = SolarDay::from_ymd(2023, 10, 8).get_lunar_day().get_twelve_star();
     assert_eq!("玉堂", star.get_name());
     assert_eq!("黄道", star.get_ecliptic().get_name());
     assert_eq!("吉", star.get_ecliptic().get_luck().get_name());

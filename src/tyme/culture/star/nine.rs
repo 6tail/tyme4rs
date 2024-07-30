@@ -12,8 +12,8 @@ pub struct Dipper {
 }
 
 impl Tyme for Dipper {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -30,10 +30,10 @@ impl Dipper {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(DIPPER_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(DIPPER_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -74,8 +74,8 @@ pub struct NineStar {
 }
 
 impl Tyme for NineStar {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -92,10 +92,10 @@ impl NineStar {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(NINE_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(NINE_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -152,84 +152,84 @@ mod tests {
 
   #[test]
   fn test0() {
-    let nine_star: NineStar = LunarYear::from_year(1985).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarYear::from_year(1985).get_nine_star();
     assert_eq!("六", nine_star.get_name());
     assert_eq!("六白金", nine_star.to_string());
   }
 
   #[test]
   fn test1() {
-    let nine_star: NineStar = LunarYear::from_year(2022).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarYear::from_year(2022).get_nine_star();
     assert_eq!("五黄土", nine_star.to_string());
     assert_eq!("玉衡", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test2() {
-    let nine_star: NineStar = LunarYear::from_year(2033).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarYear::from_year(2033).get_nine_star();
     assert_eq!("三碧木", nine_star.to_string());
     assert_eq!("天玑", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test3() {
-    let nine_star: NineStar = LunarMonth::from_ym(1985, 2).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarMonth::from_ym(1985, 2).get_nine_star();
     assert_eq!("四绿木", nine_star.to_string());
     assert_eq!("天权", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test4() {
-    let nine_star: NineStar = LunarMonth::from_ym(1985, 2).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarMonth::from_ym(1985, 2).get_nine_star();
     assert_eq!("四绿木", nine_star.to_string());
     assert_eq!("天权", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test5() {
-    let nine_star: NineStar = LunarMonth::from_ym(2022, 1).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarMonth::from_ym(2022, 1).get_nine_star();
     assert_eq!("二黒土", nine_star.to_string());
     assert_eq!("天璇", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test6() {
-    let nine_star: NineStar = LunarMonth::from_ym(2033, 1).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarMonth::from_ym(2033, 1).get_nine_star();
     assert_eq!("五黄土", nine_star.to_string());
     assert_eq!("玉衡", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test7() {
-    let nine_star: NineStar = SolarDay::from_ymd(1985, 2, 19).unwrap().get_lunar_day().get_nine_star();
+    let nine_star: NineStar = SolarDay::from_ymd(1985, 2, 19).get_lunar_day().get_nine_star();
     assert_eq!("五黄土", nine_star.to_string());
     assert_eq!("玉衡", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test8() {
-    let nine_star: NineStar = LunarDay::from_ymd(2022, 1, 1).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarDay::from_ymd(2022, 1, 1).get_nine_star();
     assert_eq!("四绿木", nine_star.to_string());
     assert_eq!("天权", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test9() {
-    let nine_star: NineStar = LunarDay::from_ymd(2033, 1, 1).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarDay::from_ymd(2033, 1, 1).get_nine_star();
     assert_eq!("一白水", nine_star.to_string());
     assert_eq!("天枢", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test10() {
-    let nine_star: NineStar = LunarHour::from_ymd_hms(2033, 1, 1, 12, 0, 0).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarHour::from_ymd_hms(2033, 1, 1, 12, 0, 0).get_nine_star();
     assert_eq!("七赤金", nine_star.to_string());
     assert_eq!("摇光", nine_star.get_dipper().to_string());
   }
 
   #[test]
   fn test11() {
-    let nine_star: NineStar = LunarHour::from_ymd_hms(2011, 5, 3, 23, 0, 0).unwrap().get_nine_star();
+    let nine_star: NineStar = LunarHour::from_ymd_hms(2011, 5, 3, 23, 0, 0).get_nine_star();
     assert_eq!("七赤金", nine_star.to_string());
     assert_eq!("摇光", nine_star.get_dipper().to_string());
   }

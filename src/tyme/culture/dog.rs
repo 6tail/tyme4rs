@@ -10,8 +10,8 @@ pub struct Dog {
 }
 
 impl Tyme for Dog {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -28,10 +28,10 @@ impl Dog {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(DOG_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(DOG_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {

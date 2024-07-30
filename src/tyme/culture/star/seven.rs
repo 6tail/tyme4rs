@@ -11,8 +11,8 @@ pub struct SevenStar {
 }
 
 impl Tyme for SevenStar {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -29,10 +29,10 @@ impl SevenStar {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(SEVEN_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(SEVEN_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {

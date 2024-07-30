@@ -40,7 +40,7 @@ impl SolarFestival {
       if year < start_year {
         return None;
       }
-      let day: SolarDay = SolarDay::from_ymd(year, month, day).unwrap();
+      let day: SolarDay = SolarDay::from_ymd(year, month, day);
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
       Some(Self {
@@ -76,7 +76,7 @@ impl SolarFestival {
       let month: usize = usize::from_str(dm).unwrap();
       let day: usize = usize::from_str(dd).unwrap();
 
-      let day: SolarDay = SolarDay::from_ymd(year, month, day).unwrap();
+      let day: SolarDay = SolarDay::from_ymd(year, month, day);
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
       Some(Self {
@@ -164,7 +164,7 @@ impl LunarFestival {
     let mut reg: Regex = Regex::new(format!("{}{:0>two$}{:0>two$}", r"@\d{2}0", month, day, two = 2).as_str()).unwrap();
     if reg.is_match(LUNAR_FESTIVAL_DATA) {
       let data: &str = reg.find(LUNAR_FESTIVAL_DATA).unwrap().as_str();
-      let day: LunarDay = LunarDay::from_ymd(year, month, day).unwrap();
+      let day: LunarDay = LunarDay::from_ymd(year, month, day);
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
       return Some(Self {
@@ -198,8 +198,8 @@ impl LunarFestival {
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
 
-      let lunar_day: LunarDay = LunarDay::from_ymd(year, month, day).unwrap();
-      let next_day: LunarDay = lunar_day.next(1).unwrap();
+      let lunar_day: LunarDay = LunarDay::from_ymd(year, month, day);
+      let next_day: LunarDay = lunar_day.next(1);
       if next_day.get_month() == 1 && next_day.get_day() == 1 {
         return Some(Self {
           festival_type: FestivalType::EVE,
@@ -231,7 +231,7 @@ impl LunarFestival {
           let index: usize = usize::from_str(di).unwrap();
           Some(Self {
             festival_type: FestivalType::DAY,
-            day: LunarDay::from_ymd(year, month as isize, day).unwrap(),
+            day: LunarDay::from_ymd(year, month as isize, day),
             index,
             solar_term: None,
           })
@@ -255,7 +255,7 @@ impl LunarFestival {
           let index: usize = usize::from_str(di).unwrap();
           Some(Self {
             festival_type: FestivalType::EVE,
-            day: LunarDay::from_ymd(year + 1, 1, 1).unwrap().next(-1).unwrap(),
+            day: LunarDay::from_ymd(year + 1, 1, 1).next(-1),
             index,
             solar_term: None,
           })
@@ -331,13 +331,13 @@ mod tests {
 
   #[test]
   fn test3() {
-    let f: LunarFestival = LunarDay::from_ymd(2010, 1, 15).unwrap().get_festival().unwrap();
+    let f: LunarFestival = LunarDay::from_ymd(2010, 1, 15).get_festival().unwrap();
     assert_eq!("农历庚寅年正月十五 元宵节", f.to_string());
   }
 
   #[test]
   fn test4() {
-    let f: LunarFestival = LunarDay::from_ymd(2021, 12, 29).unwrap().get_festival().unwrap();
+    let f: LunarFestival = LunarDay::from_ymd(2021, 12, 29).get_festival().unwrap();
     assert_eq!("农历辛丑年十二月廿九 除夕", f.to_string());
   }
 
@@ -358,21 +358,21 @@ mod tests {
 
   #[test]
   fn test7() {
-    let f: Option<SolarFestival> = SolarDay::from_ymd(2010, 1, 1).unwrap().get_festival();
+    let f: Option<SolarFestival> = SolarDay::from_ymd(2010, 1, 1).get_festival();
     assert_eq!(false, f.is_none());
     assert_eq!("2010年1月1日 元旦", f.unwrap().to_string());
   }
 
   #[test]
   fn test8() {
-    let f: Option<SolarFestival> = SolarDay::from_ymd(2021, 5, 4).unwrap().get_festival();
+    let f: Option<SolarFestival> = SolarDay::from_ymd(2021, 5, 4).get_festival();
     assert_eq!(false, f.is_none());
     assert_eq!("2021年5月4日 五四青年节", f.unwrap().to_string());
   }
 
   #[test]
   fn test9() {
-    let f: Option<SolarFestival> = SolarDay::from_ymd(1939, 5, 4).unwrap().get_festival();
+    let f: Option<SolarFestival> = SolarDay::from_ymd(1939, 5, 4).get_festival();
     assert_eq!(true, f.is_none());
   }
 }

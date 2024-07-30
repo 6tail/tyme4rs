@@ -11,8 +11,8 @@ pub struct SixStar {
 }
 
 impl Tyme for SixStar {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -29,10 +29,10 @@ impl SixStar {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(SIX_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(SIX_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -72,7 +72,7 @@ mod tests {
 
   #[test]
   fn test1() {
-    let star: SixStar = SolarDay::from_ymd(2020, 4, 23).unwrap().get_lunar_day().get_six_star();
+    let star: SixStar = SolarDay::from_ymd(2020, 4, 23).get_lunar_day().get_six_star();
     assert_eq!("佛灭", star.get_name());
   }
 }

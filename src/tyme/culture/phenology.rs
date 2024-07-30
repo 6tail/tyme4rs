@@ -11,8 +11,8 @@ pub struct Phenology {
 }
 
 impl Tyme for Phenology {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -29,10 +29,10 @@ impl Phenology {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(PHENOLOGY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(PHENOLOGY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -77,8 +77,8 @@ pub struct ThreePhenology {
 }
 
 impl Tyme for ThreePhenology {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -95,10 +95,10 @@ impl ThreePhenology {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(THREE_PHENOLOGY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(THREE_PHENOLOGY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -191,7 +191,7 @@ mod tests {
 
   #[test]
   fn test0() {
-    let solar_day: SolarDay = SolarDay::from_ymd(2020, 4, 23).unwrap();
+    let solar_day: SolarDay = SolarDay::from_ymd(2020, 4, 23);
     // 七十二候
     let phenology: PhenologyDay = solar_day.get_phenology_day();
     // 三候
@@ -205,7 +205,7 @@ mod tests {
 
   #[test]
   fn test1() {
-    let solar_day: SolarDay = SolarDay::from_ymd(2021, 12, 26).unwrap();
+    let solar_day: SolarDay = SolarDay::from_ymd(2021, 12, 26);
     // 七十二候
     let phenology: PhenologyDay = solar_day.get_phenology_day();
     // 三候

@@ -11,8 +11,8 @@ pub struct Nine {
 }
 
 impl Tyme for Nine {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -29,10 +29,10 @@ impl Nine {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(NINE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(NINE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -125,7 +125,7 @@ mod tests {
 
   #[test]
   fn test0() {
-    let d: NineDay = SolarDay::from_ymd(2020, 12, 21).unwrap().get_nine_day().unwrap();
+    let d: NineDay = SolarDay::from_ymd(2020, 12, 21).get_nine_day().unwrap();
     assert_eq!("一九", d.get_name());
     assert_eq!("一九", d.get_nine().to_string());
     assert_eq!("一九第1天", d.to_string());
@@ -133,7 +133,7 @@ mod tests {
 
   #[test]
   fn test1() {
-    let d: NineDay = SolarDay::from_ymd(2020, 12, 22).unwrap().get_nine_day().unwrap();
+    let d: NineDay = SolarDay::from_ymd(2020, 12, 22).get_nine_day().unwrap();
     assert_eq!("一九", d.get_name());
     assert_eq!("一九", d.get_nine().to_string());
     assert_eq!("一九第2天", d.to_string());
@@ -141,7 +141,7 @@ mod tests {
 
   #[test]
   fn test2() {
-    let d: NineDay = SolarDay::from_ymd(2020, 1, 7).unwrap().get_nine_day().unwrap();
+    let d: NineDay = SolarDay::from_ymd(2020, 1, 7).get_nine_day().unwrap();
     assert_eq!("二九", d.get_name());
     assert_eq!("二九", d.get_nine().to_string());
     assert_eq!("二九第8天", d.to_string());
@@ -149,7 +149,7 @@ mod tests {
 
   #[test]
   fn test3() {
-    let d: NineDay = SolarDay::from_ymd(2021, 1, 6).unwrap().get_nine_day().unwrap();
+    let d: NineDay = SolarDay::from_ymd(2021, 1, 6).get_nine_day().unwrap();
     assert_eq!("二九", d.get_name());
     assert_eq!("二九", d.get_nine().to_string());
     assert_eq!("二九第8天", d.to_string());
@@ -157,7 +157,7 @@ mod tests {
 
   #[test]
   fn test4() {
-    let d: NineDay = SolarDay::from_ymd(2021, 1, 8).unwrap().get_nine_day().unwrap();
+    let d: NineDay = SolarDay::from_ymd(2021, 1, 8).get_nine_day().unwrap();
     assert_eq!("三九", d.get_name());
     assert_eq!("三九", d.get_nine().to_string());
     assert_eq!("三九第1天", d.to_string());
@@ -165,7 +165,7 @@ mod tests {
 
   #[test]
   fn test5() {
-    let d: NineDay = SolarDay::from_ymd(2021, 3, 5).unwrap().get_nine_day().unwrap();
+    let d: NineDay = SolarDay::from_ymd(2021, 3, 5).get_nine_day().unwrap();
     assert_eq!("九九", d.get_name());
     assert_eq!("九九", d.get_nine().to_string());
     assert_eq!("九九第3天", d.to_string());
@@ -173,7 +173,7 @@ mod tests {
 
   #[test]
   fn test6() {
-    let d: Option<NineDay> = SolarDay::from_ymd(2021, 7, 5).unwrap().get_nine_day();
+    let d: Option<NineDay> = SolarDay::from_ymd(2021, 7, 5).get_nine_day();
     assert_eq!(true, d.is_none());
   }
 }

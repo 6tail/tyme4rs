@@ -14,8 +14,8 @@ pub struct Animal {
 }
 
 impl Tyme for Animal {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -32,10 +32,10 @@ impl Animal {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(ANIMAL_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(ANIMAL_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -76,8 +76,8 @@ pub struct Beast {
 }
 
 impl Tyme for Beast {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -94,10 +94,10 @@ impl Beast {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -138,8 +138,8 @@ pub struct Constellation {
 }
 
 impl Tyme for Constellation {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -156,10 +156,10 @@ impl Constellation {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(CONSTELLATION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(CONSTELLATION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -200,8 +200,8 @@ pub struct Direction {
 }
 
 impl Tyme for Direction {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -218,10 +218,10 @@ impl Direction {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(DIRECTION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(DIRECTION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -230,6 +230,11 @@ impl Direction {
 
   pub fn get_size(&self) -> usize {
     self.parent.get_size()
+  }
+
+  /// 五行
+  pub fn get_element(&self) -> Element {
+    Element::from_index([4, 2, 0, 0, 2, 3, 3, 2, 1][self.get_index()])
   }
 }
 
@@ -262,8 +267,8 @@ pub struct Duty {
 }
 
 impl Tyme for Duty {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -280,10 +285,10 @@ impl Duty {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -324,8 +329,8 @@ pub struct Element {
 }
 
 impl Tyme for Element {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -342,10 +347,10 @@ impl Element {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(ELEMENT_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(ELEMENT_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -358,22 +363,27 @@ impl Element {
 
   /// 我生者（生）
   pub fn get_reinforce(&self) -> Self {
-    self.next(1).unwrap()
+    self.next(1)
   }
 
   /// 我克者（克）
   pub fn get_restrain(&self) -> Self {
-    self.next(2).unwrap()
+    self.next(2)
   }
 
   /// 生我者（泄）
   pub fn get_reinforced(&self) -> Self {
-    self.next(-1).unwrap()
+    self.next(-1)
   }
 
   /// 克我者（耗）
   pub fn get_restrained(&self) -> Self {
-    self.next(-2).unwrap()
+    self.next(-2)
+  }
+
+  /// 方位
+  pub fn get_direction(&self) -> Direction {
+    Direction::from_index([2, 8, 4, 6, 0][self.get_index()])
   }
 }
 
@@ -420,8 +430,8 @@ pub struct God {
 }
 
 impl Tyme for God {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -438,10 +448,10 @@ impl God {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -459,7 +469,7 @@ impl God {
   pub fn get_day_gods(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
     let mut l: Vec<Self> = Vec::new();
     let reg: Regex = Regex::new(format!(r";{:02X}(.[^;]*)", day.get_index()).as_str()).unwrap();
-    if let Some(caps) = reg.captures(DAY_GODS[month.get_earth_branch().next(-2).unwrap().get_index()]) {
+    if let Some(caps) = reg.captures(DAY_GODS[month.get_earth_branch().next(-2).get_index()]) {
       let data: &str = caps.get(1).unwrap().as_str();
       for i in (0..data.len()).step_by(2) {
         let d: &str = &data[i..i + 2];
@@ -499,8 +509,8 @@ pub struct Land {
 }
 
 impl Tyme for Land {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -517,10 +527,10 @@ impl Land {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -566,8 +576,8 @@ pub struct Luck {
 }
 
 impl Tyme for Luck {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -584,10 +594,10 @@ impl Luck {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -628,8 +638,8 @@ pub struct Phase {
 }
 
 impl Tyme for Phase {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -646,10 +656,10 @@ impl Phase {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -690,8 +700,8 @@ pub struct Sixty {
 }
 
 impl Tyme for Sixty {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -708,10 +718,10 @@ impl Sixty {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -752,8 +762,8 @@ pub struct Sound {
 }
 
 impl Tyme for Sound {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -770,10 +780,10 @@ impl Sound {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -842,8 +852,8 @@ pub struct Taboo {
 }
 
 impl Tyme for Taboo {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -860,10 +870,10 @@ impl Taboo {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -952,8 +962,8 @@ pub struct Ten {
 }
 
 impl Tyme for Ten {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -970,10 +980,10 @@ impl Ten {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1014,8 +1024,8 @@ pub struct Terrain {
 }
 
 impl Tyme for Terrain {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -1032,10 +1042,10 @@ impl Terrain {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(TERRAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(TERRAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1076,8 +1086,8 @@ pub struct Twenty {
 }
 
 impl Tyme for Twenty {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -1094,10 +1104,10 @@ impl Twenty {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(TWENTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(TWENTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1142,8 +1152,8 @@ pub struct Week {
 }
 
 impl Tyme for Week {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -1160,10 +1170,10 @@ impl Week {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1204,8 +1214,8 @@ pub struct Zodiac {
 }
 
 impl Tyme for Zodiac {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -1222,10 +1232,10 @@ impl Zodiac {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(ZODIAC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(ZODIAC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1266,8 +1276,8 @@ pub struct Zone {
 }
 
 impl Tyme for Zone {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -1284,10 +1294,10 @@ impl Zone {
     }
   }
 
-  pub fn from_name(name: &str) -> Result<Self, String> {
-    Ok(Self {
-      parent: LoopTyme::from_name(ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name).unwrap()
-    })
+  pub fn from_name(name: &str) -> Self {
+    Self {
+      parent: LoopTyme::from_name(ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1299,7 +1309,7 @@ impl Zone {
   }
 
   pub fn get_direction(&self) -> Direction {
-    Direction::from_name(self.get_name().as_str()).unwrap()
+    Direction::from_name(self.get_name().as_str())
   }
 
   pub fn get_beast(&self) -> Beast {
@@ -1346,7 +1356,7 @@ mod tests {
 
   #[test]
   fn test1() {
-    assert_eq!("龙", Animal::from_name("龙").unwrap().get_name());
+    assert_eq!("龙", Animal::from_name("龙").get_name());
   }
 
   #[test]
@@ -1384,12 +1394,12 @@ mod tests {
 
   #[test]
   fn test8() {
-    assert_eq!(Element::from_name("木").unwrap(), Element::from_name("金").unwrap().get_restrain());
+    assert_eq!(Element::from_name("木"), Element::from_name("金").get_restrain());
   }
 
   #[test]
   fn test9() {
-    assert_eq!(Element::from_name("火").unwrap(), Element::from_name("土").unwrap().get_reinforced());
+    assert_eq!(Element::from_name("火"), Element::from_name("土").get_reinforced());
   }
 
   #[test]
@@ -1409,46 +1419,46 @@ mod tests {
 
   #[test]
   fn test13() {
-    assert_eq!("白羊", SolarDay::from_ymd(2020, 3, 21).unwrap().get_constellation().get_name());
-    assert_eq!("白羊", SolarDay::from_ymd(2020, 4, 19).unwrap().get_constellation().get_name());
+    assert_eq!("白羊", SolarDay::from_ymd(2020, 3, 21).get_constellation().get_name());
+    assert_eq!("白羊", SolarDay::from_ymd(2020, 4, 19).get_constellation().get_name());
   }
 
   #[test]
   fn test14() {
-    assert_eq!("金牛", SolarDay::from_ymd(2020, 4, 20).unwrap().get_constellation().get_name());
-    assert_eq!("金牛", SolarDay::from_ymd(2020, 5, 20).unwrap().get_constellation().get_name());
+    assert_eq!("金牛", SolarDay::from_ymd(2020, 4, 20).get_constellation().get_name());
+    assert_eq!("金牛", SolarDay::from_ymd(2020, 5, 20).get_constellation().get_name());
   }
 
   #[test]
   fn test15() {
-    assert_eq!("双子", SolarDay::from_ymd(2020, 5, 21).unwrap().get_constellation().get_name());
-    assert_eq!("双子", SolarDay::from_ymd(2020, 6, 21).unwrap().get_constellation().get_name());
+    assert_eq!("双子", SolarDay::from_ymd(2020, 5, 21).get_constellation().get_name());
+    assert_eq!("双子", SolarDay::from_ymd(2020, 6, 21).get_constellation().get_name());
   }
 
   #[test]
   fn test16() {
-    assert_eq!("巨蟹", SolarDay::from_ymd(2020, 6, 22).unwrap().get_constellation().get_name());
-    assert_eq!("巨蟹", SolarDay::from_ymd(2020, 7, 22).unwrap().get_constellation().get_name());
+    assert_eq!("巨蟹", SolarDay::from_ymd(2020, 6, 22).get_constellation().get_name());
+    assert_eq!("巨蟹", SolarDay::from_ymd(2020, 7, 22).get_constellation().get_name());
   }
 
   #[test]
   fn test17() {
-    assert_eq!("东南", SolarDay::from_ymd(2021, 11, 13).unwrap().get_lunar_day().get_sixty_cycle().get_heaven_stem().get_mascot_direction().get_name());
+    assert_eq!("东南", SolarDay::from_ymd(2021, 11, 13).get_lunar_day().get_sixty_cycle().get_heaven_stem().get_mascot_direction().get_name());
   }
 
   #[test]
   fn test18() {
-    assert_eq!("东南", SolarDay::from_ymd(2024, 1, 1).unwrap().get_lunar_day().get_sixty_cycle().get_heaven_stem().get_mascot_direction().get_name());
+    assert_eq!("东南", SolarDay::from_ymd(2024, 1, 1).get_lunar_day().get_sixty_cycle().get_heaven_stem().get_mascot_direction().get_name());
   }
 
   #[test]
   fn test19() {
-    assert_eq!("东", SolarDay::from_ymd(2023, 11, 6).unwrap().get_lunar_day().get_jupiter_direction().get_name());
+    assert_eq!("东", SolarDay::from_ymd(2023, 11, 6).get_lunar_day().get_jupiter_direction().get_name());
   }
 
   #[test]
   fn test20() {
-    let d: DogDay = SolarDay::from_ymd(2011, 7, 14).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2011, 7, 14).get_dog_day().unwrap();
     assert_eq!("初伏", d.get_name());
     assert_eq!("初伏", d.get_dog().to_string());
     assert_eq!("初伏第1天", d.to_string());
@@ -1456,7 +1466,7 @@ mod tests {
 
   #[test]
   fn test21() {
-    let d: DogDay = SolarDay::from_ymd(2011, 7, 23).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2011, 7, 23).get_dog_day().unwrap();
     assert_eq!("初伏", d.get_name());
     assert_eq!("初伏", d.get_dog().to_string());
     assert_eq!("初伏第10天", d.to_string());
@@ -1464,7 +1474,7 @@ mod tests {
 
   #[test]
   fn test22() {
-    let d: DogDay = SolarDay::from_ymd(2011, 7, 24).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2011, 7, 24).get_dog_day().unwrap();
     assert_eq!("中伏", d.get_name());
     assert_eq!("中伏", d.get_dog().to_string());
     assert_eq!("中伏第1天", d.to_string());
@@ -1472,7 +1482,7 @@ mod tests {
 
   #[test]
   fn test23() {
-    let d: DogDay = SolarDay::from_ymd(2011, 8, 12).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2011, 8, 12).get_dog_day().unwrap();
     assert_eq!("中伏", d.get_name());
     assert_eq!("中伏", d.get_dog().to_string());
     assert_eq!("中伏第20天", d.to_string());
@@ -1480,7 +1490,7 @@ mod tests {
 
   #[test]
   fn test24() {
-    let d: DogDay = SolarDay::from_ymd(2011, 8, 13).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2011, 8, 13).get_dog_day().unwrap();
     assert_eq!("末伏", d.get_name());
     assert_eq!("末伏", d.get_dog().to_string());
     assert_eq!("末伏第1天", d.to_string());
@@ -1488,7 +1498,7 @@ mod tests {
 
   #[test]
   fn test25() {
-    let d: DogDay = SolarDay::from_ymd(2011, 8, 22).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2011, 8, 22).get_dog_day().unwrap();
     assert_eq!("末伏", d.get_name());
     assert_eq!("末伏", d.get_dog().to_string());
     assert_eq!("末伏第10天", d.to_string());
@@ -1496,19 +1506,19 @@ mod tests {
 
   #[test]
   fn test26() {
-    let d: Option<DogDay> = SolarDay::from_ymd(2011, 7, 13).unwrap().get_dog_day();
+    let d: Option<DogDay> = SolarDay::from_ymd(2011, 7, 13).get_dog_day();
     assert_eq!(true, d.is_none());
   }
 
   #[test]
   fn test27() {
-    let d: Option<DogDay> = SolarDay::from_ymd(2011, 8, 23).unwrap().get_dog_day();
+    let d: Option<DogDay> = SolarDay::from_ymd(2011, 8, 23).get_dog_day();
     assert_eq!(true, d.is_none());
   }
 
   #[test]
   fn test28() {
-    let d: DogDay = SolarDay::from_ymd(2012, 7, 18).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2012, 7, 18).get_dog_day().unwrap();
     assert_eq!("初伏", d.get_name());
     assert_eq!("初伏", d.get_dog().to_string());
     assert_eq!("初伏第1天", d.to_string());
@@ -1516,7 +1526,7 @@ mod tests {
 
   #[test]
   fn test29() {
-    let d: DogDay = SolarDay::from_ymd(2012, 8, 5).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2012, 8, 5).get_dog_day().unwrap();
     assert_eq!("中伏", d.get_name());
     assert_eq!("中伏", d.get_dog().to_string());
     assert_eq!("中伏第9天", d.to_string());
@@ -1524,7 +1534,7 @@ mod tests {
 
   #[test]
   fn test30() {
-    let d: DogDay = SolarDay::from_ymd(2012, 8, 8).unwrap().get_dog_day().unwrap();
+    let d: DogDay = SolarDay::from_ymd(2012, 8, 8).get_dog_day().unwrap();
     assert_eq!("末伏", d.get_name());
     assert_eq!("末伏", d.get_dog().to_string());
     assert_eq!("末伏第2天", d.to_string());
@@ -1532,49 +1542,49 @@ mod tests {
 
   #[test]
   fn test31() {
-    assert_eq!("闭", SolarDay::from_ymd(2023, 10, 30).unwrap().get_lunar_day().get_duty().get_name());
+    assert_eq!("闭", SolarDay::from_ymd(2023, 10, 30).get_lunar_day().get_duty().get_name());
   }
 
   #[test]
   fn test32() {
-    assert_eq!("建", SolarDay::from_ymd(2023, 10, 19).unwrap().get_lunar_day().get_duty().get_name());
+    assert_eq!("建", SolarDay::from_ymd(2023, 10, 19).get_lunar_day().get_duty().get_name());
   }
 
   #[test]
   fn test33() {
-    assert_eq!("除", SolarDay::from_ymd(2023, 10, 7).unwrap().get_lunar_day().get_duty().get_name());
+    assert_eq!("除", SolarDay::from_ymd(2023, 10, 7).get_lunar_day().get_duty().get_name());
   }
 
   #[test]
   fn test34() {
-    assert_eq!("除", SolarDay::from_ymd(2023, 10, 8).unwrap().get_lunar_day().get_duty().get_name());
+    assert_eq!("除", SolarDay::from_ymd(2023, 10, 8).get_lunar_day().get_duty().get_name());
   }
 
   #[test]
   fn test35() {
-    assert_eq!(Element::from_name("土").unwrap(), Element::from_name("火").unwrap().get_reinforce());
+    assert_eq!(Element::from_name("土"), Element::from_name("火").get_reinforce());
   }
 
   #[test]
   fn test36() {
-    assert_eq!("火", HeavenStem::from_name("丙").unwrap().get_element().get_name());
+    assert_eq!("火", HeavenStem::from_name("丙").get_element().get_name());
   }
 
   #[test]
   fn test37() {
-    assert_eq!("木", EarthBranch::from_name("寅").unwrap().get_element().get_name());
+    assert_eq!("木", EarthBranch::from_name("寅").get_element().get_name());
   }
 
   #[test]
   fn test38() {
-    assert_eq!(Element::from_name("火").unwrap(), EarthBranch::from_name("寅").unwrap().get_element().get_reinforce());
+    assert_eq!(Element::from_name("火"), EarthBranch::from_name("寅").get_element().get_reinforce());
   }
 
   #[test]
   fn test39() {
     let mut ji: Vec<String> = Vec::new();
     let mut xiong: Vec<String> = Vec::new();
-    let gods: Vec<God> = SolarDay::from_ymd(2004, 2, 16).unwrap().get_lunar_day().get_gods();
+    let gods: Vec<God> = SolarDay::from_ymd(2004, 2, 16).get_lunar_day().get_gods();
     for g in gods.iter() {
       if "吉" == g.get_luck().get_name() {
         ji.push(g.get_name());
@@ -1588,7 +1598,7 @@ mod tests {
 
   #[test]
   fn test40() {
-    let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0).unwrap().get_lunar_hour().get_recommends();
+    let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0).get_lunar_hour().get_recommends();
     let mut l: Vec<String> = Vec::new();
     for t in taboos.iter() {
       l.push(t.get_name());
@@ -1598,7 +1608,7 @@ mod tests {
 
   #[test]
   fn test41() {
-    let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0).unwrap().get_lunar_hour().get_avoids();
+    let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0).get_lunar_hour().get_avoids();
     let mut l: Vec<String> = Vec::new();
     for t in taboos.iter() {
       l.push(t.get_name());

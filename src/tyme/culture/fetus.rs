@@ -98,8 +98,8 @@ pub struct FetusHeavenStem {
 }
 
 impl Tyme for FetusHeavenStem {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -154,8 +154,8 @@ pub struct FetusEarthBranch {
 }
 
 impl Tyme for FetusEarthBranch {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -210,8 +210,8 @@ pub struct FetusMonth {
 }
 
 impl Tyme for FetusMonth {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::from_index(self.parent.next_index(n) as isize))
+  fn next(&self, n: isize) -> Self {
+    Self::from_index(self.parent.next_index(n) as isize)
   }
 }
 
@@ -270,16 +270,16 @@ mod tests {
 
   #[test]
   fn test1() {
-    assert_eq!("碓磨厕 外东南", SolarDay::from_ymd(2021, 11, 13).unwrap().get_lunar_day().get_fetus_day().get_name());
+    assert_eq!("碓磨厕 外东南", SolarDay::from_ymd(2021, 11, 13).get_lunar_day().get_fetus_day().get_name());
   }
 
   #[test]
   fn test2() {
-    assert_eq!("占门碓 外东南", SolarDay::from_ymd(2021, 11, 12).unwrap().get_lunar_day().get_fetus_day().get_name());
+    assert_eq!("占门碓 外东南", SolarDay::from_ymd(2021, 11, 12).get_lunar_day().get_fetus_day().get_name());
   }
 
   #[test]
   fn test3() {
-    assert_eq!("厨灶厕 外西南", SolarDay::from_ymd(2011, 11, 12).unwrap().get_lunar_day().get_fetus_day().get_name());
+    assert_eq!("厨灶厕 外西南", SolarDay::from_ymd(2011, 11, 12).get_lunar_day().get_fetus_day().get_name());
   }
 }

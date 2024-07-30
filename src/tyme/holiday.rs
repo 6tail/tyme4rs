@@ -30,7 +30,7 @@ impl LegalHoliday {
     let reg: Regex = Regex::new(format!("{:0>four$}{:0>two$}{:0>two$}{}", year, month, day, r"[0-1][0-8][\+|-]\d{2}", four = 4, two = 2).as_str()).unwrap();
     if reg.is_match(LEGAL_HOLIDAY_DATA) {
       let data: &str = reg.find(LEGAL_HOLIDAY_DATA).unwrap().as_str();
-      let day: SolarDay = SolarDay::from_ymd(year, month, day).unwrap();
+      let day: SolarDay = SolarDay::from_ymd(year, month, day);
       let index: usize = data.chars().nth(9).unwrap() as usize - 48;
       let work: bool = '0' == (data.chars().nth(8).unwrap());
       Some(Self {
@@ -78,23 +78,32 @@ impl LegalHoliday {
     }
     index += n;
     let mut y: isize = year;
-    let forward: bool = n > 0;
-    let add: isize = if forward { 1 } else { -1 };
-    while if forward { index >= size } else { index < 0 } {
-      if forward {
+    if n > 0 {
+      while index >= size {
         index -= size;
+        y += 1;
+        data.clear();
+        reg = Regex::new(format!("{:0>four$}{}", y, r"\d{4}[0-1][0-8][\+|-]\d{2}", four = 4).as_str()).unwrap();
+        for matcher in reg.find_iter(LEGAL_HOLIDAY_DATA) {
+          data.push(matcher.as_str().to_string());
+        }
+        size = data.len() as isize;
+        if size < 1 {
+          return None;
+        }
       }
-      y += add;
-      data.clear();
-      reg = Regex::new(format!("{:0>four$}{}", y, r"\d{4}[0-1][0-8][\+|-]\d{2}", four = 4).as_str()).unwrap();
-      for matcher in reg.find_iter(LEGAL_HOLIDAY_DATA) {
-        data.push(matcher.as_str().to_string());
-      }
-      size = data.len() as isize;
-      if size < 1 {
-        return None;
-      }
-      if !forward {
+    } else {
+      while index < 0 {
+        y -= 1;
+        data.clear();
+        reg = Regex::new(format!("{:0>four$}{}", y, r"\d{4}[0-1][0-8][\+|-]\d{2}", four = 4).as_str()).unwrap();
+        for matcher in reg.find_iter(LEGAL_HOLIDAY_DATA) {
+          data.push(matcher.as_str().to_string());
+        }
+        size = data.len() as isize;
+        if size < 1 {
+          return None;
+        }
         index += size;
       }
     }

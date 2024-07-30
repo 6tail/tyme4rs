@@ -14,7 +14,7 @@ pub struct JulianDay {
 }
 
 impl Tyme for JulianDay {
-  fn next(&self, n: isize) -> Result<Self, String> {
+  fn next(&self, n: isize) -> Self {
     Self::from_julian_day(self.day + n as f64)
   }
 }
@@ -26,13 +26,13 @@ impl Culture for JulianDay {
 }
 
 impl JulianDay {
-  pub fn from_julian_day(day: f64) -> Result<Self, String> {
-    Ok(Self {
+  pub fn from_julian_day(day: f64) -> Self {
+    Self {
       day
-    })
+    }
   }
 
-  pub fn from_ymd_hms(year: isize, month: usize, day: usize, hour: usize, minute: usize, second: usize) -> Result<Self, String> {
+  pub fn from_ymd_hms(year: isize, month: usize, day: usize, hour: usize, minute: usize, second: usize) -> Self {
     let d: f64 = (day as f64) + ((second as f64 * 1.0 / 60.0 + (minute as f64)) / 60.0 + (hour as f64)) / 24.0;
     let mut n: isize = 0;
     let g: bool = year * 372 + (month as isize) * 31 + (d as isize) >= 588829;
@@ -97,7 +97,7 @@ impl JulianDay {
     if hour > 23 {
       day += 1
     }
-    SolarDay::from_ymd(year, month as usize, day as usize).unwrap()
+    SolarDay::from_ymd(year, month as usize, day as usize)
   }
 
   pub fn get_solar_time(&self) -> SolarTime {
@@ -143,7 +143,7 @@ impl JulianDay {
       hour -= 24;
       day += 1
     }
-    SolarTime::from_ymd_hms(year, month as usize, day as usize, hour as usize, minute as usize, second as usize).unwrap()
+    SolarTime::from_ymd_hms(year, month as usize, day as usize, hour as usize, minute as usize, second as usize)
   }
 
   /// 儒略日相减
@@ -153,7 +153,7 @@ impl JulianDay {
   /// ```
   /// use tyme4rs::tyme::solar::SolarDay;
   ///
-  /// let v: f64 = SolarDay::from_ymd(2023, 1, 10).unwrap().get_julian_day().subtract(SolarDay::from_ymd(2023, 1, 1).unwrap().get_julian_day());
+  /// let v: f64 = SolarDay::from_ymd(2023, 1, 10).get_julian_day().subtract(SolarDay::from_ymd(2023, 1, 1).get_julian_day());
   /// ```
   pub fn subtract(&self, target: JulianDay) -> f64 {
     self.day - target.get_day()
@@ -180,6 +180,6 @@ mod tests {
 
   #[test]
   fn test1() {
-    assert_eq!("2023年1月1日", SolarDay::from_ymd(2023, 1, 1).unwrap().get_julian_day().get_solar_day().to_string());
+    assert_eq!("2023年1月1日", SolarDay::from_ymd(2023, 1, 1).get_julian_day().get_solar_day().to_string());
   }
 }

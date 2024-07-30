@@ -2,13 +2,14 @@ use std::fmt::{Display, Formatter};
 
 /// 传统文化(民俗)
 pub trait Culture {
-
   /// Return 名称
   fn get_name(&self) -> String;
 }
 
 pub trait Tyme: Culture {
-  fn next(&self, n: isize) -> Result<Self, String> where Self: Sized;
+  fn next(&self, n: isize) -> Self
+  where
+    Self: Sized;
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -133,7 +134,7 @@ pub struct LoopTyme {
 }
 
 impl Tyme for LoopTyme {
-  fn next(&self, _n: isize) -> Result<Self, String> {
+  fn next(&self, _n: isize) -> Self {
     unimplemented!()
   }
 }
@@ -145,18 +146,7 @@ impl Culture for LoopTyme {
 }
 
 impl LoopTyme {
-  pub fn from_index(names: Vec<String>, index: isize) -> Self {
-    let size: usize = names.len();
-    let parent: AbstractTyme = AbstractTyme::new();
-    let culture: AbstractCulture = parent.into();
-    Self {
-      parent,
-      names,
-      index: culture.index_of(index, size),
-    }
-  }
-
-  pub fn from_name(names: Vec<String>, name: &str) -> Result<Self, String> {
+  pub fn new(names: Vec<String>, name: &str) -> Result<Self, String> {
     let mut real_index: Option<usize> = None;
     for i in 0..names.len() {
       if names[i].to_string() == name {
@@ -176,6 +166,21 @@ impl LoopTyme {
         })
       }
     }
+  }
+
+  pub fn from_index(names: Vec<String>, index: isize) -> Self {
+    let size: usize = names.len();
+    let parent: AbstractTyme = AbstractTyme::new();
+    let culture: AbstractCulture = parent.into();
+    Self {
+      parent,
+      names,
+      index: culture.index_of(index, size),
+    }
+  }
+
+  pub fn from_name(names: Vec<String>, name: &str) -> Self {
+    Self::new(names, name).unwrap()
   }
 
   pub fn get_index(&self) -> usize {

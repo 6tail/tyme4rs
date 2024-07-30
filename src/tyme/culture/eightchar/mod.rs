@@ -28,10 +28,10 @@ impl Culture for EightChar {
 impl EightChar {
   pub fn new(year: &str, month: &str, day: &str, hour: &str) -> Self {
     Self {
-      year: SixtyCycle::from_name(year).unwrap(),
-      month: SixtyCycle::from_name(month).unwrap(),
-      day: SixtyCycle::from_name(day).unwrap(),
-      hour: SixtyCycle::from_name(hour).unwrap(),
+      year: SixtyCycle::from_name(year),
+      month: SixtyCycle::from_name(month),
+      day: SixtyCycle::from_name(day),
+      hour: SixtyCycle::from_name(hour),
     }
   }
 
@@ -61,25 +61,25 @@ impl EightChar {
   }
 
   pub fn get_fetal_origin(&self) -> SixtyCycle {
-    SixtyCycle::from_name(format!("{}{}", self.month.get_heaven_stem().next(1).unwrap().get_name(), self.month.get_earth_branch().next(3).unwrap().get_name()).as_str()).unwrap()
+    SixtyCycle::from_name(format!("{}{}", self.month.get_heaven_stem().next(1).get_name(), self.month.get_earth_branch().next(3).get_name()).as_str())
   }
 
   pub fn get_fetal_breath(&self) -> SixtyCycle {
-    SixtyCycle::from_name(format!("{}{}", self.day.get_heaven_stem().next(5).unwrap().get_name(), EarthBranch::from_index(13 - (self.day.get_earth_branch().get_index() as isize)).get_name()).as_str()).unwrap()
+    SixtyCycle::from_name(format!("{}{}", self.day.get_heaven_stem().next(5).get_name(), EarthBranch::from_index(13 - (self.day.get_earth_branch().get_index() as isize)).get_name()).as_str())
   }
 
   pub fn get_own_sign(&self) -> SixtyCycle {
-    let mut offset: isize = (self.month.get_earth_branch().next(-1).unwrap().get_index() + self.hour.get_earth_branch().next(-1).unwrap().get_index()) as isize;
+    let mut offset: isize = (self.month.get_earth_branch().next(-1).get_index() + self.hour.get_earth_branch().next(-1).get_index()) as isize;
     offset = if offset >= 14 { 26 } else { 14 } - offset;
     offset -= 1;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str()).unwrap()
+    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str())
   }
 
   pub fn get_body_sign(&self) -> SixtyCycle {
     let mut offset: isize = (self.month.get_earth_branch().get_index() + self.hour.get_earth_branch().get_index()) as isize;
     offset %= 12;
     offset -= 1;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str()).unwrap()
+    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str())
   }
 
   pub fn get_duty(&self) -> Duty {
@@ -89,13 +89,13 @@ impl EightChar {
   pub fn get_solar_times(&self, start_year: isize, end_year: isize) -> Vec<SolarTime> {
     let mut l: Vec<SolarTime> = Vec::new();
     // 月地支距寅月的偏移值
-    let mut m: isize = self.month.get_earth_branch().next(-2).unwrap().get_index() as isize;
+    let mut m: isize = self.month.get_earth_branch().next(-2).get_index() as isize;
     // 月天干要一致
     if HeavenStem::from_index((self.year.get_heaven_stem().get_index() as isize + 1) * 2 + m) != self.month.get_heaven_stem() {
       return l;
     }
     // 1年的立春是辛酉，序号57
-    let mut y: isize = self.year.next(-57).unwrap().get_index() as isize + 1;
+    let mut y: isize = self.year.next(-57).get_index() as isize + 1;
     // 节令偏移值
     m *= 2;
     // 时辰地支转时刻，子时按零点算
@@ -107,7 +107,7 @@ impl EightChar {
         let mut term: SolarTerm = SolarTerm::from_index(y, 3);
         // 节令推移，年干支和月干支就都匹配上了
         if m > 0 {
-          term = term.next(m).unwrap();
+          term = term.next(m);
         }
         let solar_time: SolarTime = term.get_julian_day().get_solar_time();
         if solar_time.get_year() >= start_year {
@@ -115,16 +115,16 @@ impl EightChar {
           let mut s: usize = 0;
           // 日干支和节令干支的偏移值
           let mut solar_day: SolarDay = solar_time.get_solar_day();
-          let d: isize = self.day.next(-(solar_day.get_lunar_day().get_sixty_cycle().get_index() as isize)).unwrap().get_index() as isize;
+          let d: isize = self.day.next(-(solar_day.get_lunar_day().get_sixty_cycle().get_index() as isize)).get_index() as isize;
           if d > 0 {
             // 从节令推移天数
-            solar_day = solar_day.next(d).unwrap();
+            solar_day = solar_day.next(d);
           } else if h == solar_time.get_hour() {
             // 如果正好是节令当天，且小时和节令的小时数相等的极端情况，把分钟和秒钟带上
             mi = solar_time.get_minute();
             s = solar_time.get_second();
           }
-          let time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), h, mi, s).unwrap();
+          let time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), h, mi, s);
           // 验证一下
           if time.get_lunar_hour().get_eight_char() == *self {
             l.push(time);
@@ -232,10 +232,10 @@ impl ChildLimit {
     let forward: bool = (yang && man) || (!yang && !man);
     let mut term: SolarTerm = birth_time.get_term();
     if !term.is_jie() {
-      term = term.next(-1).unwrap();
+      term = term.next(-1);
     }
     if forward {
-      term = term.next(2).unwrap();
+      term = term.next(2);
     }
     let info: ChildLimitInfo = provider.get_info(birth_time, term);
 
@@ -318,8 +318,8 @@ impl Culture for DecadeFortune {
 }
 
 impl Tyme for DecadeFortune {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::new(self.get_child_limit(), (self.index as isize + n) as usize))
+  fn next(&self, n: isize) -> Self {
+    Self::new(self.get_child_limit(), (self.index as isize + n) as usize)
   }
 }
 
@@ -352,16 +352,16 @@ impl DecadeFortune {
   }
 
   pub fn get_start_lunar_year(&self) -> LunarYear {
-    self.child_limit.get_end_time().get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year().next(self.index as isize * 10).unwrap()
+    self.child_limit.get_end_time().get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year().next(self.index as isize * 10)
   }
 
   pub fn get_end_lunar(&self) -> LunarYear {
-    self.get_start_lunar_year().next(9).unwrap()
+    self.get_start_lunar_year().next(9)
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
     let n: isize = self.index as isize + 1;
-    self.child_limit.get_eight_char().get_month().next(if self.child_limit.is_forward() { n } else { -n }).unwrap()
+    self.child_limit.get_eight_char().get_month().next(if self.child_limit.is_forward() { n } else { -n })
   }
 
   pub fn get_start_fortune(&self) -> Fortune {
@@ -391,8 +391,8 @@ impl Culture for Fortune {
 }
 
 impl Tyme for Fortune {
-  fn next(&self, n: isize) -> Result<Self, String> {
-    Ok(Self::new(self.get_child_limit(), (self.get_index() as isize + n) as usize))
+  fn next(&self, n: isize) -> Self {
+    Self::new(self.get_child_limit(), (self.get_index() as isize + n) as usize)
   }
 }
 
@@ -421,12 +421,12 @@ impl Fortune {
   }
 
   pub fn get_lunar_year(&self) -> LunarYear {
-    self.child_limit.get_end_time().get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year().next(self.index as isize).unwrap()
+    self.child_limit.get_end_time().get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year().next(self.index as isize)
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
     let n: isize = self.get_age() as isize;
-    self.child_limit.get_eight_char().get_hour().next(if self.child_limit.is_forward() { n } else { -n }).unwrap()
+    self.child_limit.get_eight_char().get_hour().next(if self.child_limit.is_forward() { n } else { -n })
   }
 }
 

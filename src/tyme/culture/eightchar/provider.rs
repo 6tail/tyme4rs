@@ -43,17 +43,17 @@ impl ChildLimitProvider for DefaultChildLimitProvider {
     d += h / 24;
     h %= 24;
 
-    let mut sm: SolarMonth = SolarMonth::from_ym(birth_time.get_year() + year as isize, birth_time.get_month()).unwrap().next(month as isize).unwrap();
+    let mut sm: SolarMonth = SolarMonth::from_ym(birth_time.get_year() + year as isize, birth_time.get_month()).next(month as isize);
 
     let dc: usize = sm.get_day_count();
     if d > dc {
       d -= dc;
-      sm = sm.next(1).unwrap();
+      sm = sm.next(1);
     }
 
     ChildLimitInfo {
       start_time: birth_time,
-      end_time: SolarTime::from_ymd_hms(sm.get_year(), sm.get_month(), d, h, mi, birth_time.get_second()).unwrap(),
+      end_time: SolarTime::from_ymd_hms(sm.get_year(), sm.get_month(), d, h, mi, birth_time.get_second()),
       year_count: year,
       month_count: month,
       day_count: day,
@@ -83,18 +83,18 @@ impl ChildLimitProvider for China95ChildLimitProvider {
     minutes %= 360;
     let day: usize = minutes / 12;
 
-    let mut sm: SolarMonth = SolarMonth::from_ym(birth_time.get_year() + year as isize, birth_time.get_month()).unwrap().next(month as isize).unwrap();
+    let mut sm: SolarMonth = SolarMonth::from_ym(birth_time.get_year() + year as isize, birth_time.get_month()).next(month as isize);
 
     let mut d: usize = birth_time.get_day() + day;
     let dc: usize = sm.get_day_count();
     if d > dc {
       d -= dc;
-      sm = sm.next(1).unwrap();
+      sm = sm.next(1);
     }
 
     ChildLimitInfo {
       start_time: birth_time,
-      end_time: SolarTime::from_ymd_hms(sm.get_year(), sm.get_month(), d, birth_time.get_hour(), birth_time.get_minute(), birth_time.get_second()).unwrap(),
+      end_time: SolarTime::from_ymd_hms(sm.get_year(), sm.get_month(), d, birth_time.get_hour(), birth_time.get_minute(), birth_time.get_second()),
       year_count: year,
       month_count: month,
       day_count: day,
