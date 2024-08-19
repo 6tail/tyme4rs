@@ -45,10 +45,11 @@ impl ChildLimitProvider for DefaultChildLimitProvider {
 
     let mut sm: SolarMonth = SolarMonth::from_ym(birth_time.get_year() + year as isize, birth_time.get_month()).next(month as isize);
 
-    let dc: usize = sm.get_day_count();
-    if d > dc {
+    let mut dc: usize = sm.get_day_count();
+    while d > dc {
       d -= dc;
       sm = sm.next(1);
+      dc = sm.get_day_count();
     }
 
     ChildLimitInfo {
@@ -86,10 +87,11 @@ impl ChildLimitProvider for China95ChildLimitProvider {
     let mut sm: SolarMonth = SolarMonth::from_ym(birth_time.get_year() + year as isize, birth_time.get_month()).next(month as isize);
 
     let mut d: usize = birth_time.get_day() + day;
-    let dc: usize = sm.get_day_count();
-    if d > dc {
+    let mut dc: usize = sm.get_day_count();
+    while d > dc {
       d -= dc;
       sm = sm.next(1);
+      dc = sm.get_day_count();
     }
 
     ChildLimitInfo {

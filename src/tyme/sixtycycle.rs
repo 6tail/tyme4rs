@@ -100,20 +100,13 @@ impl HeavenStem {
 
   /// 十神（生我者，正印偏印。我生者，伤官食神。克我者，正官七杀。我克者，正财偏财。同我者，劫财比肩。）
   pub fn get_ten_star(&self, target: Self) -> TenStar {
-    let host: Element = self.get_element();
-    let guest: Element = target.get_element();
-    let mut index: isize = 0;
-    let same_yin_yang: bool = self.get_yin_yang() == target.get_yin_yang();
-    if host.get_reinforce() == guest {
-      index = 1;
-    } else if host.get_restrain() == guest {
-      index = 2;
-    } else if host.get_restrained() == guest {
-      index = 3;
-    } else if host.get_reinforced() == guest {
-      index = 4;
+    let target_index: isize = target.get_index() as isize;
+    let index: isize = self.get_index() as isize;
+    let mut offset: isize = target_index - index;
+    if index % 2 != 0 && target_index % 2 == 0 {
+      offset += 2;
     }
-    TenStar::from_index(index * 2 + if same_yin_yang { 0 } else { 1 })
+    return TenStar::from_index(offset);
   }
 
   /// 五合（甲己合，乙庚合，丙辛合，丁壬合，戊癸合）

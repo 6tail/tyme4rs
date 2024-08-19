@@ -361,22 +361,22 @@ impl Element {
     self.parent.get_size()
   }
 
-  /// 我生者（生）
+  /// 我生者
   pub fn get_reinforce(&self) -> Self {
     self.next(1)
   }
 
-  /// 我克者（克）
+  /// 我克者
   pub fn get_restrain(&self) -> Self {
     self.next(2)
   }
 
-  /// 生我者（泄）
+  /// 生我者
   pub fn get_reinforced(&self) -> Self {
     self.next(-1)
   }
 
-  /// 克我者（耗）
+  /// 克我者
   pub fn get_restrained(&self) -> Self {
     self.next(-2)
   }
