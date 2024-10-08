@@ -183,15 +183,16 @@ pub struct SolarHalfYear {
 
 impl Tyme for SolarHalfYear {
   fn next(&self, n: isize) -> Self {
-    if n == 0 {
-      return self.clone();
-    }
-    let mut i: isize = self.index as isize + n;
-    let mut y: isize = self.year.get_year() + i / 2;
-    i %= 2;
-    if i < 0 {
-      i += 2;
-      y -= 1;
+    let mut i: isize = self.index as isize;
+    let mut y: isize = self.year.get_year();
+    if n != 0 {
+      i += n;
+      y += i / 2;
+      i %= 2;
+      if i < 0 {
+        i += 2;
+        y -= 1;
+      }
     }
     Self::from_index(y, i as usize)
   }
@@ -337,15 +338,16 @@ pub struct SolarSeason {
 
 impl Tyme for SolarSeason {
   fn next(&self, n: isize) -> Self {
-    if n == 0 {
-      return self.clone();
-    }
-    let mut i: isize = self.index as isize + n;
-    let mut y: isize = self.year.get_year() + i / 4;
-    i %= 4;
-    if i < 0 {
-      i += 4;
-      y -= 1;
+    let mut i: isize = self.index as isize;
+    let mut y: isize = self.year.get_year();
+    if n != 0 {
+      i += n;
+      y += i / 4;
+      i %= 4;
+      if i < 0 {
+        i += 4;
+        y -= 1;
+      }
     }
     Self::from_index(y, i as usize)
   }
@@ -479,18 +481,18 @@ pub struct SolarMonth {
 
 impl Tyme for SolarMonth {
   fn next(&self, n: isize) -> Self {
-    if n == 0 {
-      self.clone()
-    } else {
-      let mut m: isize = (self.month as isize) + n;
-      let mut y: isize = self.year.get_year() + m / 12;
+    let mut m: isize = self.month as isize;
+    let mut y: isize = self.year.get_year();
+    if n != 0 {
+      m += n;
+      y += m / 12;
       m %= 12;
       if m < 1 {
         m += 12;
         y -= 1
       }
-      Self::from_ym(y, m as usize)
     }
+    Self::from_ym(y, m as usize)
   }
 }
 
@@ -728,33 +730,31 @@ pub struct SolarWeek {
 
 impl Tyme for SolarWeek {
   fn next(&self, n: isize) -> Self {
-    if n == 0 {
-      self.clone()
-    } else {
-      let mut d: isize = (self.index as isize) + n;
-      let mut m: SolarMonth = self.month;
-      let start_index: usize = self.start.get_index();
-      if n > 0 {
-        let mut week_count: isize = m.get_week_count(start_index) as isize;
-        while d >= week_count {
-          d -= week_count;
-          m = m.next(1);
-          if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).get_week() != self.start {
-            d += 1;
-          }
-          week_count = m.get_week_count(start_index) as isize;
+    let mut d: isize = self.index as isize;
+    let mut m: SolarMonth = self.month;
+    let start_index: usize = self.start.get_index();
+    if n > 0 {
+      d += n;
+      let mut week_count: isize = m.get_week_count(start_index) as isize;
+      while d >= week_count {
+        d -= week_count;
+        m = m.next(1);
+        if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).get_week() != self.start {
+          d += 1;
         }
-      } else {
-        while d < 0 {
-          if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).get_week() != self.start {
-            d -= 1;
-          }
-          m = m.next(-1);
-          d += m.get_week_count(start_index) as isize;
-        }
+        week_count = m.get_week_count(start_index) as isize;
       }
-      Self::from_ym(m.get_year(), m.get_month(), d as usize, start_index)
+    } else if n < 0 {
+      d += n;
+      while d < 0 {
+        if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).get_week() != self.start {
+          d -= 1;
+        }
+        m = m.next(-1);
+        d += m.get_week_count(start_index) as isize;
+      }
     }
+    Self::from_ym(m.get_year(), m.get_month(), d as usize, start_index)
   }
 }
 

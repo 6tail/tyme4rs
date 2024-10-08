@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{Arc, Mutex, MutexGuard};
 use lazy_static::lazy_static;
 use crate::tyme::culture::{Direction, Duty, Element, God, Phase, Taboo, Twenty, Week};
 use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
 use crate::tyme::{AbstractCulture, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::eightchar::EightChar;
+use crate::tyme::culture::eightchar::provider::{DefaultEightCharProvider, EightCharProvider};
 use crate::tyme::culture::fetus::FetusDay;
 use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::star::six::SixStar;
@@ -926,6 +927,10 @@ impl PartialEq for LunarDay {
 
 impl Eq for LunarDay {}
 
+lazy_static! {
+  static ref EIGHT_CHAR_PROVIDER: Arc<Mutex<Box<dyn EightCharProvider + Sync + Send + 'static>>> = Arc::new(Mutex::new(Box::new(DefaultEightCharProvider::new())));
+}
+
 /// 农历时辰
 #[derive(Debug, Copy, Clone)]
 pub struct LunarHour {
@@ -1084,7 +1089,7 @@ impl LunarHour {
   }
 
   pub fn get_eight_char(&self) -> EightChar {
-    EightChar::from_sixty_cycle(self.get_year_sixty_cycle(), self.get_month_sixty_cycle(), self.get_day_sixty_cycle(), self.get_sixty_cycle())
+    EIGHT_CHAR_PROVIDER.lock().unwrap().get_eight_char(*self)
   }
 
   pub fn get_nine_star(&self) -> NineStar {

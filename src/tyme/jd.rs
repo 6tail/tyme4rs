@@ -58,46 +58,7 @@ impl JulianDay {
   }
 
   pub fn get_solar_day(&self) -> SolarDay {
-    let mut d: isize = (self.day + 0.5) as isize;
-    let mut f: f64 = self.day + 0.5 - (d as f64);
-
-    if d >= 2299161 {
-      let c: isize = (((d as f64) - 1867216.25) / 36524.25) as isize;
-      d += 1 + c - ((c as f64) / 4.0) as isize;
-    }
-    d += 1524;
-    let mut year: isize = (((d as f64) - 122.1) / 365.25) as isize;
-    d -= (365.25 * (year as f64)) as isize;
-    let mut month: isize = ((d as f64) / 30.601) as isize;
-    d -= (30.601 * (month as f64)) as isize;
-    let mut day: isize = d;
-    if month > 13 {
-      month -= 13;
-      year -= 4715;
-    } else {
-      month -= 1;
-      year -= 4716;
-    }
-    f *= 24.0;
-    let mut hour: isize = f as isize;
-
-    f -= hour as f64;
-    f *= 60.0;
-    let mut minute: isize = f as isize;
-
-    f -= minute as f64;
-    f *= 60.0;
-    let second: isize = f.round() as isize;
-    if second > 59 {
-      minute += 1
-    }
-    if minute > 59 {
-      hour += 1
-    }
-    if hour > 23 {
-      day += 1
-    }
-    SolarDay::from_ymd(year, month as usize, day as usize)
+    self.get_solar_time().get_solar_day()
   }
 
   pub fn get_solar_time(&self) -> SolarTime {

@@ -1,8 +1,11 @@
 use std::fmt::{Display, Formatter};
+use std::sync::{Arc, Mutex};
+
+use lazy_static::lazy_static;
 
 use crate::tyme::{Culture, Tyme};
 use crate::tyme::culture::Duty;
-use crate::tyme::culture::eightchar::provider::ChildLimitProvider;
+use crate::tyme::culture::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
 use crate::tyme::enums::{Gender, YinYang};
 use crate::tyme::lunar::LunarYear;
 use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
@@ -213,6 +216,10 @@ impl PartialEq for ChildLimitInfo {
 
 impl Eq for ChildLimitInfo {}
 
+lazy_static! {
+  static ref CHILD_LIMIT_PROVIDER: Arc<Mutex<Box<dyn ChildLimitProvider + Sync + Send + 'static>>> = Arc::new(Mutex::new(Box::new(DefaultChildLimitProvider::new())));
+}
+
 /// 童限（从出生到起运的时间段）
 #[derive(Debug, Clone)]
 pub struct ChildLimit {
@@ -223,8 +230,7 @@ pub struct ChildLimit {
 }
 
 impl ChildLimit {
-
-  pub fn from_solar_time(provider: Box<dyn ChildLimitProvider>, birth_time: SolarTime, gender: Gender) -> Self {
+  pub fn from_solar_time(birth_time: SolarTime, gender: Gender) -> Self {
     let eight_char: EightChar = birth_time.get_lunar_hour().get_eight_char();
     // 阳男阴女顺推，阴男阳女逆推
     let yang: bool = YinYang::YANG == eight_char.get_year().get_heaven_stem().get_yin_yang();
@@ -237,7 +243,7 @@ impl ChildLimit {
     if forward {
       term = term.next(2);
     }
-    let info: ChildLimitInfo = provider.get_info(birth_time, term);
+    let info: ChildLimitInfo = CHILD_LIMIT_PROVIDER.lock().unwrap().get_info(birth_time, term);
 
     Self {
       eight_char,
@@ -437,3 +443,24 @@ impl PartialEq for Fortune {
 }
 
 impl Eq for Fortune {}
+
+#[cfg(test)]
+mod tests {
+  use std::sync::MutexGuard;
+  use crate::tyme::culture::eightchar::{CHILD_LIMIT_PROVIDER, ChildLimit};
+  use crate::tyme::culture::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
+  use crate::tyme::enums::Gender;
+  use crate::tyme::solar::SolarTime;
+
+  #[test]
+  fn test0() {
+    // 动态切换童限实现
+    {
+      let mut provider: MutexGuard<Box<dyn ChildLimitProvider + Sync + Send + 'static>> = CHILD_LIMIT_PROVIDER.lock().unwrap();
+      *provider = Box::new(DefaultChildLimitProvider::new());
+    }
+
+    let d: ChildLimit = ChildLimit::from_solar_time(SolarTime::from_ymd_hms(1989, 12, 31, 23, 7, 17), Gender::MAN);
+    assert_eq!("1998年3月1日 19:47:17", d.get_end_time().to_string());
+  }
+}
