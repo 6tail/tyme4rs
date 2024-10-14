@@ -4,7 +4,7 @@ use crate::tyme::{Culture, LoopTyme, Tyme};
 
 pub static SIX_STAR_NAMES: [&str; 6] = ["先胜", "友引", "先负", "佛灭", "大安", "赤口"];
 
-/// 六曜（孔明六曜星、小六壬）
+/// 六曜（孔明六曜星）
 #[derive(Debug, Clone)]
 pub struct SixStar {
   parent: LoopTyme,

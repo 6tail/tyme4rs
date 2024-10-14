@@ -1325,6 +1325,7 @@ pub mod phenology;
 pub mod star;
 pub mod eightchar;
 pub mod plumrain;
+pub mod ren;
 
 #[cfg(test)]
 mod tests {

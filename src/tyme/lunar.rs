@@ -7,7 +7,8 @@ use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
 use crate::tyme::{AbstractCulture, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::eightchar::EightChar;
 use crate::tyme::culture::eightchar::provider::{DefaultEightCharProvider, EightCharProvider};
-use crate::tyme::culture::fetus::FetusDay;
+use crate::tyme::culture::fetus::{FetusDay, FetusMonth};
+use crate::tyme::culture::ren::minor::MinorRen;
 use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::star::six::SixStar;
 use crate::tyme::culture::star::twelve::TwelveStar;
@@ -397,8 +398,19 @@ impl LunarMonth {
     }
   }
 
+  /// 九星
   pub fn get_nine_star(&self) -> NineStar {
     NineStar::from_index(27 - self.year.get_sixty_cycle().get_earth_branch().get_index() as isize % 3 * 3 - self.get_sixty_cycle().get_earth_branch().get_index() as isize)
+  }
+
+  /// 逐月胎神
+  pub fn get_fetus(&self) -> Option<FetusMonth> {
+    FetusMonth::from_lunar_month(*self)
+  }
+
+  /// 小六壬
+  pub fn get_minor_ren(&self) -> MinorRen {
+    MinorRen::from_index((self.month as isize - 1) % 6)
   }
 }
 
@@ -911,6 +923,11 @@ impl LunarDay {
   pub fn get_avoids(&self) -> Vec<Taboo> {
     Taboo::get_day_avoids(self.get_month_sixty_cycle(), self.get_sixty_cycle())
   }
+
+  /// 小六壬
+  pub fn get_minor_ren(&self) -> MinorRen {
+    self.get_lunar_month().get_minor_ren().next(self.day as isize - 1)
+  }
 }
 
 impl Display for LunarDay {
@@ -1115,6 +1132,11 @@ impl LunarHour {
 
   pub fn get_avoids(&self) -> Vec<Taboo> {
     Taboo::get_hour_avoids(self.get_day_sixty_cycle(), self.get_sixty_cycle())
+  }
+
+  /// 小六壬
+  pub fn get_minor_ren(&self) -> MinorRen {
+    self.get_lunar_day().get_minor_ren().next(self.get_index_in_day() as isize)
   }
 }
 

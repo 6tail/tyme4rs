@@ -43,7 +43,7 @@ impl EightChar {
       year,
       month,
       day,
-      hour
+      hour,
     }
   }
 
@@ -101,33 +101,42 @@ impl EightChar {
     let mut y: isize = self.year.next(-57).get_index() as isize + 1;
     // 节令偏移值
     m *= 2;
-    // 时辰地支转时刻，子时按零点算
+    // 时辰地支转时刻
     let h: usize = self.hour.get_earth_branch().get_index() * 2;
+    let mut hours: Vec<usize> = vec![];
+    hours.push(0);
+    if h == 0 {
+      hours.push(23);
+    }
     let base_year: isize = start_year - 1;
+    if base_year > y {
+      y += 60 * ((base_year - y) as f64 / 60.0).ceil() as isize;
+    }
     while y <= end_year {
-      if y >= base_year {
-        // 立春为寅月的开始
-        let mut term: SolarTerm = SolarTerm::from_index(y, 3);
-        // 节令推移，年干支和月干支就都匹配上了
-        if m > 0 {
-          term = term.next(m);
+      // 立春为寅月的开始
+      let mut term: SolarTerm = SolarTerm::from_index(y, 3);
+      // 节令推移，年干支和月干支就都匹配上了
+      if m > 0 {
+        term = term.next(m);
+      }
+      let solar_time: SolarTime = term.get_julian_day().get_solar_time();
+      if solar_time.get_year() >= start_year {
+        // 日干支和节令干支的偏移值
+        let mut solar_day: SolarDay = solar_time.get_solar_day();
+        let d: isize = self.day.next(-(solar_day.get_lunar_day().get_sixty_cycle().get_index() as isize)).get_index() as isize;
+        if d > 0 {
+          // 从节令推移天数
+          solar_day = solar_day.next(d);
         }
-        let solar_time: SolarTime = term.get_julian_day().get_solar_time();
-        if solar_time.get_year() >= start_year {
+        for &hour in hours.iter() {
           let mut mi: usize = 0;
           let mut s: usize = 0;
-          // 日干支和节令干支的偏移值
-          let mut solar_day: SolarDay = solar_time.get_solar_day();
-          let d: isize = self.day.next(-(solar_day.get_lunar_day().get_sixty_cycle().get_index() as isize)).get_index() as isize;
-          if d > 0 {
-            // 从节令推移天数
-            solar_day = solar_day.next(d);
-          } else if h == solar_time.get_hour() {
+          if d == 0 && hour == solar_time.get_hour() {
             // 如果正好是节令当天，且小时和节令的小时数相等的极端情况，把分钟和秒钟带上
             mi = solar_time.get_minute();
             s = solar_time.get_second();
           }
-          let time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), h, mi, s);
+          let time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), hour, mi, s);
           // 验证一下
           if time.get_lunar_hour().get_eight_char() == *self {
             l.push(time);
@@ -175,7 +184,7 @@ impl ChildLimitInfo {
       month_count,
       day_count,
       hour_count,
-      minute_count
+      minute_count,
     }
   }
 
@@ -333,7 +342,7 @@ impl DecadeFortune {
   pub fn new(child_limit: ChildLimit, index: usize) -> Self {
     Self {
       child_limit,
-      index
+      index,
     }
   }
 
@@ -406,7 +415,7 @@ impl Fortune {
   pub fn new(child_limit: ChildLimit, index: usize) -> Self {
     Self {
       child_limit,
-      index
+      index,
     }
   }
 
