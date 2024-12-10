@@ -41,6 +41,10 @@ impl FestivalType {
       }
     }
   }
+
+  pub fn get_name(&self) -> String {
+    self.to_string()
+  }
 }
 
 impl Display for FestivalType {
@@ -60,6 +64,71 @@ impl PartialEq for FestivalType {
 }
 
 impl Eq for FestivalType {}
+
+#[derive(Debug, Copy, Clone)]
+pub enum HideHeavenStemType {
+  RESIDUAL,
+  MIDDLE,
+  MAIN,
+}
+
+impl HideHeavenStemType {
+  pub fn from_code(code: usize) -> Result<Self, String> {
+    match code {
+      0 => {
+        Ok(Self::RESIDUAL)
+      }
+      1 => {
+        Ok(Self::MIDDLE)
+      }
+      2 => {
+        Ok(Self::MAIN)
+      }
+      _ => {
+        Err(format!("illegal HideHeavenStemType code: {}", code))
+      }
+    }
+  }
+
+  pub fn from_name(name: &str) -> Result<Self, String> {
+    match name {
+      "余气" => {
+        Ok(Self::RESIDUAL)
+      }
+      "中气" => {
+        Ok(Self::MIDDLE)
+      }
+      "本气" => {
+        Ok(Self::MAIN)
+      }
+      _ => {
+        Err(format!("illegal HideHeavenStemType name: {}", name))
+      }
+    }
+  }
+
+  pub fn get_name(&self) -> String {
+    self.to_string()
+  }
+}
+
+impl Display for HideHeavenStemType {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::RESIDUAL => write!(f, "{}", "余气"),
+      Self::MIDDLE => write!(f, "{}", "中气"),
+      Self::MAIN => write!(f, "{}", "本气")
+    }
+  }
+}
+
+impl PartialEq for HideHeavenStemType {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for HideHeavenStemType {}
 
 #[derive(Debug, Copy, Clone)]
 pub enum Gender {
@@ -94,6 +163,10 @@ impl Gender {
         Err(format!("illegal Gender name: {}", name))
       }
     }
+  }
+
+  pub fn get_name(&self) -> String {
+    self.to_string()
   }
 }
 
@@ -205,6 +278,10 @@ impl YinYang {
         Err(format!("illegal YinYang name: {}", name))
       }
     }
+  }
+
+  pub fn get_name(&self) -> String {
+    self.to_string()
   }
 }
 

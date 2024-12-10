@@ -1,15 +1,17 @@
 use std::fmt::{Display, Formatter};
-
+use std::str::FromStr;
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::{Constellation, Week};
 use crate::tyme::culture::dog::{Dog, DogDay};
 use crate::tyme::culture::nine::{Nine, NineDay};
 use crate::tyme::culture::phenology::{Phenology, PhenologyDay};
 use crate::tyme::culture::plumrain::{PlumRain, PlumRainDay};
+use crate::tyme::enums::HideHeavenStemType;
 use crate::tyme::festival::SolarFestival;
 use crate::tyme::holiday::LegalHoliday;
 use crate::tyme::jd::{J2000, JulianDay};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
+use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay};
 use crate::tyme::util::ShouXingUtil;
 
 /// 公历年
@@ -1310,6 +1312,37 @@ impl SolarDay {
     PhenologyDay::new(Phenology::from_index(term.get_index() as isize * 3 + index), day_index as usize)
   }
 
+  /// 人元司令分野
+  pub fn get_hide_heaven_stem_day(&self) -> HideHeavenStemDay {
+    let day_counts: [usize;6] = [3, 5, 7, 9, 10, 30];
+    let mut term: SolarTerm = self.get_term();
+    if term.is_qi() {
+      term = term.next(-1);
+    }
+    let mut day_index: usize = self.subtract(term.get_julian_day().get_solar_day()) as usize;
+    let start_index: usize = (term.get_index() - 1) * 3;
+    let data: &str = &"93705542220504xx1513904541632524533533105544806564xx7573304542018584xx95"[start_index..start_index + 6];
+    let mut days: usize = 0;
+    let mut heaven_stem_index: isize = 0;
+    let mut type_index: usize = 0;
+    while type_index < 3 {
+      let i: usize = type_index * 2;
+      let d: &str = &data[i..i + 1];
+      let mut count: usize = 0;
+      if d != "x" {
+        heaven_stem_index = isize::from_str(d).unwrap();
+        count = day_counts[usize::from_str(&data[i + 1..i + 2]).unwrap()];
+        days += count;
+      }
+      if day_index <= days {
+        day_index -= days - count;
+        break;
+      }
+      type_index += 1;
+    }
+    return HideHeavenStemDay::new(HideHeavenStem::from_index(heaven_stem_index, HideHeavenStemType::from_code(type_index).unwrap()), day_index);
+  }
+
   pub fn get_plum_rain_day(&self) -> Option<PlumRainDay> {
     // 芒种
     let grain_in_ear: SolarTerm = SolarTerm::from_index(self.get_year(), 11);
@@ -1848,6 +1881,7 @@ impl Into<AbstractCultureDay> for SolarTermDay {
 mod tests {
   use crate::tyme::{Culture, Tyme};
   use crate::tyme::lunar::LunarWeek;
+  use crate::tyme::sixtycycle::HideHeavenStemDay;
   use crate::tyme::solar::{SolarDay, SolarHalfYear, SolarMonth, SolarSeason, SolarTerm, SolarTime, SolarWeek, SolarYear};
 
   #[test]
@@ -2299,5 +2333,17 @@ mod tests {
     assert_eq!("大雪第15天", SolarDay::from_ymd(2023, 12, 21).get_term_day().to_string());
 
     assert_eq!("冬至第1天", SolarDay::from_ymd(2023, 12, 22).get_term_day().to_string());
+  }
+
+  #[test]
+  fn test73() {
+    let d: HideHeavenStemDay = SolarDay::from_ymd(2024, 12, 4).get_hide_heaven_stem_day();
+    assert_eq!("本气", d.get_hide_heaven_stem().get_type().get_name());
+    assert_eq!("壬", d.get_hide_heaven_stem().get_name());
+    assert_eq!("壬", d.get_hide_heaven_stem().to_string());
+    assert_eq!("水", d.get_hide_heaven_stem().get_heaven_stem().get_element().get_name());
+    assert_eq!("壬水", d.get_name());
+    assert_eq!(15, d.get_day_index());
+    assert_eq!("壬水第16天", d.to_string());
   }
 }

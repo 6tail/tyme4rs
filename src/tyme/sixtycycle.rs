@@ -1,13 +1,13 @@
 use std::fmt::{Display, Formatter};
 
-use crate::tyme::{Culture, LoopTyme, Tyme};
+use crate::tyme::{AbstractCulture, AbstractCultureDay, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::{Direction, Element, Sound, Ten, Terrain, Zodiac};
 use crate::tyme::culture::star::ten::TenStar;
-use crate::tyme::enums::YinYang;
+use crate::tyme::enums::{HideHeavenStemType, YinYang};
 
 pub static HEAVEN_STEM_NAMES: [&str; 10] = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 
-/// 天干
+/// 天干（天元）
 #[derive(Debug, Clone)]
 pub struct HeavenStem {
   parent: LoopTyme,
@@ -148,7 +148,7 @@ impl Into<LoopTyme> for HeavenStem {
 
 pub static EARTH_BRANCH_NAMES: [&str; 12] = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-/// 地支
+/// 地支（地元）
 #[derive(Debug, Clone)]
 pub struct EarthBranch {
   parent: LoopTyme,
@@ -198,6 +198,46 @@ impl EarthBranch {
       0 => YinYang::YANG,
       _ => YinYang::YIN
     }
+  }
+
+  /// 藏干之本气
+  pub fn get_hide_heaven_stem_main(&self) -> HeavenStem {
+    HeavenStem::from_index([9, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8][self.get_index()])
+  }
+
+  /// 藏干之中气，无中气返回None
+  pub fn get_hide_heaven_stem_middle(&self) -> Option<HeavenStem> {
+    let n: isize = [-1, 9, 2, -1, 1, 6, 5, 3, 8, -1, 7, 0][self.get_index()];
+    if n == -1 {
+      None
+    } else {
+      Some(HeavenStem::from_index(n))
+    }
+  }
+
+  /// 藏干之余气，无余气返回None
+  pub fn get_hide_heaven_stem_residual(&self) -> Option<HeavenStem> {
+    let n: isize = [-1, 7, 4, -1, 9, 4, -1, 1, 4, -1, 3, -1][self.get_index()];
+    if n == -1 {
+      None
+    } else {
+      Some(HeavenStem::from_index(n))
+    }
+  }
+
+  /// 藏干列表
+  pub fn get_hide_heaven_stems(&self) -> Vec<HideHeavenStem> {
+    let mut l: Vec<HideHeavenStem> = Vec::new();
+    l.push(HideHeavenStem::new(self.get_hide_heaven_stem_main(), HideHeavenStemType::MAIN));
+    match self.get_hide_heaven_stem_middle() {
+      Some(x) => l.push(HideHeavenStem::new(x, HideHeavenStemType::MIDDLE)),
+      None => {}
+    }
+    match self.get_hide_heaven_stem_residual() {
+      Some(x) => l.push(HideHeavenStem::new(x, HideHeavenStemType::RESIDUAL)),
+      None => {}
+    }
+    l
   }
 
   /// 生肖
@@ -345,6 +385,128 @@ impl Eq for SixtyCycle {}
 
 impl Into<LoopTyme> for SixtyCycle {
   fn into(self) -> LoopTyme {
+    self.parent
+  }
+}
+
+/// 藏干（即人元，司令取天干，分野取天干的五行）
+#[derive(Debug, Clone)]
+pub struct HideHeavenStem {
+  parent: AbstractCulture,
+  heaven_stem: HeavenStem,
+  hide_heaven_stem_type: HideHeavenStemType,
+}
+
+impl Culture for HideHeavenStem {
+  fn get_name(&self) -> String {
+    self.heaven_stem.get_name()
+  }
+}
+
+impl HideHeavenStem {
+  pub fn new(heaven_stem: HeavenStem, hide_heaven_stem_type: HideHeavenStemType) -> Self {
+    Self {
+      parent: AbstractCulture::new(),
+      heaven_stem: heaven_stem,
+      hide_heaven_stem_type: hide_heaven_stem_type,
+    }
+  }
+
+  pub fn from_index(heaven_stem_index: isize, hide_heaven_stem_type: HideHeavenStemType) -> Self {
+    Self {
+      parent: AbstractCulture::new(),
+      heaven_stem: HeavenStem::from_index(heaven_stem_index),
+      hide_heaven_stem_type: hide_heaven_stem_type,
+    }
+  }
+
+  pub fn from_name(heaven_stem_name: &str, hide_heaven_stem_type: HideHeavenStemType) -> Self {
+    Self {
+      parent: AbstractCulture::new(),
+      heaven_stem: HeavenStem::from_name(heaven_stem_name),
+      hide_heaven_stem_type: hide_heaven_stem_type,
+    }
+  }
+
+  pub fn get_heaven_stem(&self) -> HeavenStem {
+    self.heaven_stem.clone()
+  }
+
+  pub fn get_type(&self) -> HideHeavenStemType {
+    self.hide_heaven_stem_type
+  }
+}
+
+impl Display for HideHeavenStem {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}", self.get_name())
+  }
+}
+
+impl PartialEq for HideHeavenStem {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for HideHeavenStem {}
+
+impl Into<AbstractCulture> for HideHeavenStem {
+  fn into(self) -> AbstractCulture {
+    self.parent
+  }
+}
+
+/// 人元司令分野（地支藏干+天索引）
+#[derive(Debug, Clone)]
+pub struct HideHeavenStemDay {
+  parent: AbstractCultureDay,
+  hide_heaven_stem: HideHeavenStem
+}
+
+impl Culture for HideHeavenStemDay {
+  fn get_name(&self) -> String {
+    let heaven_stem: HeavenStem = self.get_hide_heaven_stem().get_heaven_stem();
+    format!("{}{}", heaven_stem.get_name(), heaven_stem.get_element().get_name())
+  }
+}
+
+impl HideHeavenStemDay {
+  pub fn new(hide_heaven_stem: HideHeavenStem, day_index: usize) -> Self {
+    let h1: HideHeavenStem = hide_heaven_stem.clone();
+    let h2: HideHeavenStem = hide_heaven_stem.clone();
+    let culture: AbstractCulture = h1.into();
+    Self {
+      parent: AbstractCultureDay::new(culture, day_index),
+      hide_heaven_stem: h2
+    }
+  }
+
+  pub fn get_hide_heaven_stem(&self) -> HideHeavenStem {
+    self.hide_heaven_stem.clone()
+  }
+
+  pub fn get_day_index(&self) -> usize {
+    self.parent.get_day_index()
+  }
+}
+
+impl Display for HideHeavenStemDay {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+  }
+}
+
+impl PartialEq for HideHeavenStemDay {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for HideHeavenStemDay {}
+
+impl Into<AbstractCultureDay> for HideHeavenStemDay {
+  fn into(self) -> AbstractCultureDay {
     self.parent
   }
 }
