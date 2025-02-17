@@ -1229,13 +1229,9 @@ impl SolarDay {
     let xia_zhi: SolarTerm = SolarTerm::from_index(self.get_year(), 12);
     // 第1个庚日
     let mut start: SolarDay = xia_zhi.get_julian_day().get_solar_day();
-    let mut add: isize = 6 - start.get_lunar_day().get_sixty_cycle().get_heaven_stem().get_index() as isize;
-    if add < 0 {
-      add += 10;
-    }
     // 第3个庚日，即初伏第1天
-    add += 20;
-    start = start.next(add);
+    let parent: LoopTyme = start.get_lunar_day().get_sixty_cycle().get_heaven_stem().into();
+    start = start.next(parent.steps_to(6) as isize + 20);
     let mut days: isize = self.subtract(start);
     // 初伏以前
     if days < 0 {
@@ -1347,22 +1343,16 @@ impl SolarDay {
     // 芒种
     let grain_in_ear: SolarTerm = SolarTerm::from_index(self.get_year(), 11);
     let mut start: SolarDay = grain_in_ear.get_julian_day().get_solar_day();
-    let mut add: isize = 2 - start.get_lunar_day().get_sixty_cycle().get_heaven_stem().get_index() as isize;
-    if add < 0 {
-      add += 10;
-    }
     // 芒种后的第1个丙日
-    start = start.next(add);
+    let mut parent: LoopTyme = start.get_lunar_day().get_sixty_cycle().get_heaven_stem().into();
+    start = start.next(parent.steps_to(2) as isize);
 
     // 小暑
     let slight_heat: SolarTerm = grain_in_ear.next(2);
     let mut end: SolarDay = slight_heat.get_julian_day().get_solar_day();
-    add = 7 - end.get_lunar_day().get_sixty_cycle().get_earth_branch().get_index() as isize;
-    if add < 0 {
-      add += 12;
-    }
     // 小暑后的第1个未日
-    end = end.next(add);
+    parent = end.get_lunar_day().get_sixty_cycle().get_earth_branch().into();
+    end = end.next(parent.steps_to(7) as isize);
 
     if self.is_before(start) || self.is_after(end) {
       return None;

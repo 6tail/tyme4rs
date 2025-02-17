@@ -107,7 +107,7 @@ impl NineStar {
   }
 
   pub fn get_color(&self) -> String {
-    ["白", "黒", "碧", "绿", "黄", "白", "赤", "白", "紫"][self.get_index()].to_string()
+    ["白", "黑", "碧", "绿", "黄", "白", "赤", "白", "紫"][self.get_index()].to_string()
   }
 
   pub fn get_element(&self) -> Element {
@@ -188,7 +188,7 @@ mod tests {
   #[test]
   fn test5() {
     let nine_star: NineStar = LunarMonth::from_ym(2022, 1).get_nine_star();
-    assert_eq!("二黒土", nine_star.to_string());
+    assert_eq!("二黑土", nine_star.to_string());
     assert_eq!("天璇", nine_star.get_dipper().to_string());
   }
 

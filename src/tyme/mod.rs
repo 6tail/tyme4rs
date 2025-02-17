@@ -199,6 +199,10 @@ impl LoopTyme {
   pub fn next_index(&self, n: isize) -> usize {
     self.index_of_index(self.index as isize + n)
   }
+
+  pub fn steps_to(&self, target_index: isize) -> usize {
+    self.index_of_index(target_index - self.index as isize)
+  }
 }
 
 impl Display for LoopTyme {

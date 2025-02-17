@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::sync::{Arc, Mutex, MutexGuard};
 use lazy_static::lazy_static;
-use crate::tyme::culture::{Direction, Duty, Element, God, Phase, Taboo, Twenty, Week};
+use crate::tyme::culture::{Direction, Duty, Element, God, KitchenGodSteed, Phase, Taboo, Twenty, Week};
 use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
 use crate::tyme::{AbstractCulture, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::eightchar::EightChar;
@@ -149,6 +149,10 @@ impl LunarYear {
 
   pub fn get_nine_star(&self) -> NineStar {
     NineStar::from_index(63 + self.get_twenty().get_sixty().get_index() as isize * 3 - self.get_sixty_cycle().get_index() as isize)
+  }
+
+  pub fn get_kitchen_god_steed(&self) -> KitchenGodSteed {
+    KitchenGodSteed::from_lunar_year(self.year)
   }
 }
 
@@ -400,7 +404,11 @@ impl LunarMonth {
 
   /// 九星
   pub fn get_nine_star(&self) -> NineStar {
-    NineStar::from_index(27 - self.year.get_sixty_cycle().get_earth_branch().get_index() as isize % 3 * 3 - self.get_sixty_cycle().get_earth_branch().get_index() as isize)
+    let mut index: isize = self.get_sixty_cycle().get_earth_branch().get_index() as isize;
+    if index < 2 {
+      index += 3;
+    }
+    NineStar::from_index(27 - self.year.get_sixty_cycle().get_earth_branch().get_index() as isize % 3 * 3 - index)
   }
 
   /// 逐月胎神
