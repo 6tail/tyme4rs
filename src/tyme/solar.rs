@@ -185,18 +185,8 @@ pub struct SolarHalfYear {
 
 impl Tyme for SolarHalfYear {
   fn next(&self, n: isize) -> Self {
-    let mut i: isize = self.index as isize;
-    let mut y: isize = self.year.get_year();
-    if n != 0 {
-      i += n;
-      y += i / 2;
-      i %= 2;
-      if i < 0 {
-        i += 2;
-        y -= 1;
-      }
-    }
-    Self::from_index(y, i as usize)
+    let i: isize = self.index as isize + n;
+    Self::from_index((self.get_year() * 2 + i) / 2, AbstractCulture::new().index_of(i, 2))
   }
 }
 
@@ -340,18 +330,8 @@ pub struct SolarSeason {
 
 impl Tyme for SolarSeason {
   fn next(&self, n: isize) -> Self {
-    let mut i: isize = self.index as isize;
-    let mut y: isize = self.year.get_year();
-    if n != 0 {
-      i += n;
-      y += i / 4;
-      i %= 4;
-      if i < 0 {
-        i += 4;
-        y -= 1;
-      }
-    }
-    Self::from_index(y, i as usize)
+    let i: isize = self.index as isize + n;
+    Self::from_index((self.get_year() * 4 + i) / 4, AbstractCulture::new().index_of(i, 4))
   }
 }
 
@@ -483,18 +463,8 @@ pub struct SolarMonth {
 
 impl Tyme for SolarMonth {
   fn next(&self, n: isize) -> Self {
-    let mut m: isize = self.month as isize;
-    let mut y: isize = self.year.get_year();
-    if n != 0 {
-      m += n;
-      y += m / 12;
-      m %= 12;
-      if m < 1 {
-        m += 12;
-        y -= 1
-      }
-    }
-    Self::from_ym(y, m as usize)
+    let i: isize = self.month as isize - 1 + n;
+    Self::from_ym((self.get_year() * 12 + i) / 12, AbstractCulture::new().index_of(i, 12) + 1)
   }
 }
 
@@ -1152,7 +1122,7 @@ impl SolarDay {
   /// let v: isize = SolarDay::from_ymd(2023, 1, 10).subtract(SolarDay::from_ymd(2023, 1, 1));
   /// ```
   pub fn subtract(&self, target: SolarDay) -> isize {
-    (self.get_julian_day().subtract(target.get_julian_day())) as isize
+    self.get_julian_day().subtract(target.get_julian_day()) as isize
   }
 
   /// 农历日
@@ -1640,13 +1610,17 @@ pub static SOLAR_TERM_NAMES: [&str; 24] = ["冬至", "小寒", "大寒", "立春
 #[derive(Debug, Clone)]
 pub struct SolarTerm {
   parent: LoopTyme,
+  /// 年
+  year: isize,
   /// 粗略的儒略日
   cursory_julian_day: f64,
 }
 
 impl Tyme for SolarTerm {
   fn next(&self, n: isize) -> Self {
-    Self::from_cursory_julian_day(self.cursory_julian_day + 15.2184 * (n as f64), self.parent.next_index(n) as isize)
+    let size: isize = self.get_size() as isize;
+    let i: isize = self.get_index() as isize + n;
+    Self::from_index((self.year * size + i) / size, self.parent.index_of_index(i) as isize)
   }
 }
 
@@ -1658,15 +1632,19 @@ impl Culture for SolarTerm {
 
 impl SolarTerm {
   pub fn from_index(year: isize, index: isize) -> Self {
+    let size: isize = SOLAR_TERM_NAMES.len() as isize;
+    let y: isize = (year * size + index) / size;
     let parent: LoopTyme = LoopTyme::from_index(SOLAR_TERM_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index);
-    let jd: f64 = ((year as f64 - 2000.0) * 365.2422 + 180.0).floor();
+    let jd: f64 = ((y as f64 - 2000.0) * 365.2422 + 180.0).floor();
     // 355是2000.12冬至，得到较靠近jd的冬至估计值
     let mut w: f64 = ((jd - 355.0 + 183.0) / 365.2422).floor() * 365.2422 + 355.0;
     if ShouXingUtil::calc_qi(w) > jd {
       w -= 365.2422;
     }
+    let index: usize = parent.get_index();
     Self {
       parent,
+      year: y,
       cursory_julian_day: ShouXingUtil::calc_qi(w + 15.2184 * index as f64),
     }
   }
@@ -1682,20 +1660,13 @@ impl SolarTerm {
     let index: usize = parent.get_index();
     Ok(Self {
       parent,
+      year,
       cursory_julian_day: ShouXingUtil::calc_qi(w + 15.2184 * (index as f64)),
     })
   }
 
   pub fn from_name(year: isize, name: &str) -> Self {
     Self::new(year, name).unwrap()
-  }
-
-  fn from_cursory_julian_day(cursory_julian_day: f64, index: isize) -> Self {
-    let parent: LoopTyme = LoopTyme::from_index(SOLAR_TERM_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index);
-    Self {
-      parent,
-      cursory_julian_day,
-    }
   }
 
   pub fn get_index(&self) -> usize {
@@ -1750,6 +1721,11 @@ impl SolarTerm {
   /// ```
   pub fn get_julian_day(&self) -> JulianDay {
     JulianDay::from_julian_day(ShouXingUtil::qi_accurate2(self.cursory_julian_day) + J2000)
+  }
+
+  /// 年
+  pub fn get_year(&self) -> isize {
+    self.year
   }
 
   /// 粗略的儒略日

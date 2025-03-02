@@ -107,19 +107,9 @@ impl SolarFestival {
   }
 
   pub fn next(&self, n: isize) -> Option<Self> {
-    if n == 0 {
-      return Some(self.clone());
-    }
-    if n == 0 {
-      return Self::from_ymd(self.day.get_year(), self.day.get_month(), self.day.get_day());
-    }
     let size: isize = SOLAR_FESTIVAL_NAMES.len() as isize;
-    let mut t: isize = (self.get_index() as isize) + n;
-    let offset: usize = AbstractCulture::new().index_of(t, size as usize);
-    if t < 0 {
-      t -= size;
-    }
-    Self::from_index(self.day.get_year() + t / size, offset)
+    let i: isize = self.get_index() as isize + n;
+    Self::from_index((self.day.get_year() * size + i) / size, AbstractCulture::new().index_of(i, size as usize))
   }
 }
 
@@ -282,17 +272,9 @@ impl LunarFestival {
   }
 
   pub fn next(&self, n: isize) -> Option<Self> {
-    if n == 0 {
-      return Some(self.clone());
-    }
-    let year: isize = self.get_day().get_year();
     let size: isize = LUNAR_FESTIVAL_NAMES.len() as isize;
-    let mut t: isize = (self.get_index() as isize) + n;
-    let offset: usize = AbstractCulture::new().index_of(t, size as usize);
-    if t < 0 {
-      t -= size;
-    }
-    Self::from_index(year + t / size, offset)
+    let i: isize = self.get_index() as isize + n;
+    Self::from_index((self.get_day().get_year() * size + i) / size, AbstractCulture::new().index_of(i, size as usize))
   }
 }
 

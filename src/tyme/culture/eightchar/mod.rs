@@ -7,7 +7,7 @@ use crate::tyme::{Culture, Tyme};
 use crate::tyme::culture::Duty;
 use crate::tyme::culture::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
 use crate::tyme::enums::{Gender, YinYang};
-use crate::tyme::lunar::{LunarHour, LunarYear};
+use crate::tyme::lunar::LunarYear;
 use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
 
@@ -311,16 +311,7 @@ impl ChildLimit {
   }
 
   pub fn get_end_lunar_year(&self) -> LunarYear {
-    let end_time: SolarTime = self.get_end_time();
-    let solar_year: isize = end_time.get_year();
-    let mut y: LunarYear = end_time.get_lunar_hour().get_lunar_day().get_lunar_month().get_lunar_year();
-    if y.get_year() < solar_year {
-      // 正月初一在立春之后的，农历年往后推一年
-      if LunarHour::from_ymd_hms(solar_year, 1, 1, 0, 0, 0).get_solar_time().is_after(SolarTerm::from_index(solar_year, 3).get_julian_day().get_solar_time()) {
-        y = y.next(1);
-      }
-    }
-    return y;
+    LunarYear::from_year(self.get_start_time().get_lunar_hour().get_year() + self.get_end_time().get_year() - self.get_start_time().get_year())
   }
 }
 
