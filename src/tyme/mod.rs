@@ -234,3 +234,4 @@ pub mod solar;
 pub mod util;
 pub mod holiday;
 pub mod festival;
+pub mod eightchar;

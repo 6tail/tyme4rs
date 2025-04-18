@@ -4,7 +4,7 @@ use crate::tyme::culture::Direction;
 use crate::tyme::enums::Side;
 use crate::tyme::{Culture, LoopTyme, Tyme};
 use crate::tyme::lunar::{LunarDay, LunarMonth};
-use crate::tyme::sixtycycle::SixtyCycle;
+use crate::tyme::sixtycycle::{SixtyCycle, SixtyCycleDay};
 
 /// 逐日胎神
 #[derive(Debug, Clone)]
@@ -16,8 +16,7 @@ pub struct FetusDay {
 }
 
 impl FetusDay {
-  pub fn from_lunar_day(lunar_day: LunarDay) -> Self {
-    let sixty_cycle: SixtyCycle = lunar_day.get_sixty_cycle();
+  pub fn new(sixty_cycle: SixtyCycle) -> Self {
     let fetus_heaven_stem: FetusHeavenStem = FetusHeavenStem::from_index((sixty_cycle.get_heaven_stem().get_index() as isize) % 5);
     let fetus_earth_branch: FetusEarthBranch = FetusEarthBranch::from_index((sixty_cycle.get_earth_branch().get_index() as isize) % 6);
     let index: isize = [3, 3, 8, 8, 8, 8, 8, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, -9, -9, -9, -9, -9, -5, -5, -1, -1, -1, -3, -7, -7, -7, -7, -5, 7, 7, 7, 7, 7, 7, 2, 2, 2, 2, 2, 3, 3, 3, 3][sixty_cycle.get_index()];
@@ -30,6 +29,14 @@ impl FetusDay {
       side,
       direction,
     }
+  }
+
+  pub fn from_lunar_day(lunar_day: LunarDay) -> Self {
+    Self::new(lunar_day.get_sixty_cycle())
+  }
+
+  pub fn from_sixty_cycle_day(sixty_cycle_day: SixtyCycleDay) -> Self {
+    Self::new(sixty_cycle_day.get_sixty_cycle())
   }
 
   pub fn get_fetus_heaven_stem(&self) -> FetusHeavenStem {

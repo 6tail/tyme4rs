@@ -1,5 +1,6 @@
-use crate::tyme::culture::eightchar::{ChildLimitInfo, EightChar};
+use crate::tyme::eightchar::{ChildLimitInfo, EightChar};
 use crate::tyme::lunar::LunarHour;
+use crate::tyme::sixtycycle::SixtyCycleHour;
 use crate::tyme::solar::{SolarMonth, SolarTerm, SolarTime};
 use crate::tyme::Tyme;
 
@@ -26,7 +27,7 @@ impl DefaultEightCharProvider {
 
 impl EightCharProvider for DefaultEightCharProvider {
   fn get_eight_char(&self, hour: LunarHour) -> EightChar {
-    EightChar::from_sixty_cycle(hour.get_year_sixty_cycle(), hour.get_month_sixty_cycle(), hour.get_day_sixty_cycle(), hour.get_sixty_cycle())
+    hour.get_sixty_cycle_hour().get_eight_char()
   }
 }
 
@@ -43,7 +44,8 @@ impl LunarSect2EightCharProvider {
 
 impl EightCharProvider for LunarSect2EightCharProvider {
   fn get_eight_char(&self, hour: LunarHour) -> EightChar {
-    EightChar::from_sixty_cycle(hour.get_year_sixty_cycle(), hour.get_month_sixty_cycle(), hour.get_lunar_day().get_sixty_cycle(), hour.get_sixty_cycle())
+    let h: SixtyCycleHour = hour.get_sixty_cycle_hour();
+    EightChar::from_sixty_cycle(h.get_year(), h.get_month(), hour.get_lunar_day().get_sixty_cycle(), h.get_sixty_cycle())
   }
 }
 

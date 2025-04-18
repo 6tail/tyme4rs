@@ -1,9 +1,16 @@
 use std::fmt::{Display, Formatter};
 
 use crate::tyme::{AbstractCulture, AbstractCultureDay, Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Direction, Element, Sound, Ten, Terrain, Zodiac};
+use crate::tyme::culture::{Direction, Duty, Element, God, Sound, Taboo, Ten, Terrain, Twenty, Zodiac};
+use crate::tyme::eightchar::EightChar;
+use crate::tyme::culture::fetus::FetusDay;
+use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::star::ten::TenStar;
+use crate::tyme::culture::star::twelve::TwelveStar;
+use crate::tyme::culture::star::twenty_eight::TwentyEightStar;
 use crate::tyme::enums::{HideHeavenStemType, YinYang};
+use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
+use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
 
 pub static HEAVEN_STEM_NAMES: [&str; 10] = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 
@@ -510,6 +517,498 @@ impl Into<AbstractCultureDay> for HideHeavenStemDay {
     self.parent
   }
 }
+
+/// 干支年
+#[derive(Debug, Copy, Clone)]
+pub struct SixtyCycleYear {
+  /// 年
+  year: isize,
+}
+
+impl Tyme for SixtyCycleYear {
+  fn next(&self, n: isize) -> Self {
+    Self::from_year(self.year + n)
+  }
+}
+
+impl Culture for SixtyCycleYear {
+  fn get_name(&self) -> String {
+    format!("{}年", self.get_sixty_cycle())
+  }
+}
+
+impl SixtyCycleYear {
+  pub fn new(year: isize) -> Result<Self, String> {
+    if year < -1 || year > 9999 {
+      Err(format!("illegal sixty cycle year: {}", year))
+    } else {
+      Ok(Self {
+        year
+      })
+    }
+  }
+
+  pub fn from_year(year: isize) -> Self {
+    Self::new(year).unwrap()
+  }
+
+  pub fn get_year(&self) -> isize {
+    self.year
+  }
+
+  pub fn get_first_month(&self) -> SixtyCycleMonth {
+    let h: HeavenStem = HeavenStem::from_index((self.get_sixty_cycle().get_heaven_stem().get_index() as isize + 1) * 2);
+    SixtyCycleMonth {
+      year: *self,
+      month: SixtyCycle::from_name(format!("{}寅", h.get_name()).as_str())
+    }
+  }
+
+  pub fn get_months(&self) -> Vec<SixtyCycleMonth> {
+    let mut l: Vec<SixtyCycleMonth> = Vec::new();
+    let m: SixtyCycleMonth = self.get_first_month();
+    l.push(m.clone());
+    for i in 1..12 {
+      l.push(m.next(i));
+    }
+    l
+  }
+
+  pub fn get_sixty_cycle(&self) -> SixtyCycle {
+    SixtyCycle::from_index(self.year - 4)
+  }
+
+  pub fn get_twenty(&self) -> Twenty {
+    Twenty::from_index(((self.year as f64 - 1864.0) / 20.0).floor() as isize)
+  }
+
+  pub fn get_jupiter_direction(&self) -> Direction {
+    Direction::from_index([0, 7, 7, 2, 3, 3, 8, 1, 1, 6, 0, 0][self.get_sixty_cycle().get_earth_branch().get_index()])
+  }
+
+  pub fn get_nine_star(&self) -> NineStar {
+    NineStar::from_index(63 + self.get_twenty().get_sixty().get_index() as isize * 3 - self.get_sixty_cycle().get_index() as isize)
+  }
+}
+
+impl Display for SixtyCycleYear {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}", self.get_name())
+  }
+}
+
+impl PartialEq for SixtyCycleYear {
+  fn eq(&self, other: &Self) -> bool {
+    self.get_year() == other.get_year()
+  }
+}
+
+impl Eq for SixtyCycleYear {}
+
+/// 干支月
+#[derive(Debug, Clone)]
+pub struct SixtyCycleMonth {
+  /// 干支年
+  year: SixtyCycleYear,
+  /// 月柱
+  month: SixtyCycle,
+}
+
+impl Tyme for SixtyCycleMonth {
+  fn next(&self, n: isize) -> Self {
+    SixtyCycleMonth {
+      year: SixtyCycleYear::from_year((self.year.get_year() * 12 + self.get_index_in_year() as isize + n) / 12),
+      month: self.month.next(n),
+    }
+  }
+}
+
+impl Culture for SixtyCycleMonth {
+  fn get_name(&self) -> String {
+    format!("{}月", self.month)
+  }
+}
+
+impl SixtyCycleMonth {
+  pub fn from_index(year: isize, index: isize) -> Self {
+    SixtyCycleYear::from_year(year).get_first_month().next(index)
+  }
+
+  pub fn get_sixty_cycle_year(&self) -> SixtyCycleYear {
+    self.year
+  }
+
+  pub fn get_year(&self) -> SixtyCycle {
+    self.year.get_sixty_cycle()
+  }
+
+  pub fn get_sixty_cycle(&self) -> SixtyCycle {
+    self.month.clone()
+  }
+
+  pub fn get_index_in_year(&self) -> usize {
+    self.month.get_earth_branch().next(-2).get_index()
+  }
+
+  pub fn get_first_day(&self) -> SixtyCycleDay {
+    SixtyCycleDay::from_solar_day(SolarTerm::from_index(self.year.get_year(), 3 + self.get_index_in_year() as isize * 2).get_julian_day().get_solar_day())
+  }
+
+  pub fn get_days(&self) -> Vec<SixtyCycleDay> {
+    let mut l: Vec<SixtyCycleDay> = Vec::new();
+    let mut d: SixtyCycleDay = self.get_first_day();
+    while d.get_sixty_cycle_month() == *self {
+      l.push(d.clone());
+      d = d.next(1);
+    }
+    l
+  }
+
+  pub fn get_jupiter_direction(&self) -> Direction {
+    let n: isize = [7, -1, 1, 3][self.month.get_earth_branch().next(-2).get_index() % 4];
+    match n {
+      -1 => self.month.get_heaven_stem().get_direction(),
+      _ => Direction::from_index(n)
+    }
+  }
+
+  /// 九星
+  pub fn get_nine_star(&self) -> NineStar {
+    let mut index: isize = self.month.get_earth_branch().get_index() as isize;
+    if index < 2 {
+      index += 3;
+    }
+    NineStar::from_index(27 - self.get_year().get_earth_branch().get_index() as isize % 3 * 3 - index)
+  }
+}
+
+impl Display for SixtyCycleMonth {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}{}", self.year.to_string(), self.get_name())
+  }
+}
+
+impl PartialEq for SixtyCycleMonth {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for SixtyCycleMonth {}
+
+/// 干支日
+#[derive(Debug, Clone)]
+pub struct SixtyCycleDay {
+  /// 公历日
+  solar_day: SolarDay,
+  /// 公历月
+  month: SixtyCycleMonth,
+  /// 日柱
+  day: SixtyCycle
+}
+
+impl Tyme for SixtyCycleDay {
+  fn next(&self, n: isize) -> Self {
+    SixtyCycleDay::from_solar_day(self.solar_day.next(n))
+  }
+}
+
+impl Culture for SixtyCycleDay {
+  fn get_name(&self) -> String {
+    format!("{}日", self.day)
+  }
+}
+
+impl SixtyCycleDay {
+  pub fn from_solar_day(solar_day: SolarDay) -> Self {
+    let solar_year: isize = solar_day.get_year();
+    let spring_solar_day: SolarDay = SolarTerm::from_index(solar_year, 3).get_julian_day().get_solar_day();
+    let lunar_day: LunarDay = solar_day.get_lunar_day();
+    let mut lunar_year: LunarYear = lunar_day.get_lunar_month().get_lunar_year();
+    if lunar_year.get_year() == solar_year {
+      if solar_day.is_before(spring_solar_day) {
+        lunar_year = lunar_year.next(-1)
+      }
+    } else if lunar_year.get_year() < solar_year {
+      if !solar_day.is_before(spring_solar_day) {
+        lunar_year = lunar_year.next(1);
+      }
+    }
+    let term: SolarTerm = solar_day.get_term();
+    let mut index: isize = term.get_index() as isize - 3;
+    if index < 0 && term.get_julian_day().get_solar_day().is_after(spring_solar_day) {
+      index += 24;
+    }
+    Self {
+      solar_day,
+      month: SixtyCycleMonth {
+        year: SixtyCycleYear::from_year(lunar_year.get_year()),
+        month: LunarMonth::from_ym(solar_year, 1).get_sixty_cycle().next((index as f64 / 2.0).floor() as isize),
+      },
+      day: lunar_day.get_sixty_cycle(),
+    }
+  }
+
+  /// 公历日
+  pub fn get_solar_day(&self) -> SolarDay {
+    self.solar_day
+  }
+
+  /// 干支月
+  pub fn get_sixty_cycle_month(&self) -> SixtyCycleMonth {
+    self.month.clone()
+  }
+
+  /// 年柱
+  pub fn get_year(&self) -> SixtyCycle {
+    self.month.get_year()
+  }
+
+  /// 月柱
+  pub fn get_month(&self) -> SixtyCycle {
+    self.month.get_sixty_cycle()
+  }
+
+  /// 干支
+  pub fn get_sixty_cycle(&self) -> SixtyCycle {
+    self.day.clone()
+  }
+
+  /// 建除十二值神
+  pub fn get_duty(&self) -> Duty {
+    Duty::from_index(self.day.get_earth_branch().get_index() as isize - self.get_month().get_earth_branch().get_index() as isize)
+  }
+
+  /// 太岁方位
+  pub fn get_jupiter_direction(&self) -> Direction {
+    let index: isize = self.day.get_index() as isize;
+    if index % 12 < 6 {
+      return Element::from_index(index / 12).get_direction();
+    }
+    self.month.get_sixty_cycle_year().get_jupiter_direction()
+  }
+
+  /// 黄道黑道十二神
+  pub fn get_twelve_star(&self) -> TwelveStar {
+    TwelveStar::from_index(self.day.get_earth_branch().get_index() as isize + (8 - self.get_month().get_earth_branch().get_index() as isize % 6) * 2)
+  }
+
+  /// 二十八宿
+  pub fn get_twenty_eight_star(&self) -> TwentyEightStar {
+    TwentyEightStar::from_index([10, 18, 26, 6, 14, 22, 2][self.solar_day.get_week().get_index()]).next(-7 * self.day.get_earth_branch().get_index() as isize)
+  }
+
+  /// 逐日胎神
+  pub fn get_fetus_day(&self) -> FetusDay {
+    FetusDay::from_sixty_cycle_day(self.clone())
+  }
+
+  pub fn get_nine_star(&self) -> NineStar {
+    let d: SolarDay = self.solar_day;
+    let dong_zhi: SolarTerm = SolarTerm::from_index(d.get_year(), 0);
+    let xia_zhi: SolarTerm = dong_zhi.next(12);
+    let dong_zhi2: SolarTerm = dong_zhi.next(24);
+    let dong_zhi_solar: SolarDay = dong_zhi.get_julian_day().get_solar_day();
+    let xia_zhi_solar: SolarDay = xia_zhi.get_julian_day().get_solar_day();
+    let dong_zhi_solar2: SolarDay = dong_zhi2.get_julian_day().get_solar_day();
+    let dong_zhi_index: isize = dong_zhi_solar.get_lunar_day().get_sixty_cycle().get_index() as isize;
+    let xia_zhi_index: isize = xia_zhi_solar.get_lunar_day().get_sixty_cycle().get_index() as isize;
+    let dong_zhi_index2: isize = dong_zhi_solar2.get_lunar_day().get_sixty_cycle().get_index() as isize;
+    let solar_shun_bai: SolarDay = dong_zhi_solar.next(if dong_zhi_index > 29 { 60 - dong_zhi_index } else { -dong_zhi_index });
+    let solar_shun_bai2: SolarDay = dong_zhi_solar2.next(if dong_zhi_index2 > 29 { 60 - dong_zhi_index2 } else { -dong_zhi_index2 });
+    let solar_ni_zi: SolarDay = xia_zhi_solar.next(if xia_zhi_index > 29 { 60 - xia_zhi_index } else { -xia_zhi_index });
+    let mut offset: isize = 0;
+    if !d.is_before(solar_shun_bai) && d.is_before(solar_ni_zi) {
+      offset = d.subtract(solar_shun_bai);
+    } else if !d.is_before(solar_ni_zi) && d.is_before(solar_shun_bai2) {
+      offset = 8 - d.subtract(solar_ni_zi);
+    } else if !d.is_before(solar_shun_bai2) {
+      offset = d.subtract(solar_shun_bai2);
+    } else if d.is_before(solar_shun_bai) {
+      offset = 8 + solar_shun_bai.subtract(d);
+    }
+    NineStar::from_index(offset)
+  }
+
+  pub fn get_hours(&self) -> Vec<SixtyCycleHour> {
+    let mut l: Vec<SixtyCycleHour> = Vec::new();
+    let d: SolarDay = self.solar_day.next(-1);
+    let t: SolarTime = SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), 23, 0, 0);
+    let mut h: SixtyCycleHour = SixtyCycleHour::from_solar_time(t);
+    l.push(h.clone());
+    for _ in 0..11 {
+      h = h.next(7200);
+      l.push(h.clone());
+    }
+    l
+  }
+
+  pub fn get_gods(&self) -> Vec<God> {
+    God::get_day_gods(self.get_month(), self.get_sixty_cycle())
+  }
+
+  pub fn get_recommends(&self) -> Vec<Taboo> {
+    Taboo::get_day_recommends(self.get_month(), self.get_sixty_cycle())
+  }
+
+  pub fn get_avoids(&self) -> Vec<Taboo> {
+    Taboo::get_day_avoids(self.get_month(), self.get_sixty_cycle())
+  }
+}
+
+impl Display for SixtyCycleDay {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}{}", self.month, self.get_name())
+  }
+}
+
+impl PartialEq for SixtyCycleDay {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for SixtyCycleDay {}
+
+/// 干支时辰
+#[derive(Debug, Clone)]
+pub struct SixtyCycleHour {
+  /// 公历时刻
+  solar_time: SolarTime,
+  /// 干支日
+  day: SixtyCycleDay,
+  /// 时柱
+  hour: SixtyCycle,
+}
+
+impl Tyme for SixtyCycleHour {
+  fn next(&self, n: isize) -> Self {
+    SixtyCycleHour::from_solar_time(self.solar_time.next(n))
+  }
+}
+
+impl Culture for SixtyCycleHour {
+  fn get_name(&self) -> String {
+    format!("{}时", self.hour)
+  }
+}
+
+impl SixtyCycleHour {
+  pub fn from_solar_time(solar_time: SolarTime) -> Self {
+    let solar_year: isize = solar_time.get_year();
+    let spring_solar_time: SolarTime = SolarTerm::from_index(solar_year, 3).get_julian_day().get_solar_time();
+    let lunar_hour: LunarHour = solar_time.get_lunar_hour();
+    let lunar_day: LunarDay = lunar_hour.get_lunar_day();
+    let mut lunar_year: LunarYear = lunar_day.get_lunar_month().get_lunar_year();
+    if lunar_year.get_year() == solar_year {
+      if solar_time.is_before(spring_solar_time) {
+        lunar_year = lunar_year.next(-1);
+      }
+    } else if lunar_year.get_year() < solar_year {
+      if !solar_time.is_before(spring_solar_time) {
+        lunar_year = lunar_year.next(1);
+      }
+    }
+    let term: SolarTerm = solar_time.get_term();
+    let mut index: isize = term.get_index() as isize - 3;
+    if index < 0 && term.get_julian_day().get_solar_time().is_after(SolarTerm::from_index(solar_year, 3).get_julian_day().get_solar_time()) {
+      index += 24;
+    }
+    let mut d: SixtyCycle = lunar_day.get_sixty_cycle();
+    if solar_time.get_hour() == 23 {
+      d = d.next(1);
+    }
+    let y: SixtyCycleYear = SixtyCycleYear::from_year(lunar_year.get_year());
+    let m: LunarMonth = LunarMonth::from_ym(solar_year, 1);
+    Self {
+      solar_time,
+      day: SixtyCycleDay {
+        solar_day: solar_time.get_solar_day(),
+        month: SixtyCycleMonth {
+          year: y,
+          month: m.get_sixty_cycle().next((index as f64 / 2.0).floor() as isize),
+        },
+        day: d,
+      },
+      hour: lunar_hour.get_sixty_cycle(),
+    }
+  }
+
+  pub fn get_year(&self) -> SixtyCycle {
+    self.day.get_year()
+  }
+
+  pub fn get_month(&self) -> SixtyCycle {
+    self.day.get_month()
+  }
+
+  pub fn get_day(&self) -> SixtyCycle {
+    self.day.get_sixty_cycle()
+  }
+
+  pub fn get_sixty_cycle(&self) -> SixtyCycle {
+    self.hour.clone()
+  }
+
+  pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
+    self.day.clone()
+  }
+
+  pub fn get_solar_time(&self) -> SolarTime {
+    self.solar_time
+  }
+
+  pub fn get_index_in_day(&self) -> usize {
+    let h: usize = self.solar_time.get_hour();
+    if h == 23 {
+      return 0;
+    }
+    return (h + 1) / 2
+  }
+
+  pub fn get_eight_char(&self) -> EightChar {
+    EightChar::from_sixty_cycle(self.get_year(), self.get_month(), self.get_day(), self.get_sixty_cycle())
+  }
+
+  pub fn get_nine_star(&self) -> NineStar {
+    let solar: SolarDay = self.solar_time.get_solar_day();
+    let dong_zhi: SolarTerm = SolarTerm::from_index(solar.get_year(), 0);
+    let xia_zhi: SolarTerm = dong_zhi.next(12);
+    let asc: bool = !solar.is_before(dong_zhi.get_julian_day().get_solar_day()) && solar.is_before(xia_zhi.get_julian_day().get_solar_day());
+    let mut start: isize = [8, 5, 2][self.get_day().get_earth_branch().get_index() % 3];
+    if asc {
+      start = 8 - start;
+    }
+    let earth_branch_index: isize = self.get_index_in_day() as isize % 12;
+    NineStar::from_index(start + if asc { earth_branch_index } else { -earth_branch_index })
+  }
+
+  pub fn get_twelve_star(&self) -> TwelveStar {
+    TwelveStar::from_index(self.hour.get_earth_branch().get_index() as isize + (8 - self.get_day().get_earth_branch().get_index() as isize % 6) * 2)
+  }
+
+  pub fn get_recommends(&self) -> Vec<Taboo> {
+    Taboo::get_hour_recommends(self.get_day(), self.get_sixty_cycle())
+  }
+
+  pub fn get_avoids(&self) -> Vec<Taboo> {
+    Taboo::get_hour_avoids(self.get_day(), self.get_sixty_cycle())
+  }
+}
+
+impl Display for SixtyCycleHour {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}{}", self.day, self.get_name())
+  }
+}
+
+impl PartialEq for SixtyCycleHour {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for SixtyCycleHour {}
 
 #[cfg(test)]
 mod tests {

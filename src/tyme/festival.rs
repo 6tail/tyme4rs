@@ -264,7 +264,7 @@ impl LunarFestival {
   }
 
   pub fn get_day(&self) -> LunarDay {
-    self.day
+    self.day.clone()
   }
 
   pub fn get_solar_term(&self) -> Option<SolarTerm> {

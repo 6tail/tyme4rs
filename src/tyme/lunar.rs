@@ -1,20 +1,23 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::sync::{Arc, Mutex, MutexGuard};
+
 use lazy_static::lazy_static;
-use crate::tyme::culture::{Direction, Duty, Element, God, KitchenGodSteed, Phase, Taboo, Twenty, Week};
-use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
+
 use crate::tyme::{AbstractCulture, AbstractTyme, Culture, LoopTyme, Tyme};
-use crate::tyme::culture::eightchar::EightChar;
-use crate::tyme::culture::eightchar::provider::{DefaultEightCharProvider, EightCharProvider};
+use crate::tyme::culture::{Direction, Duty, Element, God, KitchenGodSteed, Phase, Taboo, Twenty, Week};
 use crate::tyme::culture::fetus::{FetusDay, FetusMonth};
 use crate::tyme::culture::ren::minor::MinorRen;
 use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::star::six::SixStar;
 use crate::tyme::culture::star::twelve::TwelveStar;
 use crate::tyme::culture::star::twenty_eight::TwentyEightStar;
+use crate::tyme::eightchar::EightChar;
+use crate::tyme::eightchar::provider::{DefaultEightCharProvider, EightCharProvider};
 use crate::tyme::festival::LunarFestival;
 use crate::tyme::jd::{J2000, JulianDay};
+use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle, SixtyCycleDay, SixtyCycleHour};
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
 use crate::tyme::util::ShouXingUtil;
 
@@ -606,9 +609,10 @@ impl LunarWeek {
   pub fn get_days(&self) -> Vec<LunarDay> {
     let mut l: Vec<LunarDay> = Vec::new();
     let d: LunarDay = self.get_first_day();
+    let n: LunarDay = d.clone();
     l.push(d);
     for i in 1..7 {
-      l.push(d.next(i));
+      l.push(n.next(i));
     }
     l
   }
@@ -638,12 +642,16 @@ impl Into<AbstractTyme> for LunarWeek {
 pub static LUNAR_DAY_NAMES: [&str; 30] = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"];
 
 /// 农历日
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct LunarDay {
   /// 农历月
   month: LunarMonth,
   /// 日
   day: usize,
+  /// 公历日（第一次使用时才会初始化）
+  solar_day: RefCell<Option<SolarDay>>,
+  /// 干支日（第一次使用时才会初始化）
+  sixty_cycle_day: RefCell<Option<SixtyCycleDay>>,
 }
 
 impl Tyme for LunarDay {
@@ -671,6 +679,8 @@ impl LunarDay {
       Ok(Self {
         month: m,
         day,
+        solar_day: RefCell::new(None),
+        sixty_cycle_day: RefCell::new(None),
       })
     }
   }
@@ -768,35 +778,15 @@ impl LunarDay {
   }
 
   /// 当天的年干支（立春换）
+  #[deprecated(since = "1.3.0", note = "please use SixtyCycleDay.get_year() instead")]
   pub fn get_year_sixty_cycle(&self) -> SixtyCycle {
-    let solar_day: SolarDay = self.get_solar_day();
-    let solar_year: isize = solar_day.get_year();
-    let spring_solar_day: SolarDay = SolarTerm::from_index(solar_year, 3).get_julian_day().get_solar_day();
-    let lunar_year: LunarYear = self.month.get_lunar_year();
-    let year: isize = lunar_year.get_year();
-    let mut sixty_cycle: SixtyCycle = lunar_year.get_sixty_cycle();
-    if year == solar_year {
-      if solar_day.is_before(spring_solar_day) {
-        sixty_cycle = sixty_cycle.next(-1);
-      }
-    } else if year < solar_year {
-      if !solar_day.is_before(spring_solar_day) {
-        sixty_cycle = sixty_cycle.next(1);
-      }
-    }
-    sixty_cycle
+    self.get_sixty_cycle_day().get_year()
   }
 
   /// 当天的月干支（节气换）
+  #[deprecated(since = "1.3.0", note = "please use SixtyCycleDay.get_month() instead")]
   pub fn get_month_sixty_cycle(&self) -> SixtyCycle {
-    let solar_day: SolarDay = self.get_solar_day();
-    let year: isize = solar_day.get_year();
-    let term: SolarTerm = solar_day.get_term();
-    let mut index: isize = (term.get_index() as isize) - 3;
-    if index < 0 && term.get_julian_day().get_solar_day().is_after(SolarTerm::from_index(year, 3).get_julian_day().get_solar_day()) {
-      index += 24;
-    }
-    LunarMonth::from_ym(year, 1).get_sixty_cycle().next((index as f64 / 2.0).floor() as isize)
+    self.get_sixty_cycle_day().get_month()
   }
 
   /// 干支
@@ -807,7 +797,7 @@ impl LunarDay {
 
   /// 建除十二值神
   pub fn get_duty(&self) -> Duty {
-    Duty::from_index(self.get_sixty_cycle().get_earth_branch().get_index() as isize - self.get_month_sixty_cycle().get_earth_branch().get_index() as isize)
+    self.get_sixty_cycle_day().get_duty()
   }
 
   /// 太岁方位
@@ -850,12 +840,23 @@ impl LunarDay {
   /// let solar_day: SolarDay = LunarDay::from_ymd(2023, 1, 1).get_solar_day();
   /// ```
   pub fn get_solar_day(&self) -> SolarDay {
-    self.month.get_first_julian_day().next((self.day as isize) - 1).get_solar_day()
+    if self.solar_day.borrow().is_none() {
+      self.solar_day.replace(Some(self.month.get_first_julian_day().next(self.day as isize - 1).get_solar_day()));
+    }
+    self.solar_day.borrow().unwrap()
+  }
+
+  /// 干支日
+  pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
+    if self.sixty_cycle_day.borrow().is_none() {
+      self.sixty_cycle_day.replace(Some(self.get_solar_day().get_sixty_cycle_day()));
+    }
+    self.sixty_cycle_day.borrow().clone().unwrap()
   }
 
   /// 黄道黑道十二神
   pub fn get_twelve_star(&self) -> TwelveStar {
-    TwelveStar::from_index(self.get_sixty_cycle().get_earth_branch().get_index() as isize + (8 - self.get_month_sixty_cycle().get_earth_branch().get_index() as isize % 6) * 2)
+    self.get_sixty_cycle_day().get_twelve_star()
   }
 
   /// 二十八宿
@@ -865,7 +866,7 @@ impl LunarDay {
 
   /// 逐日胎神
   pub fn get_fetus_day(&self) -> FetusDay {
-    FetusDay::from_lunar_day(*self)
+    FetusDay::from_lunar_day(self.clone())
   }
 
   /// 农历传统节日
@@ -921,15 +922,15 @@ impl LunarDay {
   }
 
   pub fn get_gods(&self) -> Vec<God> {
-    God::get_day_gods(self.get_month_sixty_cycle(), self.get_sixty_cycle())
+    self.get_sixty_cycle_day().get_gods()
   }
 
   pub fn get_recommends(&self) -> Vec<Taboo> {
-    Taboo::get_day_recommends(self.get_month_sixty_cycle(), self.get_sixty_cycle())
+    self.get_sixty_cycle_day().get_recommends()
   }
 
   pub fn get_avoids(&self) -> Vec<Taboo> {
-    Taboo::get_day_avoids(self.get_month_sixty_cycle(), self.get_sixty_cycle())
+    self.get_sixty_cycle_day().get_avoids()
   }
 
   /// 小六壬
@@ -957,14 +958,20 @@ lazy_static! {
 }
 
 /// 农历时辰
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct LunarHour {
   /// 农历日
   day: LunarDay,
   /// 时
   hour: usize,
+  /// 分
   minute: usize,
+  /// 秒
   second: usize,
+  /// 公历时刻（第一次使用时才会初始化）
+  solar_time: RefCell<Option<SolarTime>>,
+  /// 干支时辰（第一次使用时才会初始化）
+  sixty_cycle_hour: RefCell<Option<SixtyCycleHour>>,
 }
 
 impl Tyme for LunarHour {
@@ -1007,6 +1014,8 @@ impl LunarHour {
         hour,
         minute,
         second,
+        solar_time: RefCell::new(None),
+        sixty_cycle_hour: RefCell::new(None),
       })
     }
   }
@@ -1016,7 +1025,7 @@ impl LunarHour {
   }
 
   pub fn get_lunar_day(&self) -> LunarDay {
-    self.day
+    self.day.clone()
   }
 
   pub fn get_year(&self) -> isize {
@@ -1067,54 +1076,48 @@ impl LunarHour {
     if self.minute != target.get_minute() { self.minute > target.get_minute() } else { self.second > target.get_second() }
   }
 
+  #[deprecated(since = "1.3.0", note = "please use SixtyCycleHour.get_year() instead")]
   pub fn get_year_sixty_cycle(&self) -> SixtyCycle {
-    let solar_time: SolarTime = self.get_solar_time();
-    let solar_year: isize = self.day.get_solar_day().get_year();
-    let spring_solar_time: SolarTime = SolarTerm::from_index(solar_year, 3).get_julian_day().get_solar_time();
-    let lunar_year: LunarYear = self.day.get_lunar_month().get_lunar_year();
-    let year: isize = lunar_year.get_year();
-    let mut sixty_cycle: SixtyCycle = lunar_year.get_sixty_cycle();
-    if year == solar_year {
-      if solar_time.is_before(spring_solar_time) {
-        sixty_cycle = sixty_cycle.next(-1);
-      }
-    } else if year < solar_year {
-      if !solar_time.is_before(spring_solar_time) {
-        sixty_cycle = sixty_cycle.next(1);
-      }
-    }
-    sixty_cycle
+    self.clone().get_sixty_cycle_hour().get_year()
   }
 
+  #[deprecated(since = "1.3.0", note = "please use SixtyCycleHour.get_month() instead")]
   pub fn get_month_sixty_cycle(&self) -> SixtyCycle {
-    let solar_time: SolarTime = self.get_solar_time();
-    let year: isize = solar_time.get_year();
-    let term: SolarTerm = solar_time.get_term();
-    let mut index: isize = (term.get_index() as isize) - 3;
-    if index < 0 && term.get_julian_day().get_solar_day().is_after(SolarTerm::from_index(year, 3).get_julian_day().get_solar_day()) {
-      index += 24;
-    }
-    LunarMonth::from_ym(year, 1).get_sixty_cycle().next((index as f64 / 2.0).floor() as isize)
+    self.clone().get_sixty_cycle_hour().get_month()
   }
 
+  #[deprecated(since = "1.3.0", note = "please use SixtyCycleHour.get_day() instead")]
   pub fn get_day_sixty_cycle(&self) -> SixtyCycle {
-    let d: SixtyCycle = self.day.get_sixty_cycle();
-    return if self.hour < 23 { d } else { d.next(1) };
+    self.clone().get_sixty_cycle_hour().get_day()
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
     let earth_branch_index: isize = self.get_index_in_day() as isize % 12;
-    let heaven_stem_index: isize = self.get_day_sixty_cycle().get_heaven_stem().get_index() as isize % 5 * 2 + earth_branch_index;
+    let mut d: SixtyCycle = self.day.get_sixty_cycle();
+    if self.hour >= 23 {
+      d = d.next(1);
+    }
+    let heaven_stem_index: isize = d.get_heaven_stem().get_index() as isize % 5 * 2 + earth_branch_index;
     SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(heaven_stem_index).get_name(), EarthBranch::from_index(earth_branch_index).get_name()).as_str())
   }
 
   pub fn get_solar_time(&self) -> SolarTime {
-    let d: SolarDay = self.day.get_solar_day();
-    SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second)
+    if self.solar_time.borrow().is_none() {
+      let d: SolarDay = self.day.get_solar_day();
+      self.solar_time.replace(Some(SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second)));
+    }
+    self.solar_time.borrow().unwrap()
+  }
+
+  pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
+    if self.sixty_cycle_hour.borrow().is_none() {
+      self.sixty_cycle_hour.replace(Some(self.get_solar_time().get_sixty_cycle_hour()));
+    }
+    self.sixty_cycle_hour.borrow().clone().unwrap()
   }
 
   pub fn get_eight_char(&self) -> EightChar {
-    EIGHT_CHAR_PROVIDER.lock().unwrap().get_eight_char(*self)
+    EIGHT_CHAR_PROVIDER.lock().unwrap().get_eight_char(self.clone())
   }
 
   pub fn get_nine_star(&self) -> NineStar {
@@ -1131,15 +1134,15 @@ impl LunarHour {
   }
 
   pub fn get_twelve_star(&self) -> TwelveStar {
-    TwelveStar::from_index(self.get_sixty_cycle().get_earth_branch().get_index() as isize + (8 - self.get_day_sixty_cycle().get_earth_branch().get_index() as isize % 6) * 2)
+    TwelveStar::from_index(self.get_sixty_cycle().get_earth_branch().get_index() as isize + (8 - self.get_sixty_cycle_hour().get_day().get_earth_branch().get_index() as isize % 6) * 2)
   }
 
   pub fn get_recommends(&self) -> Vec<Taboo> {
-    Taboo::get_hour_recommends(self.get_day_sixty_cycle(), self.get_sixty_cycle())
+    Taboo::get_hour_recommends(self.get_sixty_cycle_hour().get_day(), self.get_sixty_cycle())
   }
 
   pub fn get_avoids(&self) -> Vec<Taboo> {
-    Taboo::get_hour_avoids(self.get_day_sixty_cycle(), self.get_sixty_cycle())
+    Taboo::get_hour_avoids(self.get_sixty_cycle_hour().get_day(), self.get_sixty_cycle())
   }
 
   /// 小六壬
@@ -1164,9 +1167,9 @@ impl Eq for LunarHour {}
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
   use crate::tyme::{Culture, Tyme};
   use crate::tyme::culture::star::twenty_eight::TwentyEightStar;
+  use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
   use crate::tyme::solar::SolarDay;
 
   #[test]
@@ -1316,7 +1319,7 @@ mod tests {
   fn test26() {
     let lunar: LunarDay = LunarDay::from_ymd(2005, 11, 23);
     assert_eq!("戊子", lunar.get_lunar_month().get_sixty_cycle().get_name());
-    assert_eq!("戊子", lunar.get_month_sixty_cycle().get_name());
+    assert_eq!("戊子", lunar.get_sixty_cycle_day().get_month().get_name());
   }
 
   #[test]
@@ -1373,15 +1376,15 @@ mod tests {
     let h: LunarHour = LunarHour::from_ymd_hms(2023, 11, 14, 23, 0, 0);
     assert_eq!("甲子", h.get_sixty_cycle().get_name());
 
-    assert_eq!("己未", h.get_day_sixty_cycle().get_name());
+    assert_eq!("己未", h.get_sixty_cycle_hour().get_day().get_name());
     assert_eq!("戊午", h.get_lunar_day().get_sixty_cycle().get_name());
     assert_eq!("农历癸卯年十一月十四", h.get_lunar_day().to_string());
 
-    assert_eq!("甲子", h.get_month_sixty_cycle().get_name());
+    assert_eq!("甲子", h.get_sixty_cycle_hour().get_month().get_name());
     assert_eq!("农历癸卯年十一月", h.get_lunar_day().get_lunar_month().to_string());
     assert_eq!("乙丑", h.get_lunar_day().get_lunar_month().get_sixty_cycle().get_name());
 
-    assert_eq!("癸卯", h.get_year_sixty_cycle().get_name());
+    assert_eq!("癸卯", h.get_sixty_cycle_hour().get_year().get_name());
     assert_eq!("农历癸卯年", h.get_lunar_day().get_lunar_month().get_lunar_year().to_string());
     assert_eq!("癸卯", h.get_lunar_day().get_lunar_month().get_lunar_year().get_sixty_cycle().get_name());
   }
@@ -1391,15 +1394,15 @@ mod tests {
     let h: LunarHour = LunarHour::from_ymd_hms(2023, 11, 14, 6, 0, 0);
     assert_eq!("乙卯", h.get_sixty_cycle().get_name());
 
-    assert_eq!("戊午", h.get_day_sixty_cycle().get_name());
+    assert_eq!("戊午", h.get_sixty_cycle_hour().get_day().get_name());
     assert_eq!("戊午", h.get_lunar_day().get_sixty_cycle().get_name());
     assert_eq!("农历癸卯年十一月十四", h.get_lunar_day().to_string());
 
-    assert_eq!("甲子", h.get_month_sixty_cycle().get_name());
+    assert_eq!("甲子", h.get_sixty_cycle_hour().get_month().get_name());
     assert_eq!("农历癸卯年十一月", h.get_lunar_day().get_lunar_month().to_string());
     assert_eq!("乙丑", h.get_lunar_day().get_lunar_month().get_sixty_cycle().get_name());
 
-    assert_eq!("癸卯", h.get_year_sixty_cycle().get_name());
+    assert_eq!("癸卯", h.get_sixty_cycle_hour().get_year().get_name());
     assert_eq!("农历癸卯年", h.get_lunar_day().get_lunar_month().get_lunar_year().to_string());
     assert_eq!("癸卯", h.get_lunar_day().get_lunar_month().get_lunar_year().get_sixty_cycle().get_name());
   }
@@ -1556,14 +1559,14 @@ mod tests {
   fn test65() {
     let d: LunarDay = SolarDay::from_ymd(2023, 10, 7).get_lunar_day();
     assert_eq!("壬戌", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("辛酉", d.get_month_sixty_cycle().to_string());
+    assert_eq!("辛酉", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
   fn test66() {
     let d: LunarDay = SolarDay::from_ymd(2023, 10, 8).get_lunar_day();
     assert_eq!("壬戌", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("壬戌", d.get_month_sixty_cycle().to_string());
+    assert_eq!("壬戌", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
@@ -1571,21 +1574,21 @@ mod tests {
     let d: LunarDay = SolarDay::from_ymd(2023, 10, 15).get_lunar_day();
     assert_eq!("九月", d.get_lunar_month().get_name());
     assert_eq!("癸亥", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("壬戌", d.get_month_sixty_cycle().to_string());
+    assert_eq!("壬戌", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
   fn test68() {
     let d: LunarDay = SolarDay::from_ymd(2023, 11, 7).get_lunar_day();
     assert_eq!("癸亥", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("壬戌", d.get_month_sixty_cycle().to_string());
+    assert_eq!("壬戌", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
   fn test69() {
     let d: LunarDay = SolarDay::from_ymd(2023, 11, 8).get_lunar_day();
     assert_eq!("癸亥", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("癸亥", d.get_month_sixty_cycle().to_string());
+    assert_eq!("癸亥", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
@@ -1613,21 +1616,21 @@ mod tests {
   fn test72() {
     let d: LunarDay = SolarDay::from_ymd(1983, 2, 15).get_lunar_day();
     assert_eq!("甲寅", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("甲寅", d.get_month_sixty_cycle().to_string());
+    assert_eq!("甲寅", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
   fn test73() {
     let d: LunarDay = SolarDay::from_ymd(2023, 10, 30).get_lunar_day();
     assert_eq!("癸亥", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("壬戌", d.get_month_sixty_cycle().to_string());
+    assert_eq!("壬戌", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
   fn test74() {
     let d: LunarDay = SolarDay::from_ymd(2023, 10, 19).get_lunar_day();
     assert_eq!("癸亥", d.get_lunar_month().get_sixty_cycle().to_string());
-    assert_eq!("壬戌", d.get_month_sixty_cycle().to_string());
+    assert_eq!("壬戌", d.get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]
@@ -1639,7 +1642,7 @@ mod tests {
 
   #[test]
   fn test76() {
-    assert_eq!("庚申", LunarDay::from_ymd(2018, 6, 26).get_month_sixty_cycle().to_string());
+    assert_eq!("庚申", LunarDay::from_ymd(2018, 6, 26).get_sixty_cycle_day().get_month().to_string());
   }
 
   #[test]

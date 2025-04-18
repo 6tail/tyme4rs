@@ -5,10 +5,10 @@ use lazy_static::lazy_static;
 
 use crate::tyme::{Culture, Tyme};
 use crate::tyme::culture::Duty;
-use crate::tyme::culture::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
+use crate::tyme::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
 use crate::tyme::enums::{Gender, YinYang};
 use crate::tyme::lunar::LunarYear;
-use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
+use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle, SixtyCycleYear};
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
 
 pub mod provider;
@@ -79,12 +79,11 @@ impl EightChar {
   }
 
   pub fn get_body_sign(&self) -> SixtyCycle {
-    let mut offset: isize = (self.month.get_earth_branch().get_index() + self.hour.get_earth_branch().get_index()) as isize;
-    offset %= 12;
-    offset -= 1;
+    let offset: isize = (self.month.get_earth_branch().get_index() as isize + self.hour.get_earth_branch().get_index() as isize - 1) % 12;
     SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str())
   }
 
+  #[deprecated(since = "1.3.0", note = "please use SixtyCycleDay.get_duty() instead")]
   pub fn get_duty(&self) -> Duty {
     Duty::from_index((self.day.get_earth_branch().get_index() as isize) - (self.month.get_earth_branch().get_index() as isize))
   }
@@ -302,16 +301,47 @@ impl ChildLimit {
     self.info.get_end_time()
   }
 
+  /// 起始大运
   pub fn get_start_decade_fortune(&self) -> DecadeFortune {
     DecadeFortune::from_child_limit(self.clone(), 0)
+  }
+
+  /// 所属大运
+  pub fn get_decade_fortune(&self) -> DecadeFortune {
+    DecadeFortune::from_child_limit(self.clone(), -1)
   }
 
   pub fn get_start_fortune(&self) -> Fortune {
     Fortune::from_child_limit(self.clone(), 0)
   }
 
+  #[deprecated(since = "1.3.0", note = "please use get_end_sixty_cycle_year() instead")]
   pub fn get_end_lunar_year(&self) -> LunarYear {
     LunarYear::from_year(self.get_start_time().get_lunar_hour().get_year() + self.get_end_time().get_year() - self.get_start_time().get_year())
+  }
+
+  /// 开始(即出生)干支年
+  pub fn get_start_sixty_cycle_year(&self) -> SixtyCycleYear {
+    SixtyCycleYear::from_year(self.get_start_time().get_year())
+  }
+
+  /// 结束(即起运)干支年
+  pub fn get_end_sixty_cycle_year(&self) -> SixtyCycleYear {
+    SixtyCycleYear::from_year(self.get_end_time().get_year())
+  }
+
+  /// 开始年龄
+  pub fn get_start_age(&self) -> usize {
+    1
+  }
+
+  /// 结束年龄
+  pub fn get_end_age(&self) -> usize {
+    let n: isize = self.get_end_sixty_cycle_year().get_year() - self.get_start_sixty_cycle_year().get_year();
+    if n > 1 {
+      return n as usize;
+    }
+    1
   }
 }
 
@@ -327,7 +357,7 @@ impl Eq for ChildLimit {}
 #[derive(Debug, Clone)]
 pub struct DecadeFortune {
   child_limit: ChildLimit,
-  index: usize,
+  index: isize,
 }
 
 impl Culture for DecadeFortune {
@@ -338,19 +368,19 @@ impl Culture for DecadeFortune {
 
 impl Tyme for DecadeFortune {
   fn next(&self, n: isize) -> Self {
-    Self::new(self.get_child_limit(), (self.index as isize + n) as usize)
+    Self::new(self.get_child_limit(), self.index + n)
   }
 }
 
 impl DecadeFortune {
-  pub fn new(child_limit: ChildLimit, index: usize) -> Self {
+  pub fn new(child_limit: ChildLimit, index: isize) -> Self {
     Self {
       child_limit,
       index,
     }
   }
 
-  pub fn from_child_limit(child_limit: ChildLimit, index: usize) -> Self {
+  pub fn from_child_limit(child_limit: ChildLimit, index: isize) -> Self {
     Self::new(child_limit, index)
   }
 
@@ -358,28 +388,40 @@ impl DecadeFortune {
     self.child_limit.clone()
   }
 
-  pub fn get_index(&self) -> usize {
+  pub fn get_index(&self) -> isize {
     self.index
   }
 
-  pub fn get_start_age(&self) -> usize {
-    (self.child_limit.get_end_time().get_year() - self.child_limit.get_start_time().get_year()) as usize + 1 + self.index * 10
+  pub fn get_start_age(&self) -> isize {
+    self.child_limit.get_end_sixty_cycle_year().get_year() - self.child_limit.get_start_sixty_cycle_year().get_year() + 1 + self.index * 10
   }
 
-  pub fn get_end_age(&self) -> usize {
+  pub fn get_end_age(&self) -> isize {
     self.get_start_age() + 9
   }
 
+  #[deprecated(since = "1.3.0", note = "please use get_start_sixty_cycle_year() instead")]
   pub fn get_start_lunar_year(&self) -> LunarYear {
-    self.child_limit.get_end_lunar_year().next(self.index as isize * 10)
+    LunarYear::from_year(self.child_limit.get_start_time().get_lunar_hour().get_year() + self.child_limit.get_end_time().get_year() - self.child_limit.get_start_time().get_year()).next(self.index * 10)
   }
 
-  pub fn get_end_lunar(&self) -> LunarYear {
-    self.get_start_lunar_year().next(9)
+  /// 开始干支年
+  pub fn get_start_sixty_cycle_year(&self) -> SixtyCycleYear {
+    self.child_limit.get_end_sixty_cycle_year().next(self.index * 10)
+  }
+
+  #[deprecated(since = "1.3.0", note = "please use get_end_sixty_cycle_year() instead")]
+  pub fn get_end_lunar_year(&self) -> LunarYear {
+    LunarYear::from_year(self.child_limit.get_start_time().get_lunar_hour().get_year() + self.child_limit.get_end_time().get_year() - self.child_limit.get_start_time().get_year()).next(self.index * 10 + 9)
+  }
+
+  /// 结束干支年
+  pub fn get_end_sixty_cycle_year(&self) -> SixtyCycleYear {
+    self.get_start_sixty_cycle_year().next(9)
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    let n: isize = self.index as isize + 1;
+    let n: isize = self.index + 1;
     self.child_limit.get_eight_char().get_month().next(if self.child_limit.is_forward() { n } else { -n })
   }
 
@@ -400,7 +442,7 @@ impl Eq for DecadeFortune {}
 #[derive(Debug, Clone)]
 pub struct Fortune {
   child_limit: ChildLimit,
-  index: usize,
+  index: isize,
 }
 
 impl Culture for Fortune {
@@ -411,19 +453,19 @@ impl Culture for Fortune {
 
 impl Tyme for Fortune {
   fn next(&self, n: isize) -> Self {
-    Self::new(self.get_child_limit(), (self.get_index() as isize + n) as usize)
+    Self::new(self.get_child_limit(), self.get_index() + n)
   }
 }
 
 impl Fortune {
-  pub fn new(child_limit: ChildLimit, index: usize) -> Self {
+  pub fn new(child_limit: ChildLimit, index: isize) -> Self {
     Self {
       child_limit,
       index,
     }
   }
 
-  pub fn from_child_limit(child_limit: ChildLimit, index: usize) -> Self {
+  pub fn from_child_limit(child_limit: ChildLimit, index: isize) -> Self {
     Self::new(child_limit, index)
   }
 
@@ -431,20 +473,26 @@ impl Fortune {
     self.child_limit.clone()
   }
 
-  pub fn get_index(&self) -> usize {
+  pub fn get_index(&self) -> isize {
     self.index
   }
 
-  pub fn get_age(&self) -> usize {
-    (self.child_limit.get_end_time().get_year() - self.child_limit.get_start_time().get_year()) as usize + 1 + self.index
+  pub fn get_age(&self) -> isize {
+    self.child_limit.get_end_sixty_cycle_year().get_year() - self.child_limit.get_start_sixty_cycle_year().get_year() + 1 + self.index
   }
 
+  #[deprecated(since = "1.3.0", note = "please use get_sixty_cycle_year() instead")]
   pub fn get_lunar_year(&self) -> LunarYear {
-    self.child_limit.get_end_lunar_year().next(self.index as isize)
+    LunarYear::from_year(self.child_limit.get_start_time().get_lunar_hour().get_year() + self.child_limit.get_end_time().get_year() - self.child_limit.get_start_time().get_year()).next(self.index)
+  }
+
+  /// 干支年
+  pub fn get_sixty_cycle_year(&self) -> SixtyCycleYear {
+    self.child_limit.get_end_sixty_cycle_year().next(self.index)
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    let n: isize = self.get_age() as isize;
+    let n: isize = self.get_age();
     self.child_limit.get_eight_char().get_hour().next(if self.child_limit.is_forward() { n } else { -n })
   }
 }
@@ -460,8 +508,8 @@ impl Eq for Fortune {}
 #[cfg(test)]
 mod tests {
   use std::sync::MutexGuard;
-  use crate::tyme::culture::eightchar::{CHILD_LIMIT_PROVIDER, ChildLimit};
-  use crate::tyme::culture::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
+  use crate::tyme::eightchar::{CHILD_LIMIT_PROVIDER, ChildLimit};
+  use crate::tyme::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
   use crate::tyme::enums::Gender;
   use crate::tyme::solar::SolarTime;
 

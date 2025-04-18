@@ -11,7 +11,7 @@ use crate::tyme::festival::SolarFestival;
 use crate::tyme::holiday::LegalHoliday;
 use crate::tyme::jd::{J2000, JulianDay};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
-use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay};
+use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay, SixtyCycleDay, SixtyCycleHour};
 use crate::tyme::util::ShouXingUtil;
 
 /// 公历年
@@ -1157,30 +1157,30 @@ impl SolarDay {
   /// let constellation: Constellation = SolarDay::from_ymd(2023, 9, 12).get_constellation();
   /// ```
   pub fn get_constellation(&self) -> Constellation {
-    let mut index: isize = 11;
+    let mut index: isize = 8;
     let y: usize = self.get_month() * 100 + self.day;
-    if y >= 321 && y <= 419 {
-      index = 0;
-    } else if y >= 420 && y <= 520 {
-      index = 1;
-    } else if y >= 521 && y <= 621 {
-      index = 2;
-    } else if y >= 622 && y <= 722 {
-      index = 3;
-    } else if y >= 723 && y <= 822 {
-      index = 4;
-    } else if y >= 823 && y <= 922 {
-      index = 5;
-    } else if y >= 923 && y <= 1023 {
-      index = 6;
-    } else if y >= 1024 && y <= 1122 {
-      index = 7;
-    } else if y >= 1123 && y <= 1221 {
-      index = 8;
-    } else if y >= 1222 || y <= 119 {
+    if y > 1221 || y < 120 {
       index = 9;
-    } else if y <= 218 {
+    } else if y < 219 {
       index = 10;
+    } else if y < 321 {
+      index = 11;
+    } else if y < 420 {
+      index = 0;
+    } else if y < 521 {
+      index = 1;
+    } else if y < 622 {
+      index = 2;
+    } else if y < 723 {
+      index = 3;
+    } else if y < 823 {
+      index = 4;
+    } else if y < 923 {
+      index = 5;
+    } else if y < 1024 {
+      index = 6;
+    } else if y < 1123 {
+      index = 7;
     }
     Constellation::from_index(index)
   }
@@ -1356,6 +1356,11 @@ impl SolarDay {
   /// ```
   pub fn get_festival(&self) -> Option<SolarFestival> {
     SolarFestival::from_ymd(self.get_year(), self.get_month(), self.day)
+  }
+
+  /// 干支日
+  pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
+    SixtyCycleDay::from_solar_day(*self)
   }
 }
 
@@ -1586,6 +1591,11 @@ impl SolarTime {
   pub fn get_lunar_hour(&self) -> LunarHour {
     let d: LunarDay = self.day.get_lunar_day();
     LunarHour::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second)
+  }
+
+  /// 干支时辰
+  pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
+    SixtyCycleHour::from_solar_time(*self)
   }
 }
 
