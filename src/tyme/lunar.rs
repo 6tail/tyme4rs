@@ -1,8 +1,7 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::sync::{Arc, Mutex, MutexGuard};
-
+use atomic_refcell::AtomicRefCell;
 use lazy_static::lazy_static;
 
 use crate::tyme::{AbstractCulture, AbstractTyme, Culture, LoopTyme, Tyme};
@@ -649,9 +648,9 @@ pub struct LunarDay {
   /// 日
   day: usize,
   /// 公历日（第一次使用时才会初始化）
-  solar_day: RefCell<Option<SolarDay>>,
+  solar_day: AtomicRefCell<Option<SolarDay>>,
   /// 干支日（第一次使用时才会初始化）
-  sixty_cycle_day: RefCell<Option<SixtyCycleDay>>,
+  sixty_cycle_day: AtomicRefCell<Option<SixtyCycleDay>>,
 }
 
 impl Tyme for LunarDay {
@@ -679,8 +678,8 @@ impl LunarDay {
       Ok(Self {
         month: m,
         day,
-        solar_day: RefCell::new(None),
-        sixty_cycle_day: RefCell::new(None),
+        solar_day: AtomicRefCell::new(None),
+        sixty_cycle_day: AtomicRefCell::new(None),
       })
     }
   }
@@ -841,7 +840,8 @@ impl LunarDay {
   /// ```
   pub fn get_solar_day(&self) -> SolarDay {
     if self.solar_day.borrow().is_none() {
-      self.solar_day.replace(Some(self.month.get_first_julian_day().next(self.day as isize - 1).get_solar_day()));
+      let mut m = self.solar_day.borrow_mut();
+      m.replace(self.month.get_first_julian_day().next(self.day as isize - 1).get_solar_day());
     }
     self.solar_day.borrow().unwrap()
   }
@@ -849,7 +849,8 @@ impl LunarDay {
   /// 干支日
   pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
     if self.sixty_cycle_day.borrow().is_none() {
-      self.sixty_cycle_day.replace(Some(self.get_solar_day().get_sixty_cycle_day()));
+      let mut m = self.sixty_cycle_day.borrow_mut();
+      m.replace(self.get_solar_day().get_sixty_cycle_day());
     }
     self.sixty_cycle_day.borrow().clone().unwrap()
   }
@@ -969,9 +970,9 @@ pub struct LunarHour {
   /// 秒
   second: usize,
   /// 公历时刻（第一次使用时才会初始化）
-  solar_time: RefCell<Option<SolarTime>>,
+  solar_time: AtomicRefCell<Option<SolarTime>>,
   /// 干支时辰（第一次使用时才会初始化）
-  sixty_cycle_hour: RefCell<Option<SixtyCycleHour>>,
+  sixty_cycle_hour: AtomicRefCell<Option<SixtyCycleHour>>,
 }
 
 impl Tyme for LunarHour {
@@ -1014,8 +1015,8 @@ impl LunarHour {
         hour,
         minute,
         second,
-        solar_time: RefCell::new(None),
-        sixty_cycle_hour: RefCell::new(None),
+        solar_time: AtomicRefCell::new(None),
+        sixty_cycle_hour: AtomicRefCell::new(None),
       })
     }
   }
@@ -1104,14 +1105,16 @@ impl LunarHour {
   pub fn get_solar_time(&self) -> SolarTime {
     if self.solar_time.borrow().is_none() {
       let d: SolarDay = self.day.get_solar_day();
-      self.solar_time.replace(Some(SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second)));
+      let mut m = self.solar_time.borrow_mut();
+      m.replace(SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second));
     }
     self.solar_time.borrow().unwrap()
   }
 
   pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
     if self.sixty_cycle_hour.borrow().is_none() {
-      self.sixty_cycle_hour.replace(Some(self.get_solar_time().get_sixty_cycle_hour()));
+      let mut m = self.sixty_cycle_hour.borrow_mut();
+      m.replace(self.get_solar_time().get_sixty_cycle_hour());
     }
     self.sixty_cycle_hour.borrow().clone().unwrap()
   }
