@@ -134,7 +134,7 @@ impl LunarYear {
         return key;
       }
     }
-    return 0;
+    0
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
@@ -198,8 +198,7 @@ impl Tyme for LunarMonth {
     }
     let mut m: isize = self.index_in_year as isize + 1 + n;
     let mut y: LunarYear = self.year;
-    let mut leap_month: usize = y.get_leap_month();
-    let mut month_size: isize = if leap_month > 0 { 13 } else { 12 };
+    let mut month_size: isize = y.get_month_count() as isize;
     let forward: bool = n > 0;
     let add: isize = if forward { 1 } else { -1 };
     while if forward { m > month_size } else { m <= 0 } {
@@ -207,13 +206,13 @@ impl Tyme for LunarMonth {
         m -= month_size;
       }
       y = y.next(add);
-      leap_month = y.get_leap_month();
-      month_size = if leap_month > 0 { 13 } else { 12 };
+      month_size = y.get_month_count() as isize;
       if !forward {
         m += month_size;
       }
     }
     let mut leap: bool = false;
+    let leap_month: usize = y.get_leap_month();
     if leap_month > 0 {
       if m == leap_month as isize + 1 {
         leap = true;
@@ -223,7 +222,7 @@ impl Tyme for LunarMonth {
       }
     }
     let month: isize = if leap { -m } else { m };
-    return Self::from_ym(y.get_year(), month);
+    Self::from_ym(y.get_year(), month)
   }
 }
 
@@ -323,7 +322,7 @@ impl LunarMonth {
         map.insert(key, l);
       }
     }
-    return instance;
+    instance
   }
 
   pub fn get_lunar_year(&self) -> LunarYear {

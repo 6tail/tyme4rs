@@ -235,3 +235,4 @@ pub mod util;
 pub mod holiday;
 pub mod festival;
 pub mod eightchar;
+pub mod rabbyung;

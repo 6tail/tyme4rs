@@ -11,6 +11,7 @@ use crate::tyme::festival::SolarFestival;
 use crate::tyme::holiday::LegalHoliday;
 use crate::tyme::jd::{J2000, JulianDay};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
+use crate::tyme::rabbyung::{RabByungDay, RabByungYear};
 use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay, SixtyCycleDay, SixtyCycleHour};
 use crate::tyme::util::ShouXingUtil;
 
@@ -154,6 +155,11 @@ impl SolarYear {
       l.push(SolarHalfYear::from_index(self.year, i));
     }
     l
+  }
+
+  /// 藏历年
+  pub fn get_rab_byung_year(&self) -> Result<RabByungYear, String> {
+    RabByungYear::from_year(self.year)
   }
 }
 
@@ -1361,6 +1367,10 @@ impl SolarDay {
   /// 干支日
   pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
     SixtyCycleDay::from_solar_day(*self)
+  }
+
+  pub fn get_rab_byung_day(&self) -> Result<RabByungDay, String> {
+    RabByungDay::from_solar_day(*self)
   }
 }
 

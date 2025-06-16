@@ -72,15 +72,30 @@ impl EightChar {
   }
 
   pub fn get_own_sign(&self) -> SixtyCycle {
-    let mut offset: isize = (self.month.get_earth_branch().next(-1).get_index() + self.hour.get_earth_branch().next(-1).get_index()) as isize;
+    let mut m: isize = self.month.get_earth_branch().get_index() as isize - 1;
+    if m < 1 {
+      m += 12;
+    }
+    let mut h: isize = self.hour.get_earth_branch().get_index() as isize - 1;
+    if h < 1 {
+      h += 12;
+    }
+    let mut offset: isize = m + h;
     offset = if offset >= 14 { 26 } else { 14 } - offset;
-    offset -= 1;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str())
+    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset - 1).get_name(), EarthBranch::from_index(offset + 1).get_name()).as_str())
   }
 
   pub fn get_body_sign(&self) -> SixtyCycle {
-    let offset: isize = (self.month.get_earth_branch().get_index() as isize + self.hour.get_earth_branch().get_index() as isize - 1) % 12;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset).get_name(), EarthBranch::from_index(2 + offset).get_name()).as_str())
+    let mut m: isize = self.month.get_earth_branch().get_index() as isize - 1;
+    if m < 1 {
+      m += 12;
+    }
+    let h: isize = self.hour.get_earth_branch().get_index() as isize + 1;
+    let mut offset: isize = m + h;
+    if offset > 12 {
+      offset -= 12;
+    }
+    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.year.get_heaven_stem().get_index() as isize) + 1) * 2 + offset - 1).get_name(), EarthBranch::from_index(offset + 1).get_name()).as_str())
   }
 
   #[deprecated(since = "1.3.0", note = "please use SixtyCycleDay.get_duty() instead")]
