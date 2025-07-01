@@ -86,12 +86,11 @@ impl EightChar {
   }
 
   pub fn get_body_sign(&self) -> SixtyCycle {
-    let mut m: isize = self.month.get_earth_branch().get_index() as isize - 1;
-    if m < 1 {
-      m += 12;
+    let mut offset: isize = self.month.get_earth_branch().get_index() as isize - 1;
+    if offset < 1 {
+      offset += 12;
     }
-    let h: isize = self.hour.get_earth_branch().get_index() as isize + 1;
-    let mut offset: isize = m + h;
+    offset += self.hour.get_earth_branch().get_index() as isize + 1;
     if offset > 12 {
       offset -= 12;
     }

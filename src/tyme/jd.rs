@@ -43,8 +43,8 @@ impl JulianDay {
       y -= 1;
     }
     if g {
-      n = ((y as f64) / 100.0) as isize;
-      n = 2 - n + (((n as f64) / 4.0) as isize);
+      n = ((y as f64) * 0.01) as isize;
+      n = 2 - n + (((n as f64) * 0.25) as isize);
     }
     Self::from_julian_day((((365.25 * ((y + 4716) as f64)) as isize) as f64) + (((30.6001 * (m + 1) as f64) as isize) as f64) + d + (n as f64) - 1524.5)
   }
@@ -67,44 +67,35 @@ impl JulianDay {
 
     if d >= 2299161 {
       let c: isize = (((d as f64) - 1867216.25) / 36524.25) as isize;
-      d += 1 + c - ((c as f64) / 4.0) as isize;
+      d += 1 + c - ((c as f64) * 0.25) as isize;
     }
     d += 1524;
     let mut year: isize = (((d as f64) - 122.1) / 365.25) as isize;
     d -= (365.25 * (year as f64)) as isize;
     let mut month: isize = ((d as f64) / 30.601) as isize;
     d -= (30.601 * (month as f64)) as isize;
-    let mut day: isize = d;
+    let day: isize = d;
     if month > 13 {
-      month -= 13;
-      year -= 4715;
+      month -= 12;
     } else {
-      month -= 1;
-      year -= 4716;
+      year -= 1;
     }
+    month -= 1;
+    year -= 4715;
     f *= 24.0;
-    let mut hour: isize = f as isize;
+    let hour: isize = f as isize;
 
     f -= hour as f64;
     f *= 60.0;
-    let mut minute: isize = f as isize;
+    let minute: isize = f as isize;
 
     f -= minute as f64;
     f *= 60.0;
-    let mut second: isize = f.round() as isize;
-    if second > 59 {
-      second -= 60;
-      minute += 1
+    let second: isize = f.round() as isize;
+    if second < 60 {
+      return SolarTime::from_ymd_hms(year, month as usize, day as usize, hour as usize, minute as usize, second as usize)
     }
-    if minute > 59 {
-      minute -= 60;
-      hour += 1
-    }
-    if hour > 23 {
-      hour -= 24;
-      day += 1
-    }
-    SolarTime::from_ymd_hms(year, month as usize, day as usize, hour as usize, minute as usize, second as usize)
+    SolarTime::from_ymd_hms(year, month as usize, day as usize, hour as usize, minute as usize, second as usize - 60).next(60)
   }
 
   /// 儒略日相减

@@ -1274,14 +1274,19 @@ impl SolarDay {
   /// let phenology_day: PhenologyDay = SolarDay::from_ymd(2023, 12, 26).get_phenology_day();
   /// ```
   pub fn get_phenology_day(&self) -> PhenologyDay {
-    let term: SolarTerm = self.get_term();
-    let mut day_index: isize = self.subtract(term.get_julian_day().get_solar_day());
+    let d: SolarTermDay = self.get_term_day();
+    let day_index: isize = d.get_day_index() as isize;
     let mut index: isize = day_index / 5;
     if index > 2 {
       index = 2;
     }
-    day_index -= index * 5;
-    PhenologyDay::new(Phenology::from_index(term.get_index() as isize * 3 + index), day_index as usize)
+    let term: SolarTerm = d.get_solar_term();
+    PhenologyDay::new(Phenology::from_index(term.get_year(), term.get_index() as isize * 3 + index), (day_index - index * 5) as usize)
+  }
+
+  /// 候
+  pub fn get_phenology(&self) -> Phenology {
+    self.get_phenology_day().get_phenology()
   }
 
   /// 人元司令分野
@@ -1312,7 +1317,7 @@ impl SolarDay {
       }
       type_index += 1;
     }
-    return HideHeavenStemDay::new(HideHeavenStem::from_index(heaven_stem_index, HideHeavenStemType::from_code(type_index).unwrap()), day_index);
+    HideHeavenStemDay::new(HideHeavenStem::from_index(heaven_stem_index, HideHeavenStemType::from_code(type_index).unwrap()), day_index)
   }
 
   pub fn get_plum_rain_day(&self) -> Option<PlumRainDay> {
@@ -1558,17 +1563,20 @@ impl SolarTime {
   /// let term: SolarTerm = SolarTime::from_ymd_hms(2023, 12, 7, 13, 20, 0).get_term();
   /// ```
   pub fn get_term(&self) -> SolarTerm {
-    let mut y: isize = self.get_year();
-    let mut i: usize = self.get_month() * 2;
-    if i == 24 {
-      y += 1;
-      i = 0;
-    }
-    let mut term: SolarTerm = SolarTerm::from_index(y, i as isize);
-    while self.is_before(term.get_julian_day().get_solar_time()) {
+    let mut term: SolarTerm = self.day.get_term();
+    if self.is_before(term.get_julian_day().get_solar_time()) {
       term = term.next(-1);
     }
     term
+  }
+
+  /// 候
+  pub fn get_phenology(&self) -> Phenology {
+    let mut p: Phenology = self.day.get_phenology();
+    if self.is_before(p.get_julian_day().get_solar_time()) {
+      p = p.next(-1);
+    }
+    p
   }
 
   /// 儒略日
