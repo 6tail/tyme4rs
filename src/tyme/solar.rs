@@ -1329,8 +1329,7 @@ impl SolarDay {
     start = start.next(parent.steps_to(2) as isize);
 
     // 小暑
-    let slight_heat: SolarTerm = grain_in_ear.next(2);
-    let mut end: SolarDay = slight_heat.get_julian_day().get_solar_day();
+    let mut end: SolarDay = grain_in_ear.next(2).get_julian_day().get_solar_day();
     // 小暑后的第1个未日
     parent = end.get_lunar_day().get_sixty_cycle().get_earth_branch().into();
     end = end.next(parent.steps_to(7) as isize);

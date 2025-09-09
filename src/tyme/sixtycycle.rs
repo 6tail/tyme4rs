@@ -743,7 +743,7 @@ impl SixtyCycleDay {
       solar_day,
       month: SixtyCycleMonth {
         year: SixtyCycleYear::from_year(lunar_year.get_year()),
-        month: LunarMonth::from_ym(solar_year, 1).get_sixty_cycle().next((index as f64 / 2.0).floor() as isize),
+        month: LunarMonth::from_ym(solar_year, 1).get_sixty_cycle().next((index as f64 * 0.5).floor() as isize),
       },
       day: lunar_day.get_sixty_cycle(),
     }
@@ -806,11 +806,9 @@ impl SixtyCycleDay {
   pub fn get_nine_star(&self) -> NineStar {
     let d: SolarDay = self.solar_day;
     let dong_zhi: SolarTerm = SolarTerm::from_index(d.get_year(), 0);
-    let xia_zhi: SolarTerm = dong_zhi.next(12);
-    let dong_zhi2: SolarTerm = dong_zhi.next(24);
     let dong_zhi_solar: SolarDay = dong_zhi.get_julian_day().get_solar_day();
-    let xia_zhi_solar: SolarDay = xia_zhi.get_julian_day().get_solar_day();
-    let dong_zhi_solar2: SolarDay = dong_zhi2.get_julian_day().get_solar_day();
+    let xia_zhi_solar: SolarDay = dong_zhi.next(12).get_julian_day().get_solar_day();
+    let dong_zhi_solar2: SolarDay = dong_zhi.next(24).get_julian_day().get_solar_day();
     let dong_zhi_index: isize = dong_zhi_solar.get_lunar_day().get_sixty_cycle().get_index() as isize;
     let xia_zhi_index: isize = xia_zhi_solar.get_lunar_day().get_sixty_cycle().get_index() as isize;
     let dong_zhi_index2: isize = dong_zhi_solar2.get_lunar_day().get_sixty_cycle().get_index() as isize;
@@ -926,7 +924,7 @@ impl SixtyCycleHour {
         solar_day: solar_time.get_solar_day(),
         month: SixtyCycleMonth {
           year: y,
-          month: m.get_sixty_cycle().next((index as f64 / 2.0).floor() as isize),
+          month: m.get_sixty_cycle().next((index as f64 * 0.5).floor() as isize),
         },
         day: d,
       },
@@ -973,14 +971,14 @@ impl SixtyCycleHour {
   pub fn get_nine_star(&self) -> NineStar {
     let solar: SolarDay = self.solar_time.get_solar_day();
     let dong_zhi: SolarTerm = SolarTerm::from_index(solar.get_year(), 0);
-    let xia_zhi: SolarTerm = dong_zhi.next(12);
-    let asc: bool = !solar.is_before(dong_zhi.get_julian_day().get_solar_day()) && solar.is_before(xia_zhi.get_julian_day().get_solar_day());
-    let mut start: isize = [8, 5, 2][self.get_day().get_earth_branch().get_index() % 3];
-    if asc {
-      start = 8 - start;
-    }
     let earth_branch_index: isize = self.get_index_in_day() as isize % 12;
-    NineStar::from_index(start + if asc { earth_branch_index } else { -earth_branch_index })
+    let mut index: isize = [8, 5, 2][self.get_day().get_earth_branch().get_index() % 3];
+    if !solar.is_before(dong_zhi.get_julian_day().get_solar_day()) && solar.is_before(dong_zhi.next(12).get_julian_day().get_solar_day()) {
+      index = 8 + earth_branch_index - index
+    } else {
+      index -= earth_branch_index;
+    }
+    NineStar::from_index(index)
   }
 
   pub fn get_twelve_star(&self) -> TwelveStar {

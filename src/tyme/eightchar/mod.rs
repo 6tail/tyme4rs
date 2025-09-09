@@ -149,7 +149,10 @@ impl EightChar {
             mi = solar_time.get_minute();
             s = solar_time.get_second();
           }
-          let time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), hour, mi, s);
+          let mut time: SolarTime = SolarTime::from_ymd_hms(solar_day.get_year(), solar_day.get_month(), solar_day.get_day(), hour, mi, s);
+          if d == 30 {
+            time = time.next(-3600);
+          }
           // 验证一下
           if time.get_lunar_hour().get_eight_char() == *self {
             l.push(time);

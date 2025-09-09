@@ -74,11 +74,12 @@ impl FetusDay {
     }
     s = format!("{}{}", s, self.side.get_name());
 
-    if Side::OUT == self.side && "北南西东".contains(self.direction.get_name().as_str()) {
+    let direction_name: String = self.direction.get_name();
+    if Side::OUT == self.side && "北南西东".contains(direction_name.as_str()) {
       s = format!("{}{}", s, "正");
     }
-    s = format!("{}{}", s, self.direction.get_name());
-    return s;
+    s = format!("{}{}", s, direction_name);
+    s
   }
 }
 
