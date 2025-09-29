@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Constellation, Week};
+use crate::tyme::culture::{Constellation, Phase, PhaseDay, Week};
 use crate::tyme::culture::dog::{Dog, DogDay};
 use crate::tyme::culture::nine::{Nine, NineDay};
 use crate::tyme::culture::phenology::{Phenology, PhenologyDay};
@@ -1376,6 +1376,23 @@ impl SolarDay {
   pub fn get_rab_byung_day(&self) -> Result<RabByungDay, String> {
     RabByungDay::from_solar_day(*self)
   }
+
+  /// 月相第几天
+  pub fn get_phase_day(&self) -> PhaseDay {
+    let month: LunarMonth = self.get_lunar_day().get_lunar_month().next(1);
+    let mut p: Phase = Phase::from_index(month.get_year(), month.get_month_with_leap(), 0);
+    let mut d: SolarDay = p.get_solar_day();
+    while d.is_after(*self) {
+      p = p.next(-1);
+      d = p.get_solar_day();
+    }
+    PhaseDay::new(p, self.subtract(d) as usize)
+  }
+
+  /// 月相
+  pub fn get_phase(&self) -> Phase {
+    self.get_phase_day().get_phase()
+  }
 }
 
 impl Display for SolarDay {
@@ -1431,7 +1448,7 @@ impl Tyme for SolarTime {
       }
 
       let d: SolarDay = self.day.next(td);
-      return Self::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), th as usize, tm as usize, ts as usize);
+      Self::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), th as usize, tm as usize, ts as usize)
     }
   }
 }
@@ -1602,7 +1619,7 @@ impl SolarTime {
       days -= 1;
     }
     seconds += days * 86400;
-    return seconds;
+    seconds
   }
 
   pub fn get_lunar_hour(&self) -> LunarHour {
@@ -1613,6 +1630,15 @@ impl SolarTime {
   /// 干支时辰
   pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
     SixtyCycleHour::from_solar_time(*self)
+  }
+
+  pub fn get_phase(&self) -> Phase {
+    let month: LunarMonth = self.get_lunar_hour().get_lunar_day().get_lunar_month().next(1);
+    let mut p: Phase = Phase::from_index(month.get_year(), month.get_month_with_leap(), 0);
+    while p.get_solar_time().is_after(*self) {
+      p = p.next(-1);
+    }
+    p
   }
 }
 

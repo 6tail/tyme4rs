@@ -1,8 +1,8 @@
 use lazy_static::lazy_static;
 
 pub static PI64: f64 = 3.14159265358979323846;
-static PI_2: f64 = PI64 * 2.0;
-static ONE_THIRD: f64 = 1.0 / 3.0;
+pub static PI_2: f64 = PI64 * 2.0;
+pub static ONE_THIRD: f64 = 1.0 / 3.0;
 static SECOND_PER_DAY: f64 = 86400.0;
 static SECOND_PER_RAD: f64 = 180.0 * 3600.0 / PI64;
 static NUT_B: [f64; 50] = [
@@ -17,7 +17,7 @@ static NUT_B: [f64; 50] = [
   3.69, 25128.110, 0.0, -3.0, 0.0,
   3.55, 628.362, 0.0, 2.0, 0.0
 ];
-static DT_AT: [f64; 122] = [
+static DT_AT: [f64; 152] = [
   -4000.0, 108371.7, -13036.80, 392.000, 0.0000,
   -500.0, 17201.0, -627.82, 16.170, -0.3413,
   -150.0, 12200.6, -346.41, 5.403, -0.1593,
@@ -39,10 +39,18 @@ static DT_AT: [f64; 122] = [
   2000.0, 63.87, 0.1, 0.0, 0.0,
   2005.0, 64.7, 0.21, 0.0, 0.0,
   2012.0, 66.8, 0.22, 0.0, 0.0,
-  2018.0, 73.6, 0.40, 0.0, 0.0,
-  2021.0, 78.1, 0.44, 0.0, 0.0,
-  2024.0, 83.1, 0.55, 0.0, 0.0,
-  2028.0, 98.6
+  // 2018, 69.0, 0.36, 0, 0,
+  // 使用skyfeild的DE440s△T预测数据拟合
+  2016.0, 68.1024, 0.5456, -0.0542, -0.001172,
+  2020.0, 69.3612, 0.0422, -0.0502, 0.006216,
+  2024.0, 69.1752, -0.0335, -0.0048, 0.000811,
+  2028.0, 69.0206, -0.0275, 0.0055, -0.000014,
+  2032.0, 68.9981, 0.0163, 0.0054, 0.000006,
+  2036.0, 69.1498, 0.0599, 0.0053, 0.000026,
+  2040.0, 69.4751, 0.1035, 0.0051, 0.000046,
+  2044.0, 69.9737, 0.1469, 0.0050, 0.000066,
+  2048.0, 70.6451, 0.1903, 0.0049, 0.000085,
+  2050.0, 71.0457
 ];
 
 static XL0: [f64; 2666] = [
@@ -266,7 +274,7 @@ fn decode(os: &str) -> String {
   s = s.replace("D", "000000000000000000000000000000");
   s = s.replace("E", "00000000000000000000");
   s = s.replace("F", "0000000000");
-  return s;
+  s
 }
 
 lazy_static! {
@@ -338,7 +346,7 @@ impl ShouXingUtil {
       a = 0.0;
       i += 5;
     }
-    return dl / 100.0 / SECOND_PER_RAD;
+    dl / 100.0 / SECOND_PER_RAD
   }
 
   pub fn elon(pt: f64, n: isize) -> f64 {
@@ -378,7 +386,7 @@ impl ShouXingUtil {
     v /= XL0[0];
     let t2: f64 = t * t;
     v += (-0.0728 - 2.7702 * t - 1.1019 * t2 - 0.0996 * t2 * t) / SECOND_PER_RAD;
-    return v;
+    v
   }
 
   pub fn mlon(t: f64, pn: isize) -> f64 {
@@ -423,28 +431,28 @@ impl ShouXingUtil {
       tn *= t;
     }
     v /= SECOND_PER_RAD;
-    return v;
+    v
   }
 
   pub fn gxc_sun_lon(t: f64) -> f64 {
     let t2: f64 = t * t;
     let v: f64 = -0.043126 + 628.301955 * t - 0.000002732 * t2;
     let e: f64 = 0.016708634 - 0.000042037 * t - 0.0000001267 * t2;
-    return -20.49552 * (1.0 + e * v.cos()) / SECOND_PER_RAD;
+    -20.49552 * (1.0 + e * v.cos()) / SECOND_PER_RAD
   }
 
   pub fn ev(t: f64) -> f64 {
     let f: f64 = 628.307585 * t;
-    return 628.332 + 21.0 * (1.527 + f).sin() + 0.44 * (1.48 + f * 2.0).sin() + 0.129 * (5.82 + f).sin() * t + 0.00055 * (4.21 + f).sin() * t * t;
+    628.332 + 21.0 * (1.527 + f).sin() + 0.44 * (1.48 + f * 2.0).sin() + 0.129 * (5.82 + f).sin() * t + 0.00055 * (4.21 + f).sin() * t * t
   }
 
   pub fn sa_lon(t: f64, n: isize) -> f64 {
-    return Self::elon(t, n) + Self::nutation_lon2(t) + Self::gxc_sun_lon(t) + PI64;
+    Self::elon(t, n) + Self::nutation_lon2(t) + Self::gxc_sun_lon(t) + PI64
   }
 
   pub fn dt_ext(y: f64, jsd: f64) -> f64 {
     let dy: f64 = (y - 1820.0) / 100.0;
-    return -20.0 + jsd * dy * dy;
+    -20.0 + jsd * dy * dy
   }
 
   pub fn dt_calc(y: f64) -> f64 {
@@ -468,17 +476,17 @@ impl ShouXingUtil {
     let t1: f64 = (y - DT_AT[i]) / (DT_AT[i + 5] - DT_AT[i]) * 10.0;
     let t2: f64 = t1 * t1;
     let t3: f64 = t2 * t1;
-    return DT_AT[i + 1] + DT_AT[i + 2] * t1 + DT_AT[i + 3] * t2 + DT_AT[i + 4] * t3;
+    DT_AT[i + 1] + DT_AT[i + 2] * t1 + DT_AT[i + 3] * t2 + DT_AT[i + 4] * t3
   }
 
   pub fn dtt(t: f64) -> f64 {
-    return Self::dt_calc(t / 365.2425 + 2000.0) / SECOND_PER_DAY;
+    Self::dt_calc(t / 365.2425 + 2000.0) / SECOND_PER_DAY
   }
 
   pub fn mv(t: f64) -> f64 {
     let mut v: f64 = 8399.71 - 914.0 * (0.7848 + 8328.691425 * t + 0.0001523 * t * t).sin();
     v -= 179.0 * (2.543 + 15542.7543 * t).sin() + 160.0 * (0.1874 + 7214.0629 * t).sin() + 62.0 * (3.14 + 16657.3828 * t).sin() + 34.0 * (4.827 + 16866.9323 * t).sin() + 22.0 * (4.9 + 23871.4457 * t).sin() + 12.0 * (2.59 + 14914.4523 * t).sin() + 7.0 * (0.23 + 6585.7609 * t).sin() + 5.0 * (0.9 + 25195.624 * t).sin() + 5.0 * (2.32 - 7700.3895 * t).sin() + 5.0 * (3.88 + 8956.9934 * t).sin() + 5.0 * (0.49 + 7771.3771 * t).sin();
-    return v;
+    v
   }
 
   pub fn sa_lon_t(w: f64) -> f64 {
@@ -488,11 +496,11 @@ impl ShouXingUtil {
     t += (w - Self::sa_lon(t, 10)) / v;
     v = Self::ev(t);
     t += (w - Self::sa_lon(t, -1)) / v;
-    return t;
+    t
   }
 
   pub fn m_sa_lon(t: f64, mn: isize, sn: isize) -> f64 {
-    return Self::mlon(t, mn) + (-3.4E-6) - (Self::elon(t, sn) + Self::gxc_sun_lon(t) + PI64);
+    Self::mlon(t, mn) + (-3.4E-6) - (Self::elon(t, sn) + Self::gxc_sun_lon(t) + PI64)
   }
 
   pub fn m_sa_lon_t(w: f64) -> f64 {
@@ -502,7 +510,7 @@ impl ShouXingUtil {
     v = Self::mv(t) - Self::ev(t);
     t += (w - Self::m_sa_lon(t, 20, 10)) / v;
     t += (w - Self::m_sa_lon(t, -1, 60)) / v;
-    return t;
+    t
   }
 
   pub fn sa_lon_t2(w: f64) -> f64 {
@@ -510,7 +518,7 @@ impl ShouXingUtil {
     let mut t: f64 = (w - 1.75347 - PI64) / v;
     t -= (0.000005297 * t * t + 0.0334166 * (4.669257 + 628.307585 * t).cos() + 0.0002061 * (2.67823 + 628.307585 * t).cos() * t) / v;
     t += (w - Self::elon(t, 8) - PI64 + (20.5 + 17.2 * (2.1824 - 33.75705 * t).sin()) / SECOND_PER_RAD) / v;
-    return t;
+    t
   }
 
   pub fn m_sa_lon_t2(w: f64) -> f64 {
@@ -522,7 +530,7 @@ impl ShouXingUtil {
     let l: f64 = Self::mlon(t, 20) - (4.8950632 + 628.3319653318 * t + 0.000005297 * t2 + 0.0334166 * (4.669257 + 628.307585 * t).cos() + 0.0002061 * (2.67823 + 628.307585 * t).cos() * t + 0.000349 * (4.6261 + 1256.61517 * t).cos() - 20.5 / SECOND_PER_RAD);
     v = 7771.38 - 914.0 * (0.7848 + 8328.691425 * t + 0.0001523 * t2).sin() - 179.0 * (2.543 + 15542.7543 * t).sin() - 160.0 * (0.1874 + 7214.0629 * t).sin();
     t += (w - l) / v;
-    return t;
+    t
   }
 
   pub fn qi_high(w: f64) -> f64 {
@@ -532,7 +540,7 @@ impl ShouXingUtil {
     if v < 1200.0 || v > (SECOND_PER_DAY - 1200.0) {
       t = Self::sa_lon_t(w) * 36525.0 - Self::dtt(t) + ONE_THIRD;
     }
-    return t;
+    t
   }
 
   pub fn shuo_high(w: f64) -> f64 {
@@ -542,7 +550,7 @@ impl ShouXingUtil {
     if v < 1800.0 || v > (SECOND_PER_DAY - 1800.0) {
       t = Self::m_sa_lon_t(w) * 36525.0 - Self::dtt(t) + ONE_THIRD;
     }
-    return t;
+    t
   }
 
   pub fn qi_low(w: f64) -> f64 {
@@ -551,14 +559,14 @@ impl ShouXingUtil {
     t -= (53.0 * t * t + 334116.0 * (4.67 + 628.307585 * t).cos() + 2061.0 * (2.678 + 628.3076 * t).cos() * t) / v / 10000000.0;
     let n: f64 = 48950621.66 + 6283319653.318 * t + 53.0 * t * t + 334166.0 * (4.669257 + 628.307585 * t).cos() + 3489.0 * (4.6261 + 1256.61517 * t).cos() + 2060.6 * (2.67823 + 628.307585 * t).cos() * t - 994.0 - 834.0 * (2.1824 - 33.75705 * t).sin();
     t -= (n / 10000000.0 - w) / 628.332 + (32.0 * (t + 1.8) * (t + 1.8) - 20.0) / SECOND_PER_DAY / 36525.0;
-    return t * 36525.0 + ONE_THIRD;
+    t * 36525.0 + ONE_THIRD
   }
 
   pub fn shuo_low(w: f64) -> f64 {
     let v: f64 = 7771.37714500204;
     let mut t: f64 = (w + 1.08472) / v;
     t -= (-0.0000331 * t * t + 0.10976 * (0.785 + 8328.6914 * t).cos() + 0.02224 * (0.187 + 7214.0629 * t).cos() - 0.03342 * (4.669 + 628.3076 * t).cos()) / v + (32.0 * (t + 1.8) * (t + 1.8) - 20.0) / SECOND_PER_DAY / 36525.0;
-    return t * 36525.0 + ONE_THIRD;
+    t * 36525.0 + ONE_THIRD
   }
 
   pub fn calc_shuo(pjd: f64) -> f64 {
@@ -595,7 +603,7 @@ impl ShouXingUtil {
         d -= 1.0;
       }
     }
-    return d;
+    d
   }
 
   pub fn calc_qi(pjd: f64) -> f64 {
@@ -632,12 +640,12 @@ impl ShouXingUtil {
         d -= 1.0;
       }
     }
-    return d;
+    d
   }
 
   pub fn qi_accurate(w: f64) -> f64 {
     let t: f64 = Self::sa_lon_t(w) * 36525.0;
-    return t - Self::dtt(t) + ONE_THIRD;
+    t - Self::dtt(t) + ONE_THIRD
   }
 
   pub fn qi_accurate2(jd: f64) -> f64 {
@@ -650,6 +658,6 @@ impl ShouXingUtil {
     if a - jd < -5.0 {
       return Self::qi_accurate(w + d);
     }
-    return a;
+    a
   }
 }

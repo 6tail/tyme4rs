@@ -113,7 +113,7 @@ impl HeavenStem {
     if index % 2 != 0 && target_index % 2 == 0 {
       offset += 2;
     }
-    return TenStar::from_index(offset);
+    TenStar::from_index(offset)
   }
 
   /// 五合（甲己合，乙庚合，丙辛合，丁壬合，戊癸合）
@@ -961,7 +961,7 @@ impl SixtyCycleHour {
     if h == 23 {
       return 0;
     }
-    return (h + 1) / 2
+    (h + 1) / 2
   }
 
   pub fn get_eight_char(&self) -> EightChar {

@@ -2,9 +2,12 @@ use std::fmt::{Display, Formatter};
 
 use regex::Regex;
 
-use crate::tyme::{Culture, LoopTyme, Tyme};
-use crate::tyme::lunar::LunarDay;
+use crate::tyme::jd::{JulianDay, J2000};
+use crate::tyme::lunar::{LunarDay, LunarMonth};
 use crate::tyme::sixtycycle::SixtyCycle;
+use crate::tyme::solar::{SolarDay, SolarTime};
+use crate::tyme::util::{ShouXingUtil, ONE_THIRD, PI_2};
+use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 
 pub static ANIMAL_NAMES: [&str; 28] = ["蛟", "龙", "貉", "兔", "狐", "虎", "豹", "獬", "牛", "蝠", "鼠", "燕", "猪", "獝", "狼", "狗", "彘", "鸡", "乌", "猴", "猿", "犴", "羊", "獐", "马", "鹿", "蛇", "蚓"];
 
@@ -544,7 +547,7 @@ impl Land {
 
   /// 方位
   pub fn get_direction(&self) -> Direction {
-    return Direction::from_index(self.get_index() as isize);
+    Direction::from_index(self.get_index() as isize)
   }
 }
 
@@ -630,17 +633,29 @@ impl Into<LoopTyme> for Luck {
   }
 }
 
-pub static PHASE_NAMES: [&str; 30] = ["朔月", "既朔月", "蛾眉新月", "蛾眉新月", "蛾眉月", "夕月", "上弦月", "上弦月", "九夜月", "宵月", "宵月", "宵月", "渐盈凸月", "小望月", "望月", "既望月", "立待月", "居待月", "寝待月", "更待月", "渐亏凸月", "下弦月", "下弦月", "有明月", "有明月", "蛾眉残月", "蛾眉残月", "残月", "晓月", "晦月"];
+pub static PHASE_NAMES: [&str; 8] = ["新月", "蛾眉月", "上弦月", "盈凸月", "满月", "亏凸月", "下弦月", "残月"];
 
 /// 月相
 #[derive(Debug, Clone)]
 pub struct Phase {
   parent: LoopTyme,
+  lunar_year: isize,
+  lunar_month: isize,
 }
 
 impl Tyme for Phase {
   fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
+    let size: isize = self.get_size() as isize;
+    let mut i: isize = self.get_index() as isize + n;
+    if i < 0 {
+      i -= size;
+    }
+    i /= size;
+    let mut m: LunarMonth = LunarMonth::from_ym(self.lunar_year, self.lunar_month);
+    if i != 0 {
+      m = m.next(i);
+    }
+    Self::from_index(m.get_year(), m.get_month_with_leap(), self.parent.next_index(n) as isize)
   }
 }
 
@@ -651,15 +666,20 @@ impl Culture for Phase {
 }
 
 impl Phase {
-  pub fn from_index(index: isize) -> Self {
+  pub fn from_index(lunar_year: isize, lunar_month: isize, index: isize) -> Self {
+    let m: LunarMonth = LunarMonth::from_ym(lunar_year, lunar_month).next(index / PHASE_NAMES.len() as isize);
     Self {
-      parent: LoopTyme::from_index(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+      parent: LoopTyme::from_index(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index),
+      lunar_year: m.get_year(),
+      lunar_month: m.get_month_with_leap(),
     }
   }
 
-  pub fn from_name(name: &str) -> Self {
+  pub fn from_name(lunar_year: isize, lunar_month: isize, name: &str) -> Self {
     Self {
-      parent: LoopTyme::from_name(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+      parent: LoopTyme::from_name(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name),
+      lunar_year,
+      lunar_month,
     }
   }
 
@@ -669,6 +689,40 @@ impl Phase {
 
   pub fn get_size(&self) -> usize {
     self.parent.get_size()
+  }
+
+  fn get_start_solar_time(&self) -> SolarTime {
+    let n: isize = ((self.lunar_year - 2000) as f64 * 365.2422 / 29.53058886).floor() as isize;
+    let mut i: isize = 0;
+    let jd: f64 = J2000 + ONE_THIRD;
+    let d: SolarDay = LunarDay::from_ymd(self.lunar_year, self.lunar_month, 1).get_solar_day();
+    loop {
+      let t: f64 = ShouXingUtil::m_sa_lon_t((n + i) as f64 * PI_2) * 36525.0;
+      if !JulianDay::from_julian_day(jd + t - ShouXingUtil::dtt(t)).get_solar_day().is_before(d) {
+        break;
+      }
+      i += 1;
+    }
+    let t: f64 = ShouXingUtil::m_sa_lon_t((n as f64 + i as f64 + [0, 90, 180, 270][self.get_index() / 2] as f64 / 360.0) * PI_2) * 36525.0;
+    JulianDay::from_julian_day(jd + t - ShouXingUtil::dtt(t)).get_solar_time()
+  }
+
+  pub fn get_solar_time(&self) -> SolarTime {
+    let t: SolarTime = self.get_start_solar_time();
+    if self.get_index() % 2 == 1 {
+      t.next(1)
+    } else {
+      t
+    }
+  }
+
+  pub fn get_solar_day(&self) -> SolarDay {
+    let d: SolarDay = self.get_start_solar_time().get_solar_day();
+    if self.get_index() % 2 == 1 {
+      d.next(1)
+    } else {
+      d
+    }
   }
 }
 
@@ -688,6 +742,59 @@ impl Eq for Phase {}
 
 impl Into<LoopTyme> for Phase {
   fn into(self) -> LoopTyme {
+    self.parent
+  }
+}
+
+/// 月相第几天
+#[derive(Debug, Clone)]
+pub struct PhaseDay {
+  parent: AbstractCultureDay,
+  phase: Phase,
+}
+
+impl Culture for PhaseDay {
+  fn get_name(&self) -> String {
+    self.phase.get_name()
+  }
+}
+
+impl PhaseDay {
+  pub fn new(phase: Phase, day_index: usize) -> Self {
+    let loop_tyme: LoopTyme = phase.clone().into();
+    let abstract_tyme: AbstractTyme = loop_tyme.into();
+    let culture: AbstractCulture = abstract_tyme.into();
+    Self {
+      parent: AbstractCultureDay::new(culture, day_index),
+      phase
+    }
+  }
+
+  pub fn get_phase(&self) -> Phase {
+    self.phase.clone()
+  }
+
+  pub fn get_day_index(&self) -> usize {
+    self.parent.get_day_index()
+  }
+}
+
+impl Display for PhaseDay {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+  }
+}
+
+impl PartialEq for PhaseDay {
+  fn eq(&self, other: &Self) -> bool {
+    self.to_string() == other.to_string()
+  }
+}
+
+impl Eq for PhaseDay {}
+
+impl Into<AbstractCultureDay> for PhaseDay {
+  fn into(self) -> AbstractCultureDay {
     self.parent
   }
 }
@@ -1434,11 +1541,11 @@ pub mod ren;
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
-  use crate::tyme::culture::{Animal, Beast, Constellation, Direction, Duty, Element, God, Land, Luck, Phase, Taboo};
   use crate::tyme::culture::dog::DogDay;
+  use crate::tyme::culture::{Animal, Beast, Constellation, Direction, Duty, Element, God, Land, Luck, Taboo};
   use crate::tyme::sixtycycle::{EarthBranch, HeavenStem};
   use crate::tyme::solar::{SolarDay, SolarTime};
+  use crate::tyme::Culture;
 
   #[test]
   fn test1() {
@@ -1500,7 +1607,7 @@ mod tests {
 
   #[test]
   fn test12() {
-    assert_eq!("朔月", Phase::from_index(0).get_name());
+    assert_eq!("蛾眉月第2天", SolarDay::from_ymd(2023, 9, 17).get_phase_day().to_string());
   }
 
   #[test]
