@@ -1,16 +1,16 @@
-use std::fmt::{Display, Formatter};
-
-use crate::tyme::{AbstractCulture, AbstractCultureDay, Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Direction, Duty, Element, God, Sound, Taboo, Ten, Terrain, Twenty, Zodiac};
-use crate::tyme::eightchar::EightChar;
 use crate::tyme::culture::fetus::FetusDay;
 use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::star::ten::TenStar;
 use crate::tyme::culture::star::twelve::TwelveStar;
 use crate::tyme::culture::star::twenty_eight::TwentyEightStar;
+use crate::tyme::culture::{Direction, Duty, Element, God, Sound, Taboo, Ten, Terrain, Twenty, Zodiac};
+use crate::tyme::eightchar::EightChar;
 use crate::tyme::enums::{HideHeavenStemType, YinYang};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
+use crate::tyme::{AbstractCulture, AbstractCultureDay, Culture, LoopTyme, Tyme};
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 
 pub static HEAVEN_STEM_NAMES: [&str; 10] = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 
@@ -18,6 +18,20 @@ pub static HEAVEN_STEM_NAMES: [&str; 10] = ["甲", "乙", "丙", "丁", "戊", "
 #[derive(Debug, Clone)]
 pub struct HeavenStem {
   parent: LoopTyme,
+}
+
+impl Deref for HeavenStem {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for HeavenStem {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for HeavenStem {
@@ -43,14 +57,6 @@ impl HeavenStem {
     Self {
       parent: LoopTyme::from_name(HEAVEN_STEM_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   /// 五行
@@ -161,6 +167,20 @@ pub struct EarthBranch {
   parent: LoopTyme,
 }
 
+impl Deref for EarthBranch {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for EarthBranch {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for EarthBranch {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -184,14 +204,6 @@ impl EarthBranch {
     Self {
       parent: LoopTyme::from_name(EARTH_BRANCH_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   /// 五行
@@ -317,6 +329,20 @@ pub struct SixtyCycle {
   parent: LoopTyme,
 }
 
+impl Deref for SixtyCycle {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SixtyCycle {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for SixtyCycle {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -340,14 +366,6 @@ impl SixtyCycle {
     Self {
       parent: LoopTyme::from_name(SIXTY_CYCLE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_heaven_stem(&self) -> HeavenStem {
@@ -471,6 +489,20 @@ pub struct HideHeavenStemDay {
   hide_heaven_stem: HideHeavenStem
 }
 
+impl Deref for HideHeavenStemDay {
+  type Target = AbstractCultureDay;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for HideHeavenStemDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Culture for HideHeavenStemDay {
   fn get_name(&self) -> String {
     let heaven_stem: HeavenStem = self.get_hide_heaven_stem().get_heaven_stem();
@@ -492,15 +524,11 @@ impl HideHeavenStemDay {
   pub fn get_hide_heaven_stem(&self) -> HideHeavenStem {
     self.hide_heaven_stem.clone()
   }
-
-  pub fn get_day_index(&self) -> usize {
-    self.parent.get_day_index()
-  }
 }
 
 impl Display for HideHeavenStemDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+    write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
   }
 }
 
@@ -721,31 +749,20 @@ impl Culture for SixtyCycleDay {
 
 impl SixtyCycleDay {
   pub fn from_solar_day(solar_day: SolarDay) -> Self {
-    let solar_year: isize = solar_day.get_year();
-    let spring_solar_day: SolarDay = SolarTerm::from_index(solar_year, 3).get_solar_day();
-    let lunar_day: LunarDay = solar_day.get_lunar_day();
-    let mut lunar_year: LunarYear = lunar_day.get_lunar_month().get_lunar_year();
-    if lunar_year.get_year() == solar_year {
-      if solar_day.is_before(spring_solar_day) {
-        lunar_year = lunar_year.next(-1)
-      }
-    } else if lunar_year.get_year() < solar_year {
-      if !solar_day.is_before(spring_solar_day) {
-        lunar_year = lunar_year.next(1);
-      }
-    }
     let term: SolarTerm = solar_day.get_term();
-    let mut index: isize = term.get_index() as isize - 3;
-    if index < 0 && term.get_solar_day().is_after(spring_solar_day) {
-      index += 24;
+    let index: usize = term.get_index();
+    let mut offset: isize = -1;
+    if index < 3 {
+      if index == 0 {
+        offset = -2;
+      }
+    } else {
+      offset = (index as isize - 3) / 2;
     }
     Self {
       solar_day,
-      month: SixtyCycleMonth {
-        year: SixtyCycleYear::from_year(lunar_year.get_year()),
-        month: LunarMonth::from_ym(solar_year, 1).get_sixty_cycle().next((index as f64 * 0.5).floor() as isize),
-      },
-      day: lunar_day.get_sixty_cycle(),
+      month: SixtyCycleYear::from_year(term.get_year()).get_first_month().next(offset),
+      day: SixtyCycle::from_index(solar_day.subtract(SolarDay::from_ymd(2000, 1, 7))),
     }
   }
 
@@ -1117,9 +1134,9 @@ impl Eq for ThreePillars {}
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle};
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test1() {

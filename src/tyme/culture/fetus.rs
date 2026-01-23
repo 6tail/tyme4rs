@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::string::ToString;
 use crate::tyme::culture::Direction;
 use crate::tyme::enums::Side;
@@ -105,6 +106,20 @@ pub struct FetusHeavenStem {
   parent: LoopTyme,
 }
 
+impl Deref for FetusHeavenStem {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for FetusHeavenStem {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for FetusHeavenStem {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -122,14 +137,6 @@ impl FetusHeavenStem {
     Self {
       parent: LoopTyme::from_index(FETUS_HEAVEN_STEM_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -161,6 +168,20 @@ pub struct FetusEarthBranch {
   parent: LoopTyme,
 }
 
+impl Deref for FetusEarthBranch {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for FetusEarthBranch {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for FetusEarthBranch {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -178,14 +199,6 @@ impl FetusEarthBranch {
     Self {
       parent: LoopTyme::from_index(FETUS_EARTH_BRANCH_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -217,6 +230,20 @@ pub struct FetusMonth {
   parent: LoopTyme,
 }
 
+impl Deref for FetusMonth {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for FetusMonth {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for FetusMonth {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -241,14 +268,6 @@ impl FetusMonth {
       true => None,
       _ => Some(Self::from_index((lunar_month.get_month() as isize) - 1))
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 

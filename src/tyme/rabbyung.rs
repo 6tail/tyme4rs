@@ -1,16 +1,31 @@
-use std::collections::HashMap;
-use crate::tyme::culture::{Direction, Element, Zodiac};
-use crate::tyme::{Culture, Tyme};
-use std::fmt::{Display, Formatter};
-use std::str::{Chars, Split};
-use lazy_static::lazy_static;
+use crate::tyme::culture::{Element, Zodiac};
 use crate::tyme::sixtycycle::SixtyCycle;
 use crate::tyme::solar::{SolarDay, SolarYear};
+use crate::tyme::{Culture, Tyme};
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
+use std::str::{Chars, Split};
 
 /// 藏历五行
 #[derive(Debug, Clone)]
 pub struct RabByungElement {
   parent: Element,
+}
+
+impl Deref for RabByungElement {
+  type Target = Element;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for RabByungElement {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for RabByungElement {
@@ -40,14 +55,6 @@ impl RabByungElement {
     }
   }
 
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
-  }
-
   /// 我生者
   pub fn get_reinforce(&self) -> Self {
     self.next(1)
@@ -66,11 +73,6 @@ impl RabByungElement {
   /// 克我者
   pub fn get_restrained(&self) -> Self {
     self.next(-2)
-  }
-
-  /// 方位
-  pub fn get_direction(&self) -> Direction {
-    self.parent.get_direction()
   }
 }
 
@@ -660,10 +662,10 @@ impl Eq for RabByungDay {}
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::Zodiac;
   use crate::tyme::rabbyung::{RabByungDay, RabByungElement, RabByungMonth, RabByungYear};
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test0() {

@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
-
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 
 pub static PLUM_RAIN_NAMES: [&str; 2] = ["入梅", "出梅"];
 
@@ -8,6 +8,20 @@ pub static PLUM_RAIN_NAMES: [&str; 2] = ["入梅", "出梅"];
 #[derive(Debug, Clone)]
 pub struct PlumRain {
   parent: LoopTyme,
+}
+
+impl Deref for PlumRain {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for PlumRain {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for PlumRain {
@@ -33,14 +47,6 @@ impl PlumRain {
     Self {
       parent: LoopTyme::from_name(PLUM_RAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -71,6 +77,20 @@ pub struct PlumRainDay {
   plum_rain: PlumRain,
 }
 
+impl Deref for PlumRainDay {
+  type Target = AbstractCultureDay;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for PlumRainDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Culture for PlumRainDay {
   fn get_name(&self) -> String {
     self.plum_rain.get_name()
@@ -91,16 +111,12 @@ impl PlumRainDay {
   pub fn get_plum_rain(&self) -> PlumRain {
     self.plum_rain.clone()
   }
-
-  pub fn get_day_index(&self) -> usize {
-    self.parent.get_day_index()
-  }
 }
 
 impl Display for PlumRainDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     if self.plum_rain.get_index() == 0 {
-      write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+      write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
     } else {
       write!(f, "{}", self.plum_rain.get_name())
     }
@@ -123,9 +139,9 @@ impl Into<AbstractCultureDay> for PlumRainDay {
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::plumrain::PlumRainDay;
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test1() {

@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
-
 use regex::Regex;
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 
 use crate::tyme::jd::{JulianDay, J2000};
 use crate::tyme::lunar::{LunarDay, LunarMonth};
@@ -15,6 +15,20 @@ pub static ANIMAL_NAMES: [&str; 28] = ["蛟", "龙", "貉", "兔", "狐", "虎",
 #[derive(Debug, Clone)]
 pub struct Animal {
   parent: LoopTyme,
+}
+
+impl Deref for Animal {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Animal {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for Animal {
@@ -40,14 +54,6 @@ impl Animal {
     Self {
       parent: LoopTyme::from_name(ANIMAL_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -79,6 +85,20 @@ pub struct Beast {
   parent: LoopTyme,
 }
 
+impl Deref for Beast {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Beast {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Beast {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -102,14 +122,6 @@ impl Beast {
     Self {
       parent: LoopTyme::from_name(BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -141,6 +153,20 @@ pub struct Constellation {
   parent: LoopTyme,
 }
 
+impl Deref for Constellation {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Constellation {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Constellation {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -164,14 +190,6 @@ impl Constellation {
     Self {
       parent: LoopTyme::from_name(CONSTELLATION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -203,6 +221,20 @@ pub struct Direction {
   parent: LoopTyme,
 }
 
+impl Deref for Direction {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Direction {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Direction {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -226,14 +258,6 @@ impl Direction {
     Self {
       parent: LoopTyme::from_name(DIRECTION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   /// 五行
@@ -270,6 +294,20 @@ pub struct Duty {
   parent: LoopTyme,
 }
 
+impl Deref for Duty {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Duty {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Duty {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -293,14 +331,6 @@ impl Duty {
     Self {
       parent: LoopTyme::from_name(DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -332,6 +362,20 @@ pub struct Element {
   parent: LoopTyme,
 }
 
+impl Deref for Element {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Element {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Element {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -355,14 +399,6 @@ impl Element {
     Self {
       parent: LoopTyme::from_name(ELEMENT_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   /// 我生者
@@ -433,6 +469,20 @@ pub struct God {
   parent: LoopTyme,
 }
 
+impl Deref for God {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for God {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for God {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -456,14 +506,6 @@ impl God {
     Self {
       parent: LoopTyme::from_name(GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_luck(&self) -> Luck {
@@ -512,6 +554,20 @@ pub struct Land {
   parent: LoopTyme,
 }
 
+impl Deref for Land {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Land {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Land {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -535,14 +591,6 @@ impl Land {
     Self {
       parent: LoopTyme::from_name(LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   /// 方位
@@ -579,6 +627,20 @@ pub struct Luck {
   parent: LoopTyme,
 }
 
+impl Deref for Luck {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Luck {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Luck {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -602,14 +664,6 @@ impl Luck {
     Self {
       parent: LoopTyme::from_name(LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -641,6 +695,20 @@ pub struct Phase {
   parent: LoopTyme,
   lunar_year: isize,
   lunar_month: isize,
+}
+
+impl Deref for Phase {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Phase {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for Phase {
@@ -681,14 +749,6 @@ impl Phase {
       lunar_year,
       lunar_month,
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   fn get_start_solar_time(&self) -> SolarTime {
@@ -753,6 +813,20 @@ pub struct PhaseDay {
   phase: Phase,
 }
 
+impl Deref for PhaseDay {
+  type Target = AbstractCultureDay;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for PhaseDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Culture for PhaseDay {
   fn get_name(&self) -> String {
     self.phase.get_name()
@@ -773,15 +847,11 @@ impl PhaseDay {
   pub fn get_phase(&self) -> Phase {
     self.phase.clone()
   }
-
-  pub fn get_day_index(&self) -> usize {
-    self.parent.get_day_index()
-  }
 }
 
 impl Display for PhaseDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+    write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
   }
 }
 
@@ -807,6 +877,20 @@ pub struct Sixty {
   parent: LoopTyme,
 }
 
+impl Deref for Sixty {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Sixty {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Sixty {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -830,14 +914,6 @@ impl Sixty {
     Self {
       parent: LoopTyme::from_name(SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -869,6 +945,20 @@ pub struct Sound {
   parent: LoopTyme,
 }
 
+impl Deref for Sound {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Sound {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Sound {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -892,14 +982,6 @@ impl Sound {
     Self {
       parent: LoopTyme::from_name(SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -959,6 +1041,20 @@ pub struct Taboo {
   parent: LoopTyme,
 }
 
+impl Deref for Taboo {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Taboo {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Taboo {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -982,14 +1078,6 @@ impl Taboo {
     Self {
       parent: LoopTyme::from_name(TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   fn get_taboos(data: [&str; 12], sup_index: usize, sub_index: usize, index: usize) -> Vec<Self> {
@@ -1049,6 +1137,20 @@ pub struct Ten {
   parent: LoopTyme,
 }
 
+impl Deref for Ten {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Ten {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Ten {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -1072,14 +1174,6 @@ impl Ten {
     Self {
       parent: LoopTyme::from_name(TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -1111,6 +1205,20 @@ pub struct Terrain {
   parent: LoopTyme,
 }
 
+impl Deref for Terrain {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Terrain {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Terrain {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -1134,14 +1242,6 @@ impl Terrain {
     Self {
       parent: LoopTyme::from_name(TERRAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -1173,6 +1273,20 @@ pub struct Twenty {
   parent: LoopTyme,
 }
 
+impl Deref for Twenty {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Twenty {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Twenty {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -1196,14 +1310,6 @@ impl Twenty {
     Self {
       parent: LoopTyme::from_name(TWENTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_sixty(&self) -> Sixty {
@@ -1239,6 +1345,20 @@ pub struct Week {
   parent: LoopTyme,
 }
 
+impl Deref for Week {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Week {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Week {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -1262,14 +1382,6 @@ impl Week {
     Self {
       parent: LoopTyme::from_name(WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -1301,6 +1413,20 @@ pub struct Zodiac {
   parent: LoopTyme,
 }
 
+impl Deref for Zodiac {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Zodiac {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Zodiac {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -1324,14 +1450,6 @@ impl Zodiac {
     Self {
       parent: LoopTyme::from_name(ZODIAC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -1363,6 +1481,20 @@ pub struct Zone {
   parent: LoopTyme,
 }
 
+impl Deref for Zone {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Zone {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Zone {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -1386,14 +1518,6 @@ impl Zone {
     Self {
       parent: LoopTyme::from_name(ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_direction(&self) -> Direction {

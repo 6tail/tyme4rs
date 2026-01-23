@@ -1,24 +1,24 @@
-use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
-use std::sync::{Arc, Mutex, MutexGuard};
-use atomic_refcell::AtomicRefCell;
 use lazy_static::lazy_static;
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
 
-use crate::tyme::{AbstractCulture, AbstractTyme, Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Direction, Duty, Element, God, KitchenGodSteed, Phase, PhaseDay, Taboo, Twenty, Week};
 use crate::tyme::culture::fetus::{FetusDay, FetusMonth};
 use crate::tyme::culture::ren::minor::MinorRen;
 use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::star::six::SixStar;
 use crate::tyme::culture::star::twelve::TwelveStar;
 use crate::tyme::culture::star::twenty_eight::TwentyEightStar;
-use crate::tyme::eightchar::EightChar;
+use crate::tyme::culture::{Direction, Duty, Element, God, KitchenGodSteed, Phase, PhaseDay, Taboo, Twenty, Week};
 use crate::tyme::eightchar::provider::{DefaultEightCharProvider, EightCharProvider};
+use crate::tyme::eightchar::EightChar;
 use crate::tyme::festival::LunarFestival;
-use crate::tyme::jd::{J2000, JulianDay};
+use crate::tyme::jd::{JulianDay, J2000};
 use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle, SixtyCycleDay, SixtyCycleHour, ThreePillars};
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
+use crate::tyme::unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit};
 use crate::tyme::util::ShouXingUtil;
+use crate::tyme::{AbstractCulture, Culture, LoopTyme, Tyme};
 
 lazy_static! {
   static ref LEAP_MONTH_YEAR: Vec<Vec<isize>> = {
@@ -66,12 +66,12 @@ lazy_static! {
 #[derive(Debug, Copy, Clone)]
 pub struct LunarYear {
   /// 年
-  year: isize,
+  parent: YearUnit,
 }
 
 impl Tyme for LunarYear {
   fn next(&self, n: isize) -> Self {
-    Self::from_year(self.year + n)
+    Self::from_year(self.get_year() + n)
   }
 }
 
@@ -81,23 +81,38 @@ impl Culture for LunarYear {
   }
 }
 
+impl Deref for LunarYear {
+  type Target = YearUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LunarYear {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl LunarYear {
   pub fn new(year: isize) -> Result<Self, String> {
+    Self::validate(year)?;
+    Ok(Self {
+      parent: YearUnit::new(year),
+    })
+  }
+
+  pub fn validate(year: isize) -> Result<(), String> {
     if year < -1 || year > 9999 {
       Err(format!("illegal lunar year: {}", year))
     } else {
-      Ok(Self {
-        year
-      })
+      Ok(())
     }
   }
 
   pub fn from_year(year: isize) -> Self {
     Self::new(year).unwrap()
-  }
-
-  pub fn get_year(&self) -> isize {
-    self.year
   }
 
   pub fn get_day_count(&self) -> usize {
@@ -129,8 +144,9 @@ impl LunarYear {
 
   pub fn get_months(&self) -> Vec<LunarMonth> {
     let mut l: Vec<LunarMonth> = Vec::new();
-    let mut m: LunarMonth = LunarMonth::from_ym(self.year, 1);
-    while m.get_year() == self.year {
+    let year: isize = self.get_year();
+    let mut m: LunarMonth = LunarMonth::from_ym(year, 1);
+    while m.get_year() == year {
       l.push(m);
       m = m.next(1);
     }
@@ -138,11 +154,12 @@ impl LunarYear {
   }
 
   pub fn get_leap_month(&self) -> usize {
-    if self.year == -1 {
+    let year: isize = self.get_year();
+    if year == -1 {
       return 11;
     }
     for i in 0.. LEAP_MONTH_YEAR.len() {
-      if LEAP_MONTH_YEAR[i].contains(&self.year) {
+      if LEAP_MONTH_YEAR[i].contains(&year) {
         return i + 1;
       }
     }
@@ -150,11 +167,11 @@ impl LunarYear {
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    SixtyCycle::from_index(self.year - 4)
+    SixtyCycle::from_index(self.get_year() - 4)
   }
 
   pub fn get_twenty(&self) -> Twenty {
-    Twenty::from_index(((self.year as f64 - 1864.0) / 20.0).floor() as isize)
+    Twenty::from_index(((self.get_year() as f64 - 1864.0) / 20.0).floor() as isize)
   }
 
   pub fn get_jupiter_direction(&self) -> Direction {
@@ -166,7 +183,7 @@ impl LunarYear {
   }
 
   pub fn get_kitchen_god_steed(&self) -> KitchenGodSteed {
-    KitchenGodSteed::from_lunar_year(self.year)
+    KitchenGodSteed::from_lunar_year(self.get_year())
   }
 }
 
@@ -186,30 +203,20 @@ impl Eq for LunarYear {}
 
 pub static LUNAR_MONTH_NAMES: [&str; 12] = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
 
-lazy_static! {
-  /// 农历月缓存
-  static ref LUNAR_MONTH_CACHE: Mutex<HashMap<String, Vec<f64>>> = Mutex::new(HashMap::new());
-}
-
 /// 农历月
 #[derive(Debug, Copy, Clone)]
 pub struct LunarMonth {
-  /// 农历年
-  year: LunarYear,
-  month: usize,
+  parent: MonthUnit,
   leap: bool,
-  day_count: usize,
-  index_in_year: usize,
-  first_julian_day: JulianDay,
 }
 
 impl Tyme for LunarMonth {
   fn next(&self, n: isize) -> Self {
     if n == 0 {
-      return Self::from_ym(self.year.get_year(), self.get_month_with_leap());
+      return self.clone();
     }
-    let mut m: isize = self.index_in_year as isize + 1 + n;
-    let mut y: LunarYear = self.year;
+    let mut m: isize = self.get_index_in_year() as isize + 1 + n;
+    let mut y: LunarYear = self.get_lunar_year();
     let mut month_size: isize = y.get_month_count() as isize;
     let forward: bool = n > 0;
     let add: isize = if forward { 1 } else { -1 };
@@ -238,26 +245,69 @@ impl Tyme for LunarMonth {
   }
 }
 
+impl Deref for LunarMonth {
+  type Target = MonthUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LunarMonth {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Culture for LunarMonth {
   fn get_name(&self) -> String {
     let leap: &str = if self.leap { "闰" } else { "" };
-    format!("{}{}", leap, LUNAR_MONTH_NAMES[self.month - 1])
+    format!("{}{}", leap, LUNAR_MONTH_NAMES[self.get_month() - 1])
   }
 }
 
 impl LunarMonth {
   pub fn new(year: isize, month: isize) -> Result<Self, String> {
-    let current_year: LunarYear = LunarYear::from_year(year);
-    let current_leap_month: usize = current_year.get_leap_month();
-    if month == 0 || month > 12 || month < -12 {
-      return Err(format!("illegal lunar month: {}", month));
-    }
-    let leap: bool = month < 0;
-    let m: usize = month.abs() as usize;
-    if leap && m != current_leap_month {
-      return Err(format!("illegal leap month {} in lunar year {}", m, year));
-    }
+    Self::validate(year, month)?;
+    Ok(Self {
+      parent: MonthUnit::new(year, month.abs()),
+      leap: month < 0,
+    })
+  }
 
+  pub fn validate(year: isize, month: isize) -> Result<(), String> {
+    if month == 0 || month > 12 || month < -12 {
+      Err(format!("illegal lunar month: {}", month))
+    } else {
+      let m: usize = month.abs() as usize;
+      if month < 0 && m != LunarYear::from_year(year).get_leap_month() {
+        return Err(format!("illegal leap month {} in lunar year {}", m, year));
+      }
+      Ok(())
+    }
+  }
+
+  pub fn from_ym(year: isize, month: isize) -> Self {
+    Self::new(year, month).unwrap()
+  }
+
+  pub fn get_lunar_year(&self) -> LunarYear {
+    LunarYear::from_year(self.get_year())
+  }
+
+  pub fn get_month(&self) -> usize {
+    self.parent.get_month() as usize
+  }
+
+  pub fn get_month_with_leap(&self) -> isize {
+    match self.leap {
+      false => self.get_month() as isize,
+      _ => -(self.get_month() as isize)
+    }
+  }
+
+  fn get_new_moon(&self) -> f64 {
+    let year: isize = self.get_year();
     // 冬至
     let dong_zhi_jd: f64 = SolarTerm::from_index(year, 0).get_cursory_julian_day();
 
@@ -279,96 +329,36 @@ impl LunarMonth {
       offset = 3.0;
     }
 
-    // 位于当年的索引
-    let mut index: usize = m - 1;
-    if leap || (current_leap_month > 0 && m > current_leap_month) {
-      index += 1;
-    }
-    let index_in_year: usize = index;
-
     // 本月初一
-    w += 29.5306 * (offset + index as f64);
-    let first_day: f64 = ShouXingUtil::calc_shuo(w);
-    let first_julian_day: JulianDay = JulianDay::from_julian_day(J2000 + first_day);
-    // 本月天数 = 下月初一 - 本月初一
-    let day_count: usize = (ShouXingUtil::calc_shuo(w + 29.5306) - first_day) as usize;
-
-    Ok(Self {
-      year: current_year,
-      month: m,
-      leap,
-      day_count,
-      index_in_year,
-      first_julian_day,
-    })
-  }
-
-  fn from_cache(cache: Vec<f64>) -> Self {
-    let m: isize = cache[1] as isize;
-    Self {
-      year: LunarYear::from_year(cache[0] as isize),
-      month: m.abs() as usize,
-      leap: m < 0,
-      day_count: cache[2] as usize,
-      index_in_year: cache[3] as usize,
-      first_julian_day: JulianDay::from_julian_day(cache[4]),
-    }
-  }
-
-  pub fn from_ym(year: isize, month: isize) -> Self {
-    let instance: Self;
-    let key: String = format!("{}{}", year, month);
-    let mut map: MutexGuard<HashMap<String, Vec<f64>>> = LUNAR_MONTH_CACHE.lock().unwrap();
-    let vec: Option<&Vec<f64>> = map.get(&key);
-    match vec {
-      Some(v) => instance = Self::from_cache((*v).to_owned()),
-      None => {
-        instance = Self::new(year, month).unwrap();
-        let mut l: Vec<f64> = Vec::new();
-        l.push(instance.get_year() as f64);
-        l.push(instance.get_month_with_leap() as f64);
-        l.push(instance.get_day_count() as f64);
-        l.push(instance.get_index_in_year() as f64);
-        l.push(instance.get_first_julian_day().get_day());
-        map.insert(key, l);
-      }
-    }
-    instance
-  }
-
-  pub fn get_lunar_year(&self) -> LunarYear {
-    self.year
-  }
-
-  pub fn get_year(&self) -> isize {
-    self.year.get_year()
-  }
-
-  pub fn get_month(&self) -> usize {
-    self.month
-  }
-
-  pub fn get_month_with_leap(&self) -> isize {
-    match self.leap {
-      false => self.month as isize,
-      _ => -(self.month as isize)
-    }
+    w + 29.5306 * (offset + self.get_index_in_year() as f64)
   }
 
   pub fn get_day_count(&self) -> usize {
-    self.day_count
+    let w: f64 = self.get_new_moon();
+    // 本月天数 = 下月初一 - 本月初一
+    (ShouXingUtil::calc_shuo(w + 29.5306) - ShouXingUtil::calc_shuo(w)) as usize
   }
 
   pub fn get_index_in_year(&self) -> usize {
-    self.index_in_year
+    let month: usize = self.get_month();
+    let mut index: usize = month - 1;
+    if self.is_leap() {
+      index += 1;
+    } else {
+      let leap_month: usize = self.get_lunar_year().get_leap_month();
+      if leap_month > 0 && month > leap_month {
+        index += 1;
+      }
+    }
+    index
   }
 
   pub fn get_season(&self) -> LunarSeason {
-    LunarSeason::from_index(self.month as isize - 1)
+    LunarSeason::from_index(self.get_month() as isize - 1)
   }
 
   pub fn get_first_julian_day(&self) -> JulianDay {
-    self.first_julian_day
+    JulianDay::from_julian_day(J2000 + ShouXingUtil::calc_shuo(self.get_new_moon()))
   }
 
   pub fn is_leap(&self) -> bool {
@@ -376,7 +366,7 @@ impl LunarMonth {
   }
 
   pub fn get_week_count(&self, start: usize) -> usize {
-    ((AbstractCulture::new().index_of((self.first_julian_day.get_week().get_index() as isize) - (start as isize), 7) + self.get_day_count()) as f64 / 7.0).ceil() as usize
+    ((AbstractCulture::new().index_of((self.get_first_julian_day().get_week().get_index() as isize) - (start as isize), 7) + self.get_day_count()) as f64 / 7.0).ceil() as usize
   }
 
   pub fn get_days(&self) -> Vec<LunarDay> {
@@ -388,6 +378,10 @@ impl LunarMonth {
       l.push(LunarDay::from_ymd(y, m, i + 1));
     }
     l
+  }
+
+  pub fn get_first_day(&self) -> LunarDay {
+    LunarDay::from_ymd(self.get_year(), self.get_month_with_leap(), 1)
   }
 
   pub fn get_weeks(&self, start: usize) -> Vec<LunarWeek> {
@@ -402,7 +396,8 @@ impl LunarMonth {
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(self.year.get_sixty_cycle().get_heaven_stem().get_index() as isize * 2 + self.month as isize + 1).get_name(), EarthBranch::from_index(self.month as isize + 1).get_name()).as_str())
+    let month: isize = self.get_month() as isize;
+    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(self.get_lunar_year().get_sixty_cycle().get_heaven_stem().get_index() as isize * 2 + month + 1).get_name(), EarthBranch::from_index(month + 1).get_name()).as_str())
   }
 
   pub fn get_jupiter_direction(&self) -> Direction {
@@ -420,7 +415,7 @@ impl LunarMonth {
     if index < 2 {
       index += 3;
     }
-    NineStar::from_index(27 - self.year.get_sixty_cycle().get_earth_branch().get_index() as isize % 3 * 3 - index)
+    NineStar::from_index(27 - self.get_lunar_year().get_sixty_cycle().get_earth_branch().get_index() as isize % 3 * 3 - index)
   }
 
   /// 逐月胎神
@@ -430,13 +425,13 @@ impl LunarMonth {
 
   /// 小六壬
   pub fn get_minor_ren(&self) -> MinorRen {
-    MinorRen::from_index((self.month as isize - 1) % 6)
+    MinorRen::from_index((self.get_month() as isize - 1) % 6)
   }
 }
 
 impl Display for LunarMonth {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.year.to_string(), self.get_name())
+    write!(f, "{}{}", self.get_lunar_year(), self.get_name())
   }
 }
 
@@ -454,6 +449,20 @@ pub static LUNAR_SEASON_NAMES: [&str; 12] = ["孟春", "仲春", "季春", "孟�
 #[derive(Debug, Clone)]
 pub struct LunarSeason {
   parent: LoopTyme,
+}
+
+impl Deref for LunarSeason {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LunarSeason {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for LunarSeason {
@@ -479,14 +488,6 @@ impl LunarSeason {
     Self {
       parent: LoopTyme::from_name(LUNAR_SEASON_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -516,13 +517,21 @@ pub static LUNAR_WEEK_NAMES: [&str; 6] = ["第一周", "第二周", "第三周",
 /// 农历周
 #[derive(Debug, Clone)]
 pub struct LunarWeek {
-  parent: AbstractTyme,
-  /// 农历月
-  month: LunarMonth,
-  /// 索引，0-6
-  index: usize,
-  /// 起始星期
-  start: Week,
+  parent: WeekUnit,
+}
+
+impl Deref for LunarWeek {
+  type Target = WeekUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LunarWeek {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for LunarWeek {
@@ -530,22 +539,22 @@ impl Tyme for LunarWeek {
     if n == 0 {
       self.clone()
     } else {
-      let mut d: isize = (self.index as isize) + n;
-      let mut m: LunarMonth = self.month;
-      let start_index: usize = self.start.get_index();
+      let mut d: isize = (self.get_index() as isize) + n;
+      let mut m: LunarMonth = self.get_lunar_month();
+      let start_index: usize = self.get_start();
       if n > 0 {
         let mut week_count: isize = m.get_week_count(start_index) as isize;
         while d >= week_count {
           d -= week_count;
           m = m.next(1);
-          if LunarDay::from_ymd(m.get_year(), m.get_month_with_leap(), 1).get_week() != self.start {
+          if m.get_first_day().get_week().get_index() != start_index {
             d += 1;
           }
           week_count = m.get_week_count(start_index) as isize;
         }
       } else {
         while d < 0 {
-          if LunarDay::from_ymd(m.get_year(), m.get_month_with_leap(), 1).get_week() != self.start {
+          if m.get_first_day().get_week().get_index() != start_index {
             d -= 1;
           }
           m = m.next(-1);
@@ -559,28 +568,25 @@ impl Tyme for LunarWeek {
 
 impl Culture for LunarWeek {
   fn get_name(&self) -> String {
-    LUNAR_WEEK_NAMES[self.index].to_string()
+    LUNAR_WEEK_NAMES[self.get_index()].to_string()
   }
 }
 
 impl LunarWeek {
   pub fn new(year: isize, month: isize, index: usize, start: usize) -> Result<Self, String> {
-    if index > 5 {
-      Err(format!("illegal lunar week index: {}", index))
-    } else if start > 6 {
-      Err(format!("illegal lunar week start: {}", start))
+    Self::validate(year, month, index, start)?;
+    Ok(Self {
+      parent: WeekUnit::new(year, month, index, start),
+    })
+  }
+
+  pub fn validate(year: isize, month: isize, index: usize, start: usize) -> Result<(), String> {
+    WeekUnit::validate(index, start)?;
+    let m: LunarMonth = LunarMonth::from_ym(year, month);
+    if index >= m.get_week_count(start) {
+      Err(format!("illegal lunar week index: {} in month: {}", index, m))
     } else {
-      let m: LunarMonth = LunarMonth::from_ym(year, month);
-      if index >= m.get_week_count(start) {
-        Err(format!("illegal lunar week index: {} in month: {}", index, m))
-      } else {
-        Ok(Self {
-          parent: AbstractTyme::new(),
-          month: m,
-          index,
-          start: Week::from_index(start as isize),
-        })
-      }
+      Ok(())
     }
   }
 
@@ -589,30 +595,12 @@ impl LunarWeek {
   }
 
   pub fn get_lunar_month(&self) -> LunarMonth {
-    self.month
-  }
-
-  pub fn get_year(&self) -> isize {
-    self.month.get_year()
-  }
-
-  pub fn get_month(&self) -> isize {
-    self.month.get_month_with_leap()
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.index
-  }
-
-  pub fn get_start(&self) -> Week {
-    self.start.clone()
+    LunarMonth::from_ym(self.get_year(), self.get_month())
   }
 
   pub fn get_first_day(&self) -> LunarDay {
     let first_day: LunarDay = LunarDay::from_ymd(self.get_year(), self.get_month(), 1);
-    let parent: AbstractTyme = self.parent.into();
-    let culture: AbstractCulture = parent.into();
-    first_day.next(self.index as isize * 7 - culture.index_of((first_day.get_week().get_index() as isize) - (self.start.get_index() as isize), 7) as isize)
+    first_day.next(self.get_index() as isize * 7 - self.index_of((first_day.get_week().get_index() as isize) - (self.get_start() as isize), 7) as isize)
   }
 
   pub fn get_days(&self) -> Vec<LunarDay> {
@@ -629,7 +617,7 @@ impl LunarWeek {
 
 impl Display for LunarWeek {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.month, self.get_name())
+    write!(f, "{}{}", self.get_lunar_month(), self.get_name())
   }
 }
 
@@ -641,26 +629,13 @@ impl PartialEq for LunarWeek {
 
 impl Eq for LunarWeek {}
 
-impl Into<AbstractTyme> for LunarWeek {
-  fn into(self) -> AbstractTyme {
-    self.parent
-  }
-}
-
 /// 农历日名称
 pub static LUNAR_DAY_NAMES: [&str; 30] = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"];
 
 /// 农历日
 #[derive(Debug, Clone)]
 pub struct LunarDay {
-  /// 农历月
-  month: LunarMonth,
-  /// 日
-  day: usize,
-  /// 公历日（第一次使用时才会初始化）
-  solar_day: AtomicRefCell<Option<SolarDay>>,
-  /// 干支日（第一次使用时才会初始化）
-  sixty_cycle_day: AtomicRefCell<Option<SixtyCycleDay>>,
+  parent: DayUnit,
 }
 
 impl Tyme for LunarDay {
@@ -675,22 +650,41 @@ impl Tyme for LunarDay {
 
 impl Culture for LunarDay {
   fn get_name(&self) -> String {
-    LUNAR_DAY_NAMES[self.day - 1].to_string()
+    LUNAR_DAY_NAMES[self.get_day() - 1].to_string()
+  }
+}
+
+impl Deref for LunarDay {
+  type Target = DayUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LunarDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
   }
 }
 
 impl LunarDay {
   pub fn new(year: isize, month: isize, day: usize) -> Result<Self, String> {
-    let m: LunarMonth = LunarMonth::from_ym(year, month);
-    if day < 1 || day > m.get_day_count() {
-      Err(format!("illegal day {} in {}", day, m))
+    Self::validate(year, month, day)?;
+    Ok(Self {
+      parent: DayUnit::new(year, month, day as isize)
+    })
+  }
+
+  pub fn validate(year: isize, month: isize, day: usize) -> Result<(), String> {
+    if day < 1 {
+      Err(format!("illegal lunar day {}", day))
     } else {
-      Ok(Self {
-        month: m,
-        day,
-        solar_day: AtomicRefCell::new(None),
-        sixty_cycle_day: AtomicRefCell::new(None),
-      })
+      let m: LunarMonth = LunarMonth::from_ym(year, month);
+      if day > m.get_day_count() {
+        return Err(format!("illegal day {} in {}", day, m))
+      }
+      Ok(())
     }
   }
 
@@ -709,35 +703,7 @@ impl LunarDay {
   /// let lunar_month: LunarMonth = LunarDay::from_ymd(2023, 1, 1).get_lunar_month();
   /// ```
   pub fn get_lunar_month(&self) -> LunarMonth {
-    self.month
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::lunar::LunarDay;
-  ///
-  /// // 2023
-  /// let y: isize = LunarDay::from_ymd(2023, 1, 1).get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.month.get_year()
-  }
-
-  /// 月
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::lunar::LunarDay;
-  ///
-  /// // 1
-  /// let m: isize = LunarDay::from_ymd(2023, 1, 1).get_month();
-  /// ```
-  pub fn get_month(&self) -> isize {
-    self.month.get_month_with_leap()
+    LunarMonth::from_ym(self.get_year(), self.get_month())
   }
 
   /// 日
@@ -751,7 +717,7 @@ impl LunarDay {
   /// let day: usize = LunarDay::from_ymd(2023, 1, 1).get_day();
   /// ```
   pub fn get_day(&self) -> usize {
-    self.day
+    self.parent.get_day() as usize
   }
 
   pub fn get_week(&self) -> Week {
@@ -769,7 +735,7 @@ impl LunarDay {
     if a_month != b_month {
       return a_month.abs() < b_month.abs();
     }
-    self.day < target.get_day()
+    self.get_day() < target.get_day()
   }
 
   pub fn is_after(&self, target: LunarDay) -> bool {
@@ -783,7 +749,7 @@ impl LunarDay {
     if a_month != b_month {
       return a_month.abs() >= b_month.abs();
     }
-    self.day > target.get_day()
+    self.get_day() > target.get_day()
   }
 
   /// 当天的年干支（立春换）
@@ -800,7 +766,7 @@ impl LunarDay {
 
   /// 干支
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    let offset: isize = self.month.get_first_julian_day().next((self.day as isize) - 12).get_day() as isize;
+    let offset: isize = self.get_lunar_month().get_first_julian_day().next((self.get_day() as isize) - 12).get_day() as isize;
     SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(offset).get_name(), EarthBranch::from_index(offset).get_name()).as_str())
   }
 
@@ -815,13 +781,13 @@ impl LunarDay {
     if index % 12 < 6 {
       return Element::from_index(index / 12).get_direction();
     }
-    self.month.get_lunar_year().get_jupiter_direction()
+    self.get_lunar_month().get_lunar_year().get_jupiter_direction()
   }
 
   /// 月相第几天
   pub fn get_phase_day(&self) -> PhaseDay {
     let today: SolarDay = self.get_solar_day();
-    let m: LunarMonth = self.month.next(1);
+    let m: LunarMonth = self.get_lunar_month().next(1);
     let mut p: Phase = Phase::from_index(m.get_year(), m.get_month_with_leap(), 0);
     let mut d: SolarDay = p.get_solar_day();
     while d.is_after(today) {
@@ -847,7 +813,7 @@ impl LunarDay {
   /// let six_star: SixStar = LunarDay::from_ymd(2023, 1, 1).get_six_star();
   /// ```
   pub fn get_six_star(&self) -> SixStar {
-    SixStar::from_index((self.get_month() + self.day as isize - 2) % 6)
+    SixStar::from_index((self.get_month() + self.get_day() as isize - 2) % 6)
   }
 
   /// 公历日
@@ -862,20 +828,12 @@ impl LunarDay {
   /// let solar_day: SolarDay = LunarDay::from_ymd(2023, 1, 1).get_solar_day();
   /// ```
   pub fn get_solar_day(&self) -> SolarDay {
-    if self.solar_day.borrow().is_none() {
-      let mut m = self.solar_day.borrow_mut();
-      m.replace(self.month.get_first_julian_day().next(self.day as isize - 1).get_solar_day());
-    }
-    self.solar_day.borrow().unwrap()
+    self.get_lunar_month().get_first_julian_day().next(self.get_day() as isize - 1).get_solar_day()
   }
 
   /// 干支日
   pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
-    if self.sixty_cycle_day.borrow().is_none() {
-      let mut m = self.sixty_cycle_day.borrow_mut();
-      m.replace(self.get_solar_day().get_sixty_cycle_day());
-    }
-    self.sixty_cycle_day.borrow().clone().unwrap()
+    self.get_solar_day().get_sixty_cycle_day()
   }
 
   /// 黄道黑道十二神
@@ -904,7 +862,7 @@ impl LunarDay {
   /// let festival: Option<LunarFestival> = LunarDay::from_ymd(2024, 1, 1).get_festival();
   /// ```
   pub fn get_festival(&self) -> Option<LunarFestival> {
-    LunarFestival::from_ymd(self.get_year(), self.get_month(), self.day)
+    LunarFestival::from_ymd(self.get_year(), self.get_month(), self.get_day())
   }
 
   /// 九星
@@ -937,9 +895,10 @@ impl LunarDay {
     let mut l: Vec<LunarHour> = Vec::new();
     let y: isize = self.get_year();
     let m: isize = self.get_month();
-    l.push(LunarHour::from_ymd_hms(y, m, self.day, 0, 0, 0));
+    let d: usize = self.get_day();
+    l.push(LunarHour::from_ymd_hms(y, m, d, 0, 0, 0));
     for i in (0..24).step_by(2) {
-      l.push(LunarHour::from_ymd_hms(y, m, self.day, i + 1, 0, 0));
+      l.push(LunarHour::from_ymd_hms(y, m, d, i + 1, 0, 0));
     }
     l
   }
@@ -960,7 +919,7 @@ impl LunarDay {
 
   /// 小六壬
   pub fn get_minor_ren(&self) -> MinorRen {
-    self.get_lunar_month().get_minor_ren().next(self.day as isize - 1)
+    self.get_lunar_month().get_minor_ren().next(self.get_day() as isize - 1)
   }
 
   /// 三柱
@@ -971,7 +930,7 @@ impl LunarDay {
 
 impl Display for LunarDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.month, self.get_name())
+    write!(f, "{}{}", self.get_lunar_month(), self.get_name())
   }
 }
 
@@ -990,18 +949,7 @@ lazy_static! {
 /// 农历时辰
 #[derive(Debug, Clone)]
 pub struct LunarHour {
-  /// 农历日
-  day: LunarDay,
-  /// 时
-  hour: usize,
-  /// 分
-  minute: usize,
-  /// 秒
-  second: usize,
-  /// 公历时刻（第一次使用时才会初始化）
-  solar_time: AtomicRefCell<Option<SolarTime>>,
-  /// 干支时辰（第一次使用时才会初始化）
-  sixty_cycle_hour: AtomicRefCell<Option<SixtyCycleHour>>,
+  parent: SecondUnit,
 }
 
 impl Tyme for LunarHour {
@@ -1009,7 +957,7 @@ impl Tyme for LunarHour {
     if n == 0 {
       self.clone()
     } else {
-      let h: isize = (self.hour as isize) + n * 2;
+      let h: isize = (self.get_hour() as isize) + n * 2;
       let diff: isize = if h < 0 { -1 } else { 1 };
       let mut hour: isize = h.abs();
       let mut days: isize = hour / 24 * diff;
@@ -1018,8 +966,8 @@ impl Tyme for LunarHour {
         hour += 24;
         days -= 1;
       }
-      let d: LunarDay = self.day.next(days);
-      Self::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), hour as usize, self.minute, self.second)
+      let d: LunarDay = self.get_lunar_day().next(days);
+      Self::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), hour as usize, self.get_minute(), self.get_second())
     }
   }
 }
@@ -1030,24 +978,32 @@ impl Culture for LunarHour {
   }
 }
 
+impl Deref for LunarHour {
+  type Target = SecondUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LunarHour {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl LunarHour {
   pub fn new(year: isize, month: isize, day: usize, hour: usize, minute: usize, second: usize) -> Result<Self, String> {
-    if hour > 23 {
-      Err(format!("illegal hour: {}", hour))
-    } else if minute > 59 {
-      Err(format!("illegal minute: {}", minute))
-    } else if second > 59 {
-      Err(format!("illegal second: {}", second))
-    } else {
-      Ok(Self {
-        day: LunarDay::from_ymd(year, month, day),
-        hour,
-        minute,
-        second,
-        solar_time: AtomicRefCell::new(None),
-        sixty_cycle_hour: AtomicRefCell::new(None),
-      })
-    }
+    Self::validate(year, month, day, hour, minute, second)?;
+    Ok(Self {
+      parent: SecondUnit::new(year, month, day as isize, hour, minute, second),
+    })
+  }
+
+  pub fn validate(year: isize, month: isize, day: usize, hour: usize, minute: usize, second: usize) -> Result<(), String> {
+    SecondUnit::validate(hour, minute, second)?;
+    LunarDay::validate(year, month, day)?;
+    Ok(())
   }
 
   pub fn from_ymd_hms(year: isize, month: isize, day: usize, hour: usize, minute: usize, second: usize) -> Self {
@@ -1055,55 +1011,47 @@ impl LunarHour {
   }
 
   pub fn get_lunar_day(&self) -> LunarDay {
-    self.day.clone()
-  }
-
-  pub fn get_year(&self) -> isize {
-    self.day.get_year()
-  }
-
-  pub fn get_month(&self) -> isize {
-    self.day.get_month()
+    LunarDay::from_ymd(self.get_year(), self.get_month(), self.get_day())
   }
 
   pub fn get_day(&self) -> usize {
-    self.day.get_day()
-  }
-
-  pub fn get_hour(&self) -> usize {
-    self.hour
-  }
-
-  pub fn get_minute(&self) -> usize {
-    self.minute
-  }
-
-  pub fn get_second(&self) -> usize {
-    self.second
+    self.parent.get_day() as usize
   }
 
   pub fn get_index_in_day(&self) -> usize {
-    (self.hour + 1) / 2
+    (self.get_hour() + 1) / 2
   }
 
   pub fn is_before(&self, target: LunarHour) -> bool {
-    if self.day != target.get_lunar_day() {
-      return self.day.is_before(target.get_lunar_day());
+    let a_day: LunarDay = self.get_lunar_day();
+    let b_day: LunarDay = target.get_lunar_day();
+    if a_day != b_day {
+      return a_day.is_before(b_day);
     }
-    if self.hour != target.get_hour() {
-      return self.hour < target.get_hour();
+    let a_hour: usize = self.get_hour();
+    let b_hour: usize = target.get_hour();
+    if a_hour != b_hour {
+      return a_hour < b_hour;
     }
-    if self.minute != target.get_minute() { self.minute < target.get_minute() } else { self.second < target.get_second() }
+    let a_minute: usize = self.get_minute();
+    let b_minute: usize = target.get_minute();
+    if a_minute != b_minute { a_minute < b_minute } else { self.get_second() < target.get_second() }
   }
 
   pub fn is_after(&self, target: LunarHour) -> bool {
-    if self.day != target.get_lunar_day() {
-      return self.day.is_after(target.get_lunar_day());
+    let a_day: LunarDay = self.get_lunar_day();
+    let b_day: LunarDay = target.get_lunar_day();
+    if a_day != b_day {
+      return a_day.is_after(b_day);
     }
-    if self.hour != target.get_hour() {
-      return self.hour > target.get_hour();
+    let a_hour: usize = self.get_hour();
+    let b_hour: usize = target.get_hour();
+    if a_hour != b_hour {
+      return a_hour > b_hour;
     }
-    if self.minute != target.get_minute() { self.minute > target.get_minute() } else { self.second > target.get_second() }
+    let a_minute: usize = self.get_minute();
+    let b_minute: usize = target.get_minute();
+    if a_minute != b_minute { a_minute > b_minute } else { self.get_second() > target.get_second() }
   }
 
   #[deprecated(since = "1.3.0", note = "please use SixtyCycleHour.get_year() instead")]
@@ -1123,28 +1071,20 @@ impl LunarHour {
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
     let earth_branch_index: isize = self.get_index_in_day() as isize % 12;
-    let mut d: SixtyCycle = self.day.get_sixty_cycle();
-    if self.hour >= 23 {
+    let mut d: SixtyCycle = self.get_lunar_day().get_sixty_cycle();
+    if self.get_hour() >= 23 {
       d = d.next(1);
     }
     SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(d.get_heaven_stem().get_index() as isize % 5 * 2 + earth_branch_index).get_name(), EarthBranch::from_index(earth_branch_index).get_name()).as_str())
   }
 
   pub fn get_solar_time(&self) -> SolarTime {
-    if self.solar_time.borrow().is_none() {
-      let d: SolarDay = self.day.get_solar_day();
-      let mut m = self.solar_time.borrow_mut();
-      m.replace(SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second));
-    }
-    self.solar_time.borrow().unwrap()
+    let d: SolarDay = self.get_lunar_day().get_solar_day();
+    SolarTime::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.get_hour(), self.get_minute(), self.get_second())
   }
 
   pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
-    if self.sixty_cycle_hour.borrow().is_none() {
-      let mut m = self.sixty_cycle_hour.borrow_mut();
-      m.replace(self.get_solar_time().get_sixty_cycle_hour());
-    }
-    self.sixty_cycle_hour.borrow().clone().unwrap()
+    self.get_solar_time().get_sixty_cycle_hour()
   }
 
   pub fn get_eight_char(&self) -> EightChar {
@@ -1152,10 +1092,11 @@ impl LunarHour {
   }
 
   pub fn get_nine_star(&self) -> NineStar {
-    let solar: SolarDay = self.day.get_solar_day();
+    let day: LunarDay = self.get_lunar_day();
+    let solar: SolarDay = day.get_solar_day();
     let dong_zhi: SolarTerm = SolarTerm::from_index(solar.get_year(), 0);
     let earth_branch_index: isize = self.get_index_in_day() as isize % 12;
-    let mut index = [8, 5, 2][self.day.get_sixty_cycle().get_earth_branch().get_index() % 3];
+    let mut index = [8, 5, 2][day.get_sixty_cycle().get_earth_branch().get_index() % 3];
     if !solar.is_before(dong_zhi.get_julian_day().get_solar_day()) && solar.is_before(dong_zhi.next(12).get_julian_day().get_solar_day()) {
       index = 8 + earth_branch_index - index;
     } else {
@@ -1184,7 +1125,7 @@ impl LunarHour {
 
 impl Display for LunarHour {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}时", self.day.to_string(), self.get_sixty_cycle().get_name())
+    write!(f, "{}{}时", self.get_lunar_day(), self.get_sixty_cycle().get_name())
   }
 }
 
@@ -1198,10 +1139,10 @@ impl Eq for LunarHour {}
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::{Culture, Tyme};
   use crate::tyme::culture::star::twenty_eight::TwentyEightStar;
   use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::{Culture, Tyme};
 
   #[test]
   fn test1() {

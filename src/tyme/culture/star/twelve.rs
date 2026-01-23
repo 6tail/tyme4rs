@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-
+use std::ops::{Deref, DerefMut};
 use crate::tyme::{Culture, LoopTyme, Tyme};
 use crate::tyme::culture::Luck;
 
@@ -9,6 +9,20 @@ pub static ECLIPTIC_NAMES: [&str; 2] = ["黄道", "黑道"];
 #[derive(Debug, Clone)]
 pub struct Ecliptic {
   parent: LoopTyme,
+}
+
+impl Deref for Ecliptic {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Ecliptic {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for Ecliptic {
@@ -34,14 +48,6 @@ impl Ecliptic {
     Self {
       parent: LoopTyme::from_name(ECLIPTIC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_luck(&self) -> Luck {
@@ -77,6 +83,20 @@ pub struct TwelveStar {
   parent: LoopTyme,
 }
 
+impl Deref for TwelveStar {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for TwelveStar {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for TwelveStar {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -100,14 +120,6 @@ impl TwelveStar {
     Self {
       parent: LoopTyme::from_name(TWELVE_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_ecliptic(&self) -> Ecliptic {

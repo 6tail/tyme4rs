@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-
+use std::ops::{Deref, DerefMut};
 use crate::tyme::{Culture, LoopTyme, Tyme};
 use crate::tyme::culture::{Direction, Element};
 
@@ -9,6 +9,20 @@ pub static DIPPER_NAMES: [&str; 9] = ["天枢", "天璇", "天玑", "天权", "�
 #[derive(Debug, Clone)]
 pub struct Dipper {
   parent: LoopTyme,
+}
+
+impl Deref for Dipper {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Dipper {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for Dipper {
@@ -34,14 +48,6 @@ impl Dipper {
     Self {
       parent: LoopTyme::from_name(DIPPER_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -73,6 +79,20 @@ pub struct NineStar {
   parent: LoopTyme,
 }
 
+impl Deref for NineStar {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for NineStar {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for NineStar {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -96,14 +116,6 @@ impl NineStar {
     Self {
       parent: LoopTyme::from_name(NINE_STAR_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_color(&self) -> String {

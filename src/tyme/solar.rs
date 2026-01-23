@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::culture::{Constellation, Phase, PhaseDay, Week};
@@ -13,54 +14,59 @@ use crate::tyme::jd::{J2000, JulianDay};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
 use crate::tyme::rabbyung::{RabByungDay, RabByungYear};
 use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay, SixtyCycleDay, SixtyCycleHour};
+use crate::tyme::unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit};
 use crate::tyme::util::ShouXingUtil;
 
 /// 公历年
 #[derive(Debug, Copy, Clone)]
 pub struct SolarYear {
-  /// 年
-  year: isize,
+  parent: YearUnit,
 }
 
 impl Tyme for SolarYear {
   fn next(&self, n: isize) -> Self {
-    Self::from_year(self.year + n)
+    Self::from_year(self.get_year() + n)
   }
 }
 
 impl Culture for SolarYear {
   fn get_name(&self) -> String {
-    format!("{}年", self.year)
+    format!("{}年", self.get_year())
+  }
+}
+
+impl Deref for SolarYear {
+  type Target = YearUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarYear {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
   }
 }
 
 impl SolarYear {
   pub fn new(year: isize) -> Result<Self, String> {
+    Self::validate(year)?;
+    Ok(Self {
+      parent: YearUnit::new(year),
+    })
+  }
+
+  pub fn validate(year: isize) -> Result<(), String> {
     if year < 1 || year > 9999 {
       Err(format!("illegal solar year: {}", year))
     } else {
-      Ok(Self {
-        year
-      })
+      Ok(())
     }
   }
 
   pub fn from_year(year: isize) -> Self {
     Self::new(year).unwrap()
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::SolarYear;
-  ///
-  /// // 2023
-  /// let year: isize = SolarYear::from_year(2023).get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.year
   }
 
   /// 当年总天数
@@ -74,7 +80,7 @@ impl SolarYear {
   /// let day_count: usize = SolarYear::from_year(2023).get_day_count();
   /// ```
   pub fn get_day_count(&self) -> usize {
-    if 1582 == self.year {
+    if 1582 == self.get_year() {
       355
     } else {
       if self.is_leap() {
@@ -96,10 +102,11 @@ impl SolarYear {
   /// let leap: bool = SolarYear::from_year(2023).is_leap();
   /// ```
   pub fn is_leap(&self) -> bool {
-    if self.year < 1600 {
-      self.year % 4 == 0
+    let y: isize = self.get_year();
+    if y < 1600 {
+      y % 4 == 0
     } else {
-      (self.year % 4 == 0 && self.year % 100 != 0) || (self.year % 400 == 0)
+      (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0)
     }
   }
 
@@ -115,8 +122,9 @@ impl SolarYear {
   /// ```
   pub fn get_months(&self) -> Vec<SolarMonth> {
     let mut l: Vec<SolarMonth> = Vec::new();
+    let y: isize = self.get_year();
     for i in 1..13 {
-      l.push(SolarMonth::from_ym(self.year, i));
+      l.push(SolarMonth::from_ym(y, i));
     }
     l
   }
@@ -133,8 +141,9 @@ impl SolarYear {
   /// ```
   pub fn get_seasons(&self) -> Vec<SolarSeason> {
     let mut l: Vec<SolarSeason> = Vec::new();
+    let y: isize = self.get_year();
     for i in 0..4 {
-      l.push(SolarSeason::from_index(self.year, i));
+      l.push(SolarSeason::from_index(y, i));
     }
     l
   }
@@ -151,15 +160,16 @@ impl SolarYear {
   /// ```
   pub fn get_half_years(&self) -> Vec<SolarHalfYear> {
     let mut l: Vec<SolarHalfYear> = Vec::new();
+    let y: isize = self.get_year();
     for i in 0..2 {
-      l.push(SolarHalfYear::from_index(self.year, i));
+      l.push(SolarHalfYear::from_index(y, i));
     }
     l
   }
 
   /// 藏历年
   pub fn get_rab_byung_year(&self) -> Result<RabByungYear, String> {
-    RabByungYear::from_year(self.year)
+    RabByungYear::from_year(self.get_year())
   }
 }
 
@@ -183,8 +193,7 @@ pub static SOLAR_HALF_YEAR_NAMES: [&str; 2] = ["上半年", "下半年"];
 /// 公历半年
 #[derive(Debug, Copy, Clone)]
 pub struct SolarHalfYear {
-  /// 公历年
-  year: SolarYear,
+  parent: YearUnit,
   /// 索引，0-1
   index: usize,
 }
@@ -192,7 +201,7 @@ pub struct SolarHalfYear {
 impl Tyme for SolarHalfYear {
   fn next(&self, n: isize) -> Self {
     let i: isize = self.index as isize + n;
-    Self::from_index((self.get_year() * 2 + i) / 2, AbstractCulture::new().index_of(i, 2))
+    Self::from_index((self.get_year() * 2 + i) / 2, self.index_of(i, 2))
   }
 }
 
@@ -202,15 +211,35 @@ impl Culture for SolarHalfYear {
   }
 }
 
+impl Deref for SolarHalfYear {
+  type Target = YearUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarHalfYear {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl SolarHalfYear {
   pub fn new(year: isize, index: usize) -> Result<Self, String> {
+    Self::validate(year, index)?;
+    Ok(Self {
+      parent: YearUnit::new(year),
+      index,
+    })
+  }
+
+  pub fn validate(year: isize, index: usize) -> Result<(), String> {
     if index > 1 {
       Err(format!("illegal solar half year index: {}", index))
     } else {
-      Ok(Self {
-        year: SolarYear::from_year(year),
-        index,
-      })
+      SolarYear::validate(year)?;
+      Ok(())
     }
   }
 
@@ -232,24 +261,7 @@ impl SolarHalfYear {
   /// let year: SolarYear = half_year.get_solar_year();
   /// ```
   pub fn get_solar_year(&self) -> SolarYear {
-    self.year
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::{SolarHalfYear};
-  ///
-  /// // 2023年上半年
-  /// let half_year: SolarHalfYear = SolarHalfYear::from_index(2023, 0);
-  ///
-  /// // 2023
-  /// let year: isize = half_year.get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.year.get_year()
+    SolarYear::new(self.get_year()).unwrap()
   }
 
   /// 索引
@@ -310,7 +322,7 @@ impl SolarHalfYear {
 
 impl Display for SolarHalfYear {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.year, self.get_name())
+    write!(f, "{}{}", self.get_solar_year(), self.get_name())
   }
 }
 
@@ -328,8 +340,7 @@ pub static SOLAR_SEASON_NAMES: [&str; 4] = ["一季度", "二季度", "三季度
 /// 公历季度
 #[derive(Debug, Copy, Clone)]
 pub struct SolarSeason {
-  /// 公历年
-  year: SolarYear,
+  parent: YearUnit,
   /// 索引，0-1
   index: usize,
 }
@@ -337,7 +348,7 @@ pub struct SolarSeason {
 impl Tyme for SolarSeason {
   fn next(&self, n: isize) -> Self {
     let i: isize = self.index as isize + n;
-    Self::from_index((self.get_year() * 4 + i) / 4, AbstractCulture::new().index_of(i, 4))
+    Self::from_index((self.get_year() * 4 + i) / 4, self.index_of(i, 4))
   }
 }
 
@@ -347,15 +358,35 @@ impl Culture for SolarSeason {
   }
 }
 
+impl Deref for SolarSeason {
+  type Target = YearUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarSeason {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl SolarSeason {
   pub fn new(year: isize, index: usize) -> Result<Self, String> {
+    Self::validate(year, index)?;
+    Ok(Self {
+      parent: YearUnit::new(year),
+      index,
+    })
+  }
+
+  pub fn validate(year: isize, index: usize) -> Result<(), String> {
     if index > 3 {
       Err(format!("illegal solar season index: {}", index))
     } else {
-      Ok(Self {
-        year: SolarYear::from_year(year),
-        index,
-      })
+      SolarYear::validate(year)?;
+      Ok(())
     }
   }
 
@@ -377,24 +408,7 @@ impl SolarSeason {
   /// let year: SolarYear = season.get_solar_year();
   /// ```
   pub fn get_solar_year(&self) -> SolarYear {
-    self.year
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::{SolarSeason};
-  ///
-  /// // 2023年一季度
-  /// let season: SolarSeason = SolarSeason::from_index(2023, 0);
-  ///
-  /// // 2023
-  /// let year: isize = season.get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.year.get_year()
+    SolarYear::new(self.get_year()).unwrap()
   }
 
   /// 索引
@@ -439,7 +453,7 @@ impl SolarSeason {
 
 impl Display for SolarSeason {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.year, self.get_name())
+    write!(f, "{}{}", self.get_solar_year(), self.get_name())
   }
 }
 
@@ -460,17 +474,13 @@ pub static SOLAR_MONTH_DAYS: [usize; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 
 /// 公历月
 #[derive(Debug, Copy, Clone)]
 pub struct SolarMonth {
-  parent: AbstractTyme,
-  /// 公历年
-  year: SolarYear,
-  /// 月
-  month: usize,
+  parent: MonthUnit,
 }
 
 impl Tyme for SolarMonth {
   fn next(&self, n: isize) -> Self {
-    let i: isize = self.month as isize - 1 + n;
-    Self::from_ym((self.get_year() * 12 + i) / 12, AbstractCulture::new().index_of(i, 12) + 1)
+    let i: isize = self.get_month() as isize - 1 + n;
+    Self::from_ym((self.get_year() * 12 + i) / 12, self.index_of(i, 12) + 1)
   }
 }
 
@@ -480,16 +490,34 @@ impl Culture for SolarMonth {
   }
 }
 
+impl Deref for SolarMonth {
+  type Target = MonthUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarMonth {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl SolarMonth {
   pub fn new(year: isize, month: usize) -> Result<Self, String> {
+    Self::validate(year, month)?;
+    Ok(Self {
+      parent: MonthUnit::new(year, month as isize),
+    })
+  }
+
+  pub fn validate(year: isize, month: usize) -> Result<(), String> {
     if month < 1 || month > 12 {
       Err(format!("illegal solar month: {}", month))
     } else {
-      Ok(Self {
-        parent: AbstractTyme::new(),
-        year: SolarYear::from_year(year),
-        month,
-      })
+      SolarYear::validate(year)?;
+      Ok(())
     }
   }
 
@@ -511,24 +539,7 @@ impl SolarMonth {
   /// let year: SolarYear = month.get_solar_year();
   /// ```
   pub fn get_solar_year(&self) -> SolarYear {
-    self.year
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::{SolarMonth};
-  ///
-  /// // 2023年1月
-  /// let month: SolarMonth = SolarMonth::from_ym(2023, 1);
-  ///
-  /// // 2023
-  /// let year: isize = month.get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.year.get_year()
+    SolarYear::new(self.get_year()).unwrap()
   }
 
   /// 月
@@ -545,7 +556,7 @@ impl SolarMonth {
   /// let m: usize = month.get_month();
   /// ```
   pub fn get_month(&self) -> usize {
-    self.month
+    self.parent.get_month() as usize
   }
 
   /// 当月天数
@@ -562,12 +573,13 @@ impl SolarMonth {
   /// let count: usize = month.get_day_count();
   /// ```
   pub fn get_day_count(&self) -> usize {
-    if 1582 == self.get_year() && 10 == self.month {
+    let m: usize = self.get_month();
+    if 1582 == self.get_year() && 10 == m {
       21
     } else {
       let mut d: usize = SOLAR_MONTH_DAYS[self.get_index_in_year()];
       //公历闰年2月多一天
-      if 2 == self.month && self.year.is_leap() {
+      if 2 == m && self.get_solar_year().is_leap() {
         d += 1
       }
       d
@@ -588,7 +600,7 @@ impl SolarMonth {
   /// let index: usize = month.get_index_in_year();
   /// ```
   pub fn get_index_in_year(&self) -> usize {
-    self.month - 1
+    self.get_month() - 1
   }
 
   /// 当月周数
@@ -605,8 +617,7 @@ impl SolarMonth {
   /// let count: usize = month.get_week_count(0);
   /// ```
   pub fn get_week_count(&self, start: usize) -> usize {
-    let culture: AbstractCulture = self.parent.into();
-    ((culture.index_of(SolarDay::from_ymd(self.get_year(), self.month, 1).get_week().get_index() as isize - start as isize, 7) + self.get_day_count()) as f64 / 7f64).ceil() as usize
+    ((self.index_of(SolarDay::from_ymd(self.get_year(), self.get_month(), 1).get_week().get_index() as isize - start as isize, 7) + self.get_day_count()) as f64 / 7f64).ceil() as usize
   }
 
   /// 公历季度
@@ -643,7 +654,7 @@ impl SolarMonth {
     let y: isize = self.get_year();
     let mut l: Vec<SolarWeek> = Vec::new();
     for i in 0..self.get_week_count(start) {
-      l.push(SolarWeek::from_ym(y, self.month, i, start));
+      l.push(SolarWeek::from_ym(y, self.get_month(), i, start));
     }
     l
   }
@@ -665,15 +676,20 @@ impl SolarMonth {
     let y: isize = self.get_year();
     let mut l: Vec<SolarDay> = Vec::new();
     for i in 1..self.get_day_count() + 1 {
-      l.push(SolarDay::from_ymd(y, self.month, i));
+      l.push(SolarDay::from_ymd(y, self.get_month(), i));
     }
     l
+  }
+
+  /// 本月第1天
+  pub fn get_first_day(&self) -> SolarDay {
+    SolarDay::from_ymd(self.get_year(), self.get_month(), 1)
   }
 }
 
 impl Display for SolarMonth {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.year, self.get_name())
+    write!(f, "{}{}", self.get_solar_year(), self.get_name())
   }
 }
 
@@ -685,39 +701,27 @@ impl PartialEq for SolarMonth {
 
 impl Eq for SolarMonth {}
 
-impl Into<AbstractTyme> for SolarMonth {
-  fn into(self) -> AbstractTyme {
-    self.parent
-  }
-}
-
 /// 公历周名称
 pub static SOLAR_WEEK_NAMES: [&str; 6] = ["第一周", "第二周", "第三周", "第四周", "第五周", "第六周"];
 
 /// 公历周
 #[derive(Debug, Clone)]
 pub struct SolarWeek {
-  parent: AbstractTyme,
-  /// 公历月
-  month: SolarMonth,
-  /// 索引，0-6
-  index: usize,
-  /// 起始星期
-  start: Week,
+  parent: WeekUnit
 }
 
 impl Tyme for SolarWeek {
   fn next(&self, n: isize) -> Self {
-    let mut d: isize = self.index as isize;
-    let mut m: SolarMonth = self.month;
-    let start_index: usize = self.start.get_index();
+    let mut d: isize = self.get_index() as isize;
+    let mut m: SolarMonth = self.get_solar_month();
+    let start_index: usize = self.get_start();
     if n > 0 {
       d += n;
       let mut week_count: isize = m.get_week_count(start_index) as isize;
       while d >= week_count {
         d -= week_count;
         m = m.next(1);
-        if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).get_week() != self.start {
+        if m.get_first_day().get_week().get_index() != start_index {
           d += 1;
         }
         week_count = m.get_week_count(start_index) as isize;
@@ -725,7 +729,7 @@ impl Tyme for SolarWeek {
     } else if n < 0 {
       d += n;
       while d < 0 {
-        if SolarDay::from_ymd(m.get_year(), m.get_month(), 1).get_week() != self.start {
+        if m.get_first_day().get_week().get_index() != start_index {
           d -= 1;
         }
         m = m.next(-1);
@@ -738,28 +742,40 @@ impl Tyme for SolarWeek {
 
 impl Culture for SolarWeek {
   fn get_name(&self) -> String {
-    SOLAR_WEEK_NAMES[self.index].to_string()
+    SOLAR_WEEK_NAMES[self.get_index()].to_string()
   }
 }
 
+impl Deref for SolarWeek {
+  type Target = WeekUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarWeek {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
+
 impl SolarWeek {
   pub fn new(year: isize, month: usize, index: usize, start: usize) -> Result<Self, String> {
-    if index > 5 {
-      Err(format!("illegal solar week index: {}", index))
-    } else if start > 6 {
-      Err(format!("illegal solar week start: {}", start))
+    Self::validate(year, month, index, start)?;
+    Ok(Self {
+      parent: WeekUnit::new(year, month as isize, index, start),
+    })
+  }
+
+  pub fn validate(year: isize, month: usize, index: usize, start: usize) -> Result<(), String> {
+    WeekUnit::validate(index, start)?;
+    let m: SolarMonth = SolarMonth::from_ym(year, month);
+    if index >= m.get_week_count(start) {
+      Err(format!("illegal solar week index: {} in month: {}", index, m))
     } else {
-      let m: SolarMonth = SolarMonth::from_ym(year, month);
-      if index >= m.get_week_count(start) {
-        Err(format!("illegal solar week index: {} in month: {}", index, m))
-      } else {
-        Ok(Self {
-          parent: AbstractTyme::new(),
-          month: m,
-          index,
-          start: Week::from_index(start as isize),
-        })
-      }
+      Ok(())
     }
   }
 
@@ -781,24 +797,7 @@ impl SolarWeek {
   /// let m: SolarMonth = week.get_solar_month();
   /// ```
   pub fn get_solar_month(&self) -> SolarMonth {
-    self.month
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::{SolarWeek};
-  ///
-  /// // 2023年1月第一周
-  /// let week: SolarWeek = SolarWeek::from_ym(2023, 1, 0, 0);
-  ///
-  /// // 2023
-  /// let y: isize = week.get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.month.get_year()
+    SolarMonth::from_ym(self.get_year(), self.get_month())
   }
 
   /// 月
@@ -815,22 +814,12 @@ impl SolarWeek {
   /// let y: usize = week.get_month();
   /// ```
   pub fn get_month(&self) -> usize {
-    self.month.get_month()
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.index
-  }
-
-  pub fn get_start(&self) -> Week {
-    self.start.clone()
+    self.parent.get_month() as usize
   }
 
   pub fn get_first_day(&self) -> SolarDay {
     let first_day: SolarDay = SolarDay::from_ymd(self.get_year(), self.get_month(), 1);
-    let parent: AbstractTyme = self.parent.into();
-    let culture: AbstractCulture = parent.into();
-    first_day.next(self.index as isize * 7 - culture.index_of((first_day.get_week().get_index() as isize) - (self.start.get_index() as isize), 7) as isize)
+    first_day.next(self.get_index() as isize * 7 - self.index_of((first_day.get_week().get_index() as isize) - (self.get_start() as isize), 7) as isize)
   }
 
   pub fn get_days(&self) -> Vec<SolarDay> {
@@ -857,7 +846,7 @@ impl SolarWeek {
     let mut i: usize = 0;
     let first_day: SolarDay = self.get_first_day();
     // 今年第1周
-    let mut w: SolarWeek = SolarWeek::from_ym(self.get_year(), 1, 0, self.start.get_index());
+    let mut w: SolarWeek = SolarWeek::from_ym(self.get_year(), 1, 0, self.get_start());
     while w.get_first_day() != first_day {
       w = w.next(1);
       i += 1;
@@ -868,7 +857,7 @@ impl SolarWeek {
 
 impl Display for SolarWeek {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.month, self.get_name())
+    write!(f, "{}{}", self.get_solar_month(), self.get_name())
   }
 }
 
@@ -880,22 +869,13 @@ impl PartialEq for SolarWeek {
 
 impl Eq for SolarWeek {}
 
-impl Into<AbstractTyme> for SolarWeek {
-  fn into(self) -> AbstractTyme {
-    self.parent
-  }
-}
-
 /// 公历日名称
 pub static SOLAR_DAY_NAMES: [&str; 31] = ["1日", "2日", "3日", "4日", "5日", "6日", "7日", "8日", "9日", "10日", "11日", "12日", "13日", "14日", "15日", "16日", "17日", "18日", "19日", "20日", "21日", "22日", "23日", "24日", "25日", "26日", "27日", "28日", "29日", "30日", "31日"];
 
 /// 公历日
 #[derive(Debug, Copy, Clone)]
 pub struct SolarDay {
-  /// 公历月
-  month: SolarMonth,
-  /// 日
-  day: usize,
+  parent: DayUnit,
 }
 
 impl Tyme for SolarDay {
@@ -906,31 +886,47 @@ impl Tyme for SolarDay {
 
 impl Culture for SolarDay {
   fn get_name(&self) -> String {
-    SOLAR_DAY_NAMES[self.day - 1].to_string()
+    SOLAR_DAY_NAMES[self.get_day() - 1].to_string()
+  }
+}
+
+impl Deref for SolarDay {
+  type Target = MonthUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
   }
 }
 
 impl SolarDay {
   pub fn new(year: isize, month: usize, day: usize) -> Result<Self, String> {
-    let m: SolarMonth = SolarMonth::from_ym(year, month);
+    Self::validate(year, month, day)?;
+    Ok(Self {
+      parent: DayUnit::new(year, month as isize, day as isize),
+    })
+  }
+
+  pub fn validate(year: isize, month: usize, day: usize) -> Result<(), String> {
     if day < 1 {
       Err(format!("illegal solar day: {}-{}-{}", year, month, day))
     } else if 1582 == year && 10 == month {
       if (day > 4 && day < 15) || day > 31 {
         Err(format!("illegal solar day: {}-{}-{}", year, month, day))
       } else {
-        Ok(Self {
-          month: m,
-          day,
-        })
+        Ok(())
       }
-    } else if day > m.get_day_count() {
-      Err(format!("illegal solar day: {}-{}-{}", year, month, day))
     } else {
-      Ok(Self {
-        month: m,
-        day,
-      })
+      if day > SolarMonth::from_ym(year, month).get_day_count() {
+        Err(format!("illegal solar day: {}-{}-{}", year, month, day))
+      } else {
+        Ok(())
+      }
     }
   }
 
@@ -948,21 +944,7 @@ impl SolarDay {
   /// let month: SolarMonth = SolarDay::from_ymd(2000, 1, 29).get_solar_month();
   /// ```
   pub fn get_solar_month(&self) -> SolarMonth {
-    self.month
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::SolarDay;
-  ///
-  /// // 2000
-  /// let y: isize = SolarDay::from_ymd(2000, 1, 29).get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.month.get_year()
+    SolarMonth::new(self.get_year(), self.get_month()).unwrap()
   }
 
   /// 月
@@ -976,7 +958,7 @@ impl SolarDay {
   /// let m: usize = SolarDay::from_ymd(2000, 1, 29).get_month();
   /// ```
   pub fn get_month(&self) -> usize {
-    self.month.get_month()
+    self.parent.get_month() as usize
   }
 
   /// 日
@@ -990,7 +972,7 @@ impl SolarDay {
   /// let day: usize = SolarDay::from_ymd(2000, 1, 29).get_day();
   /// ```
   pub fn get_day(&self) -> usize {
-    self.day
+    self.parent.get_day() as usize
   }
 
   /// 星期
@@ -1020,7 +1002,7 @@ impl SolarDay {
   pub fn get_solar_week(&self, start: usize) -> SolarWeek {
     let y: isize = self.get_year();
     let m: usize = self.get_month();
-    SolarWeek::from_ym(y, m, ((self.day + SolarDay::from_ymd(y, m, 1).get_week().next(-(start as isize)).get_index()) as f64 / 7.0).ceil() as usize - 1, start)
+    SolarWeek::from_ym(y, m, ((self.get_day() + SolarDay::from_ymd(y, m, 1).get_week().next(-(start as isize)).get_index()) as f64 / 7.0).ceil() as usize - 1, start)
   }
 
   /// 节气
@@ -1058,7 +1040,7 @@ impl SolarDay {
       y += 1;
       i = 0;
     }
-    let mut term: SolarTerm = SolarTerm::from_index(y, i as isize);
+    let mut term: SolarTerm = SolarTerm::from_index(y, i as isize + 1);
     let mut day: SolarDay = term.get_solar_day();
     while self.is_before(day) {
       term = term.next(-1);
@@ -1078,7 +1060,7 @@ impl SolarDay {
   /// let julian_day: JulianDay = SolarDay::from_ymd(2023, 12, 7).get_julian_day();
   /// ```
   pub fn get_julian_day(&self) -> JulianDay {
-    JulianDay::from_ymd_hms(self.get_year(), self.get_month(), self.day, 0, 0, 0)
+    JulianDay::from_ymd_hms(self.get_year(), self.get_month(), self.get_day(), 0, 0, 0)
   }
 
   pub fn is_before(&self, target: SolarDay) -> bool {
@@ -1089,7 +1071,7 @@ impl SolarDay {
     }
     let a_month: usize = self.get_month();
     let b_month: usize = target.get_month();
-    if a_month != b_month { a_month < b_month } else { self.day < target.get_day() }
+    if a_month != b_month { a_month < b_month } else { self.get_day() < target.get_day() }
   }
 
   pub fn is_after(&self, target: SolarDay) -> bool {
@@ -1100,7 +1082,7 @@ impl SolarDay {
     }
     let a_month: usize = self.get_month();
     let b_month: usize = target.get_month();
-    if a_month != b_month { a_month > b_month } else { self.day > target.get_day() }
+    if a_month != b_month { a_month > b_month } else { self.get_day() > target.get_day() }
   }
 
   /// 位于当年的索引
@@ -1164,7 +1146,7 @@ impl SolarDay {
   /// ```
   pub fn get_constellation(&self) -> Constellation {
     let mut index: isize = 8;
-    let y: usize = self.get_month() * 100 + self.day;
+    let y: usize = self.get_month() * 100 + self.get_day();
     if y > 1221 || y < 120 {
       index = 9;
     } else if y < 219 {
@@ -1351,7 +1333,7 @@ impl SolarDay {
   /// let legal_holiday: Option<LegalHoliday> = SolarDay::from_ymd(2024, 10, 1).get_legal_holiday();
   /// ```
   pub fn get_legal_holiday(&self) -> Option<LegalHoliday> {
-    LegalHoliday::from_ymd(self.get_year(), self.get_month(), self.day)
+    LegalHoliday::from_ymd(self.get_year(), self.get_month(), self.get_day())
   }
 
   /// 公历现代节日
@@ -1365,7 +1347,7 @@ impl SolarDay {
   /// let festival: Option<SolarFestival> = SolarDay::from_ymd(2024, 10, 1).get_festival();
   /// ```
   pub fn get_festival(&self) -> Option<SolarFestival> {
-    SolarFestival::from_ymd(self.get_year(), self.get_month(), self.day)
+    SolarFestival::from_ymd(self.get_year(), self.get_month(), self.get_day())
   }
 
   /// 干支日
@@ -1397,7 +1379,7 @@ impl SolarDay {
 
 impl Display for SolarDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}{}", self.month, self.get_name())
+    write!(f, "{}{}", self.get_solar_month(), self.get_name())
   }
 }
 
@@ -1412,14 +1394,7 @@ impl Eq for SolarDay {}
 /// 公历时刻
 #[derive(Debug, Copy, Clone)]
 pub struct SolarTime {
-  /// 公历日
-  day: SolarDay,
-  /// 时
-  hour: usize,
-  /// 分
-  minute: usize,
-  /// 秒
-  second: usize,
+  parent: SecondUnit,
 }
 
 impl Tyme for SolarTime {
@@ -1427,14 +1402,14 @@ impl Tyme for SolarTime {
     if n == 0 {
       self.clone()
     } else {
-      let mut ts: isize = (self.second as isize) + n;
-      let mut tm: isize = (self.minute as isize) + ts / 60;
+      let mut ts: isize = (self.get_second() as isize) + n;
+      let mut tm: isize = (self.get_minute() as isize) + ts / 60;
       ts %= 60;
       if ts < 0 {
         ts += 60;
         tm -= 1;
       }
-      let mut th: isize = (self.hour as isize) + tm / 60;
+      let mut th: isize = (self.get_hour() as isize) + tm / 60;
       tm %= 60;
       if tm < 0 {
         tm += 60;
@@ -1447,7 +1422,7 @@ impl Tyme for SolarTime {
         td -= 1;
       }
 
-      let d: SolarDay = self.day.next(td);
+      let d: SolarDay = self.get_solar_day().next(td);
       Self::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), th as usize, tm as usize, ts as usize)
     }
   }
@@ -1455,26 +1430,36 @@ impl Tyme for SolarTime {
 
 impl Culture for SolarTime {
   fn get_name(&self) -> String {
-    format!("{:0>2}:{:0>2}:{:0>2}", self.hour, self.minute, self.second)
+    format!("{:0>2}:{:0>2}:{:0>2}", self.get_hour(), self.get_minute(), self.get_second())
+  }
+}
+
+impl Deref for SolarTime {
+  type Target = SecondUnit;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarTime {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
   }
 }
 
 impl SolarTime {
   pub fn new(year: isize, month: usize, day: usize, hour: usize, minute: usize, second: usize) -> Result<Self, String> {
-    if hour > 23 {
-      Err(format!("illegal hour: {}", hour))
-    } else if minute > 59 {
-      Err(format!("illegal minute: {}", minute))
-    } else if second > 59 {
-      Err(format!("illegal second: {}", second))
-    } else {
-      Ok(Self {
-        day: SolarDay::from_ymd(year, month, day),
-        hour,
-        minute,
-        second,
-      })
-    }
+    Self::validate(year, month, day, hour, minute, second)?;
+    Ok(Self {
+      parent: SecondUnit::new(year, month as isize, day as isize, hour, minute, second),
+    })
+  }
+
+  pub fn validate(year: isize, month: usize, day: usize, hour: usize, minute: usize, second: usize) -> Result<(), String> {
+    SecondUnit::validate(hour, minute, second)?;
+    SolarDay::validate(year, month, day)?;
+    Ok(())
   }
 
   pub fn from_ymd_hms(year: isize, month: usize, day: usize, hour: usize, minute: usize, second: usize) -> Self {
@@ -1492,21 +1477,7 @@ impl SolarTime {
   /// let day: SolarDay = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).get_solar_day();
   /// ```
   pub fn get_solar_day(&self) -> SolarDay {
-    self.day
-  }
-
-  /// 年
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::{SolarTime};
-  ///
-  /// // 2000
-  /// let y: isize = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).get_year();
-  /// ```
-  pub fn get_year(&self) -> isize {
-    self.day.get_year()
+    SolarDay::from_ymd(self.get_year(), self.get_month(), self.get_day())
   }
 
   /// 月
@@ -1520,7 +1491,7 @@ impl SolarTime {
   /// let m: usize = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).get_month();
   /// ```
   pub fn get_month(&self) -> usize {
-    self.day.get_month()
+    self.parent.get_month() as usize
   }
 
   /// 日
@@ -1534,39 +1505,39 @@ impl SolarTime {
   /// let day: usize = SolarTime::from_ymd_hms(2000, 1, 29, 12, 0, 0).get_day();
   /// ```
   pub fn get_day(&self) -> usize {
-    self.day.get_day()
-  }
-
-  pub fn get_hour(&self) -> usize {
-    self.hour
-  }
-
-  pub fn get_minute(&self) -> usize {
-    self.minute
-  }
-
-  pub fn get_second(&self) -> usize {
-    self.second
+    self.parent.get_day() as usize
   }
 
   pub fn is_before(&self, target: SolarTime) -> bool {
-    if self.day != target.get_solar_day() {
-      return self.day.is_before(target.get_solar_day());
+    let a_day: SolarDay = self.get_solar_day();
+    let b_day: SolarDay = target.get_solar_day();
+    if a_day != b_day {
+      return a_day.is_before(b_day);
     }
-    if self.hour != target.get_hour() {
-      return self.hour < target.get_hour();
+    let a_hour: usize = self.get_hour();
+    let b_hour: usize = target.get_hour();
+    if a_hour != b_hour {
+      return a_hour < b_hour;
     }
-    if self.minute != target.get_minute() { self.minute < target.get_minute() } else { self.second < target.get_second() }
+    let a_minute: usize = self.get_minute();
+    let b_minute: usize = target.get_minute();
+    if a_minute != b_minute { a_minute < b_minute } else { self.get_second() < target.get_second() }
   }
 
   pub fn is_after(&self, target: SolarTime) -> bool {
-    if self.day != target.get_solar_day() {
-      return self.day.is_after(target.get_solar_day());
+    let a_day: SolarDay = self.get_solar_day();
+    let b_day: SolarDay = target.get_solar_day();
+    if a_day != b_day {
+      return a_day.is_after(b_day);
     }
-    if self.hour != target.get_hour() {
-      return self.hour > target.get_hour();
+    let a_hour: usize = self.get_hour();
+    let b_hour: usize = target.get_hour();
+    if a_hour != b_hour {
+      return a_hour > b_hour;
     }
-    if self.minute != target.get_minute() { self.minute > target.get_minute() } else { self.second > target.get_second() }
+    let a_minute: usize = self.get_minute();
+    let b_minute: usize = target.get_minute();
+    if a_minute != b_minute { a_minute > b_minute } else { self.get_second() > target.get_second() }
   }
 
   /// 节气
@@ -1579,7 +1550,7 @@ impl SolarTime {
   /// let term: SolarTerm = SolarTime::from_ymd_hms(2023, 12, 7, 13, 20, 0).get_term();
   /// ```
   pub fn get_term(&self) -> SolarTerm {
-    let mut term: SolarTerm = self.day.get_term();
+    let mut term: SolarTerm = self.get_solar_day().get_term();
     if self.is_before(term.get_julian_day().get_solar_time()) {
       term = term.next(-1);
     }
@@ -1588,7 +1559,7 @@ impl SolarTime {
 
   /// 候
   pub fn get_phenology(&self) -> Phenology {
-    let mut p: Phenology = self.day.get_phenology();
+    let mut p: Phenology = self.get_solar_day().get_phenology();
     if self.is_before(p.get_julian_day().get_solar_time()) {
       p = p.next(-1);
     }
@@ -1606,12 +1577,12 @@ impl SolarTime {
   /// let jd: JulianDay = SolarTime::from_ymd_hms(2023, 12, 7, 13, 20, 0).get_julian_day();
   /// ```
   pub fn get_julian_day(&self) -> JulianDay {
-    JulianDay::from_ymd_hms(self.get_year(), self.get_month(), self.get_day(), self.hour, self.minute, self.second)
+    JulianDay::from_ymd_hms(self.get_year(), self.get_month(), self.get_day(), self.get_hour(), self.get_minute(), self.get_second())
   }
 
   pub fn subtract(&self, target: SolarTime) -> isize {
-    let mut days: isize = self.day.subtract(target.get_solar_day());
-    let cs: usize = self.hour * 3600 + self.minute * 60 + self.second;
+    let mut days: isize = self.get_solar_day().subtract(target.get_solar_day());
+    let cs: usize = self.get_hour() * 3600 + self.get_minute() * 60 + self.get_second();
     let ts: usize = target.get_hour() * 3600 + target.get_minute() * 60 + target.get_second();
     let mut seconds: isize = cs as isize - ts as isize;
     if seconds < 0 {
@@ -1623,8 +1594,8 @@ impl SolarTime {
   }
 
   pub fn get_lunar_hour(&self) -> LunarHour {
-    let d: LunarDay = self.day.get_lunar_day();
-    LunarHour::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.hour, self.minute, self.second)
+    let d: LunarDay = self.get_solar_day().get_lunar_day();
+    LunarHour::from_ymd_hms(d.get_year(), d.get_month(), d.get_day(), self.get_hour(), self.get_minute(), self.get_second())
   }
 
   /// 干支时辰
@@ -1644,7 +1615,7 @@ impl SolarTime {
 
 impl Display for SolarTime {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{} {}", self.day, self.get_name())
+    write!(f, "{} {}", self.get_solar_day(), self.get_name())
   }
 }
 
@@ -1667,6 +1638,20 @@ pub struct SolarTerm {
   year: isize,
   /// 儒略日（用于日历，只精确到日中午12:00）
   cursory_julian_day: f64,
+}
+
+impl Deref for SolarTerm {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarTerm {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for SolarTerm {
@@ -1720,14 +1705,6 @@ impl SolarTerm {
 
   pub fn from_name(year: isize, name: &str) -> Self {
     Self::new(year, name).unwrap()
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   /// 是否节令
@@ -1847,6 +1824,20 @@ impl Culture for SolarTermDay {
   }
 }
 
+impl Deref for SolarTermDay {
+  type Target = AbstractCultureDay;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for SolarTermDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl SolarTermDay {
   pub fn new(solar_term: SolarTerm, day_index: usize) -> Self {
     let loop_tyme: LoopTyme = solar_term.clone().into();
@@ -1872,28 +1863,11 @@ impl SolarTermDay {
   pub fn get_solar_term(&self) -> SolarTerm {
     self.solar_term.clone()
   }
-
-  /// 天索引
-  ///
-  /// # 示例
-  ///
-  /// ```
-  /// use tyme4rs::tyme::solar::{SolarDay, SolarTerm, SolarTermDay};
-  ///
-  /// // 大雪第1天
-  /// let term_day: SolarTermDay = SolarDay::from_ymd(2023, 12, 7).get_term_day();
-  ///
-  /// // 0
-  /// let day_index: usize = term_day.get_day_index();
-  /// ```
-  pub fn get_day_index(&self) -> usize {
-    self.parent.get_day_index()
-  }
 }
 
 impl Display for SolarTermDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+    write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
   }
 }
 

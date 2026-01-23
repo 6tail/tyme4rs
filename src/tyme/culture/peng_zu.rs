@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::string::ToString;
 
 use crate::tyme::{Culture, LoopTyme, Tyme};
@@ -57,6 +58,20 @@ pub struct PengZuHeavenStem {
   parent: LoopTyme,
 }
 
+impl Deref for PengZuHeavenStem {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for PengZuHeavenStem {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for PengZuHeavenStem {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -80,14 +95,6 @@ impl PengZuHeavenStem {
     Self {
       parent: LoopTyme::from_name(PENG_ZU_HEAVEN_STEM_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -119,6 +126,20 @@ pub struct PengZuEarthBranch {
   parent: LoopTyme,
 }
 
+impl Deref for PengZuEarthBranch {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for PengZuEarthBranch {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for PengZuEarthBranch {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -142,14 +163,6 @@ impl PengZuEarthBranch {
     Self {
       parent: LoopTyme::from_name(PENG_ZU_EARTH_BRANCH_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 

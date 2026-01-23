@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter};
-
-use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 use crate::tyme::jd::{JulianDay, J2000};
 use crate::tyme::util::{ShouXingUtil, PI64};
+use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 
 pub static PHENOLOGY_NAMES: [&str; 72] = ["蚯蚓结", "麋角解", "水泉动", "雁北乡", "鹊始巢", "雉始雊", "鸡始乳", "征鸟厉疾", "水泽腹坚", "东风解冻", "蛰虫始振", "鱼陟负冰", "獭祭鱼", "候雁北", "草木萌动", "桃始华", "仓庚鸣", "鹰化为鸠", "玄鸟至", "雷乃发声", "始电", "桐始华", "田鼠化为鴽", "虹始见", "萍始生", "鸣鸠拂其羽", "戴胜降于桑", "蝼蝈鸣", "蚯蚓出", "王瓜生", "苦菜秀", "靡草死", "麦秋至", "螳螂生", "鵙始鸣", "反舌无声", "鹿角解", "蜩始鸣", "半夏生", "温风至", "蟋蟀居壁", "鹰始挚", "腐草为萤", "土润溽暑", "大雨行时", "凉风至", "白露降", "寒蝉鸣", "鹰乃祭鸟", "天地始肃", "禾乃登", "鸿雁来", "玄鸟归", "群鸟养羞", "雷始收声", "蛰虫坯户", "水始涸", "鸿雁来宾", "雀入大水为蛤", "菊有黄花", "豺乃祭兽", "草木黄落", "蛰虫咸俯", "水始冰", "地始冻", "雉入大水为蜃", "虹藏不见", "天气上升地气下降", "闭塞而成冬", "鹖鴠不鸣", "虎始交", "荔挺出"];
 
@@ -13,11 +13,25 @@ pub struct Phenology {
   year: isize,
 }
 
+impl Deref for Phenology {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Phenology {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for Phenology {
   fn next(&self, n: isize) -> Self {
     let size: isize = self.get_size() as isize;
     let i: isize = self.get_index() as isize + n;
-    Self::from_index((self.get_year() * size + i) / size, self.parent.index_of_index(i) as isize)
+    Self::from_index((self.get_year() * size + i) / size, self.index_of_index(i) as isize)
   }
 }
 
@@ -42,14 +56,6 @@ impl Phenology {
       parent: LoopTyme::from_name(PHENOLOGY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name),
       year,
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 
   pub fn get_year(&self) -> isize {
@@ -95,6 +101,20 @@ pub struct ThreePhenology {
   parent: LoopTyme,
 }
 
+impl Deref for ThreePhenology {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for ThreePhenology {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Tyme for ThreePhenology {
   fn next(&self, n: isize) -> Self {
     Self::from_index(self.parent.next_index(n) as isize)
@@ -118,14 +138,6 @@ impl ThreePhenology {
     Self {
       parent: LoopTyme::from_name(THREE_PHENOLOGY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -156,6 +168,20 @@ pub struct PhenologyDay {
   phenology: Phenology,
 }
 
+impl Deref for PhenologyDay {
+  type Target = AbstractCultureDay;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for PhenologyDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Culture for PhenologyDay {
   fn get_name(&self) -> String {
     self.phenology.get_name()
@@ -176,15 +202,11 @@ impl PhenologyDay {
   pub fn get_phenology(&self) -> Phenology {
     self.phenology.clone()
   }
-
-  pub fn get_day_index(&self) -> usize {
-    self.parent.get_day_index()
-  }
 }
 
 impl Display for PhenologyDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+    write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
   }
 }
 
@@ -204,10 +226,10 @@ impl Into<AbstractCultureDay> for PhenologyDay {
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::phenology::{Phenology, PhenologyDay, ThreePhenology};
   use crate::tyme::jd::JulianDay;
   use crate::tyme::solar::{SolarDay, SolarTime};
+  use crate::tyme::Culture;
 
   #[test]
   fn test0() {

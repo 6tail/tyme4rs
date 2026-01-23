@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::string::ToString;
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 
@@ -8,6 +9,20 @@ pub static NINE_NAMES: [&str; 9] = ["一九", "二九", "三九", "四九", "五
 #[derive(Debug, Clone)]
 pub struct Nine {
   parent: LoopTyme,
+}
+
+impl Deref for Nine {
+  type Target = LoopTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for Nine {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
 }
 
 impl Tyme for Nine {
@@ -33,14 +48,6 @@ impl Nine {
     Self {
       parent: LoopTyme::from_name(NINE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
     }
-  }
-
-  pub fn get_index(&self) -> usize {
-    self.parent.get_index()
-  }
-
-  pub fn get_size(&self) -> usize {
-    self.parent.get_size()
   }
 }
 
@@ -71,6 +78,20 @@ pub struct NineDay {
   nine: Nine
 }
 
+impl Deref for NineDay {
+  type Target = AbstractCultureDay;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for NineDay {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl Culture for NineDay {
   fn get_name(&self) -> String {
     self.nine.get_name()
@@ -91,15 +112,11 @@ impl NineDay {
   pub fn get_nine(&self) -> Nine {
     self.nine.clone()
   }
-
-  pub fn get_day_index(&self) -> usize {
-    self.parent.get_day_index()
-  }
 }
 
 impl Display for NineDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}第{}天", self.get_name(), self.parent.get_day_index() + 1)
+    write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
   }
 }
 
@@ -169,6 +186,7 @@ mod tests {
     assert_eq!("九九", d.get_name());
     assert_eq!("九九", d.get_nine().to_string());
     assert_eq!("九九第3天", d.to_string());
+    assert_eq!(2, d.get_day_index());
   }
 
   #[test]

@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
 
 /// 传统文化(民俗)
 pub trait Culture {
@@ -98,6 +99,20 @@ pub struct AbstractTyme {
   parent: AbstractCulture,
 }
 
+impl Deref for AbstractTyme {
+  type Target = AbstractCulture;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for AbstractTyme {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl AbstractTyme {
   pub fn new() -> Self {
     Self {
@@ -145,6 +160,20 @@ impl Culture for LoopTyme {
   }
 }
 
+impl Deref for LoopTyme {
+  type Target = AbstractTyme;
+
+  fn deref(&self) -> &Self::Target {
+    &self.parent
+  }
+}
+
+impl DerefMut for LoopTyme {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.parent
+  }
+}
+
 impl LoopTyme {
   pub fn new(names: Vec<String>, name: &str) -> Result<Self, String> {
     let mut real_index: Option<usize> = None;
@@ -171,11 +200,11 @@ impl LoopTyme {
   pub fn from_index(names: Vec<String>, index: isize) -> Self {
     let size: usize = names.len();
     let parent: AbstractTyme = AbstractTyme::new();
-    let culture: AbstractCulture = parent.into();
+    let i: usize = parent.index_of(index, size);
     Self {
       parent,
       names,
-      index: culture.index_of(index, size),
+      index: i,
     }
   }
 
@@ -192,8 +221,7 @@ impl LoopTyme {
   }
 
   fn index_of_index(&self, index: isize) -> usize {
-    let culture: AbstractCulture = self.parent.into();
-    culture.index_of(index, self.get_size())
+    self.index_of(index, self.get_size())
   }
 
   pub fn next_index(&self, n: isize) -> usize {
@@ -227,6 +255,7 @@ impl Into<AbstractTyme> for LoopTyme {
 
 pub mod enums;
 pub mod culture;
+pub mod unit;
 pub mod jd;
 pub mod sixtycycle;
 pub mod lunar;
