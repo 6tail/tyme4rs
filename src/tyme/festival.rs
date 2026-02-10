@@ -164,39 +164,43 @@ impl LunarFestival {
         solar_term: None,
       });
     }
+    let lunar_day: LunarDay = LunarDay::from_ymd(year, month, day);
+    let solar_day: SolarDay = lunar_day.get_solar_day();
     reg = Regex::new(r"@\d{2}1\d{2}").unwrap();
     if reg.is_match(LUNAR_FESTIVAL_DATA) {
       let data: &str = reg.find(LUNAR_FESTIVAL_DATA).unwrap().as_str();
       let di: &str = &data[4..data.len()];
       let term_index: usize = usize::from_str(di).unwrap();
-      let solar_term: SolarTerm = SolarTerm::from_index(year, term_index as isize);
+      let term: SolarTerm = SolarTerm::from_index(year, term_index as isize);
+      let term_day: SolarDay = term.get_solar_day();
       let di: &str = &data[1..3];
       let index: usize = usize::from_str(di).unwrap();
-      let lunar_day: LunarDay = solar_term.get_solar_day().get_lunar_day();
-      if lunar_day.get_year() == year && lunar_day.get_month() == month && lunar_day.get_day() == day {
+      let lunar_day: LunarDay = term.get_solar_day().get_lunar_day();
+      if term_day.get_year() == solar_day.get_year() && term_day.get_month() == solar_day.get_month() && term_day.get_day() == solar_day.get_day() {
         return Some(Self {
           festival_type: FestivalType::TERM,
           day: lunar_day,
           index,
-          solar_term: Some(solar_term),
+          solar_term: Some(term),
         });
       }
     }
-    reg = Regex::new(r"@\d{2}2").unwrap();
-    if reg.is_match(LUNAR_FESTIVAL_DATA) {
-      let data: &str = reg.find(LUNAR_FESTIVAL_DATA).unwrap().as_str();
-      let di: &str = &data[1..3];
-      let index: usize = usize::from_str(di).unwrap();
+    if month == 12 && day > 28 {
+      reg = Regex::new(r"@\d{2}2").unwrap();
+      if reg.is_match(LUNAR_FESTIVAL_DATA) {
+        let data: &str = reg.find(LUNAR_FESTIVAL_DATA).unwrap().as_str();
+        let di: &str = &data[1..3];
+        let index: usize = usize::from_str(di).unwrap();
 
-      let lunar_day: LunarDay = LunarDay::from_ymd(year, month, day);
-      let next_day: LunarDay = lunar_day.next(1);
-      if next_day.get_month() == 1 && next_day.get_day() == 1 {
-        return Some(Self {
-          festival_type: FestivalType::EVE,
-          day: lunar_day,
-          index,
-          solar_term: None,
-        });
+        let next_day: LunarDay = lunar_day.next(1);
+        if next_day.get_month() == 1 && next_day.get_day() == 1 {
+          return Some(Self {
+            festival_type: FestivalType::EVE,
+            day: lunar_day,
+            index,
+            solar_term: None,
+          });
+        }
       }
     }
     None
