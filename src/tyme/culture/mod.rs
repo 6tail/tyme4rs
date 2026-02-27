@@ -9,72 +9,89 @@ use crate::tyme::solar::{SolarDay, SolarTime};
 use crate::tyme::util::{ShouXingUtil, ONE_THIRD, PI_2};
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 
-pub static ANIMAL_NAMES: [&str; 28] = ["蛟", "龙", "貉", "兔", "狐", "虎", "豹", "獬", "牛", "蝠", "鼠", "燕", "猪", "獝", "狼", "狗", "彘", "鸡", "乌", "猴", "猿", "犴", "羊", "獐", "马", "鹿", "蛇", "蚓"];
+pub static ANIMAL_NAMES: [&str; 28] = [
+    "蛟", "龙", "貉", "兔", "狐", "虎", "豹", "獬", "牛", "蝠", "鼠", "燕", "猪", "獝", "狼", "狗",
+    "彘", "鸡", "乌", "猴", "猿", "犴", "羊", "獐", "马", "鹿", "蛇", "蚓",
+];
 
 /// 动物
 #[derive(Debug, Clone)]
 pub struct Animal {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Animal {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Animal {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Animal {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Animal {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Animal {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(ANIMAL_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                ANIMAL_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(ANIMAL_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                ANIMAL_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Animal {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Animal {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Animal {}
 
-impl Into<LoopTyme> for Animal {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Animal> for LoopTyme {
+    fn from(val: Animal) -> Self {
+        val.parent
+    }
 }
 
 pub static BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
@@ -82,276 +99,321 @@ pub static BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
 /// 神兽
 #[derive(Debug, Clone)]
 pub struct Beast {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Beast {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Beast {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Beast {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Beast {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Beast {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                BEAST_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Beast {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Beast {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Beast {}
 
-impl Into<LoopTyme> for Beast {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Beast> for LoopTyme {
+    fn from(val: Beast) -> Self {
+        val.parent
+    }
 }
 
-pub static CONSTELLATION_NAMES: [&str; 12] = ["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"];
+pub static CONSTELLATION_NAMES: [&str; 12] = [
+    "白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼",
+];
 
 /// 星座
 #[derive(Debug, Clone)]
 pub struct Constellation {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Constellation {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Constellation {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Constellation {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Constellation {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Constellation {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(CONSTELLATION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                CONSTELLATION_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(CONSTELLATION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                CONSTELLATION_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Constellation {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Constellation {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Constellation {}
 
-impl Into<LoopTyme> for Constellation {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Constellation> for LoopTyme {
+    fn from(val: Constellation) -> Self {
+        val.parent
+    }
 }
 
-pub static DIRECTION_NAMES: [&str; 9] = ["北", "西南", "东", "东南", "中", "西北", "西", "东北", "南"];
+pub static DIRECTION_NAMES: [&str; 9] =
+    ["北", "西南", "东", "东南", "中", "西北", "西", "东北", "南"];
 
 /// 方位
 #[derive(Debug, Clone)]
 pub struct Direction {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Direction {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Direction {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Direction {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Direction {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Direction {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(DIRECTION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                DIRECTION_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(DIRECTION_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                DIRECTION_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  /// 五行
-  pub fn get_element(&self) -> Element {
-    Element::from_index([4, 2, 0, 0, 2, 3, 3, 2, 1][self.get_index()])
-  }
+    /// 五行
+    pub fn get_element(&self) -> Element {
+        Element::from_index([4, 2, 0, 0, 2, 3, 3, 2, 1][self.get_index()])
+    }
 }
 
 impl Display for Direction {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Direction {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Direction {}
 
-impl Into<LoopTyme> for Direction {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Direction> for LoopTyme {
+    fn from(val: Direction) -> Self {
+        val.parent
+    }
 }
 
-pub static DUTY_NAMES: [&str; 12] = ["建", "除", "满", "平", "定", "执", "破", "危", "成", "收", "开", "闭"];
+pub static DUTY_NAMES: [&str; 12] = [
+    "建", "除", "满", "平", "定", "执", "破", "危", "成", "收", "开", "闭",
+];
 
 /// 建除十二值神
 #[derive(Debug, Clone)]
 pub struct Duty {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Duty {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Duty {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Duty {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Duty {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Duty {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                DUTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Duty {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Duty {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Duty {}
 
-impl Into<LoopTyme> for Duty {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Duty> for LoopTyme {
+    fn from(val: Duty) -> Self {
+        val.parent
+    }
 }
 
 pub static ELEMENT_NAMES: [&str; 5] = ["木", "火", "土", "金", "水"];
@@ -359,95 +421,261 @@ pub static ELEMENT_NAMES: [&str; 5] = ["木", "火", "土", "金", "水"];
 /// 五行
 #[derive(Debug, Clone)]
 pub struct Element {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Element {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Element {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Element {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Element {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Element {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(ELEMENT_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                ELEMENT_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(ELEMENT_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                ELEMENT_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  /// 我生者
-  pub fn get_reinforce(&self) -> Self {
-    self.next(1)
-  }
+    /// 我生者
+    pub fn get_reinforce(&self) -> Self {
+        self.next(1)
+    }
 
-  /// 我克者
-  pub fn get_restrain(&self) -> Self {
-    self.next(2)
-  }
+    /// 我克者
+    pub fn get_restrain(&self) -> Self {
+        self.next(2)
+    }
 
-  /// 生我者
-  pub fn get_reinforced(&self) -> Self {
-    self.next(-1)
-  }
+    /// 生我者
+    pub fn get_reinforced(&self) -> Self {
+        self.next(-1)
+    }
 
-  /// 克我者
-  pub fn get_restrained(&self) -> Self {
-    self.next(-2)
-  }
+    /// 克我者
+    pub fn get_restrained(&self) -> Self {
+        self.next(-2)
+    }
 
-  /// 方位
-  pub fn get_direction(&self) -> Direction {
-    Direction::from_index([2, 8, 4, 6, 0][self.get_index()])
-  }
+    /// 方位
+    pub fn get_direction(&self) -> Direction {
+        Direction::from_index([2, 8, 4, 6, 0][self.get_index()])
+    }
 }
 
 impl Display for Element {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Element {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Element {}
 
-impl Into<LoopTyme> for Element {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Element> for LoopTyme {
+    fn from(val: Element) -> Self {
+        val.parent
+    }
 }
 
-pub static GOD_NAMES: [&str; 151] = ["天恩", "鸣吠", "母仓", "不将", "四相", "鸣吠对", "五合", "三合", "除神", "月德", "月空", "月德合", "月恩", "时阴", "五富", "生气", "金匮", "相日", "阴德", "六合", "益后", "青龙", "续世", "明堂", "王日", "要安", "官日", "吉期", "福德", "六仪", "金堂", "宝光", "民日", "临日", "天马", "敬安", "普护", "驿马", "天后", "阳德", "天喜", "天医", "司命", "圣心", "玉宇", "守日", "时德", "解神", "时阳", "天仓", "天巫", "玉堂", "福生", "天德", "天德合", "天愿", "天赦", "天符", "阴神", "解除", "五虚", "五离", "重日", "复日", "血支", "天贼", "土符", "游祸", "白虎", "小耗", "致死", "河魁", "劫煞", "月煞", "月建", "往亡", "大时", "大败", "咸池", "厌对", "招摇", "九坎", "九焦", "天罡", "死神", "月害", "死气", "月破", "大耗", "天牢", "元武", "月厌", "月虚", "归忌", "小时", "天刑", "朱雀", "九空", "天吏", "地火", "四击", "大煞", "勾陈", "八专", "灾煞", "天火", "血忌", "土府", "月刑", "触水龙", "地囊", "八风", "四废", "四忌", "四穷", "五墓", "阴错", "四耗", "阳错", "孤辰", "小会", "大会", "八龙", "七鸟", "九虎", "六蛇", "天狗", "行狠", "了戾", "岁薄", "逐阵", "三丧", "三阴", "阴道冲阳", "阴位", "阴阳交破", "阴阳俱错", "阴阳击冲", "鬼哭", "单阴", "绝阴", "纯阳", "阳错阴冲", "七符", "成日", "孤阳", "绝阳", "纯阴", "大退", "四离", "阳破阴冲"];
+pub static GOD_NAMES: [&str; 151] = [
+    "天恩",
+    "鸣吠",
+    "母仓",
+    "不将",
+    "四相",
+    "鸣吠对",
+    "五合",
+    "三合",
+    "除神",
+    "月德",
+    "月空",
+    "月德合",
+    "月恩",
+    "时阴",
+    "五富",
+    "生气",
+    "金匮",
+    "相日",
+    "阴德",
+    "六合",
+    "益后",
+    "青龙",
+    "续世",
+    "明堂",
+    "王日",
+    "要安",
+    "官日",
+    "吉期",
+    "福德",
+    "六仪",
+    "金堂",
+    "宝光",
+    "民日",
+    "临日",
+    "天马",
+    "敬安",
+    "普护",
+    "驿马",
+    "天后",
+    "阳德",
+    "天喜",
+    "天医",
+    "司命",
+    "圣心",
+    "玉宇",
+    "守日",
+    "时德",
+    "解神",
+    "时阳",
+    "天仓",
+    "天巫",
+    "玉堂",
+    "福生",
+    "天德",
+    "天德合",
+    "天愿",
+    "天赦",
+    "天符",
+    "阴神",
+    "解除",
+    "五虚",
+    "五离",
+    "重日",
+    "复日",
+    "血支",
+    "天贼",
+    "土符",
+    "游祸",
+    "白虎",
+    "小耗",
+    "致死",
+    "河魁",
+    "劫煞",
+    "月煞",
+    "月建",
+    "往亡",
+    "大时",
+    "大败",
+    "咸池",
+    "厌对",
+    "招摇",
+    "九坎",
+    "九焦",
+    "天罡",
+    "死神",
+    "月害",
+    "死气",
+    "月破",
+    "大耗",
+    "天牢",
+    "元武",
+    "月厌",
+    "月虚",
+    "归忌",
+    "小时",
+    "天刑",
+    "朱雀",
+    "九空",
+    "天吏",
+    "地火",
+    "四击",
+    "大煞",
+    "勾陈",
+    "八专",
+    "灾煞",
+    "天火",
+    "血忌",
+    "土府",
+    "月刑",
+    "触水龙",
+    "地囊",
+    "八风",
+    "四废",
+    "四忌",
+    "四穷",
+    "五墓",
+    "阴错",
+    "四耗",
+    "阳错",
+    "孤辰",
+    "小会",
+    "大会",
+    "八龙",
+    "七鸟",
+    "九虎",
+    "六蛇",
+    "天狗",
+    "行狠",
+    "了戾",
+    "岁薄",
+    "逐阵",
+    "三丧",
+    "三阴",
+    "阴道冲阳",
+    "阴位",
+    "阴阳交破",
+    "阴阳俱错",
+    "阴阳击冲",
+    "鬼哭",
+    "单阴",
+    "绝阴",
+    "纯阳",
+    "阳错阴冲",
+    "七符",
+    "成日",
+    "孤阳",
+    "绝阳",
+    "纯阴",
+    "大退",
+    "四离",
+    "阳破阴冲",
+];
 static DAY_GODS: [&str; 12] = [
   ";000002300F14156869717A3F;01001617495C40413C425D6A;0209000C041831031906054A5E6B4B5F;033500041A1B032C06054C4D4E60;04002D321C1D1E104F50615152;05111F53546C55433C3E;062E200721220D01566E44;070B2333242F45;08360A2526242F080157583D59;091234080162463C3D5A;0A270728292A5B6364653F79;0B0237130E2B4748727A3E66;0C09020C04300F0314150568696D;0D3504031617495C40413C6F425D6A;0E38183119064A5E6B4B5F;0F001A1B032C064C4D4E60;10002D321C1D1E104F50615152;110B00111F53546C55433C3E;12360A002E200721220D015644;13002333456D;142526242F080157583F3D59;15001234080162463C3D5A;16090004270728292A5B636465;17350204130E032B47483E66;1802300F14156869;19031617495C40413C425D6A;1A1831031906054A5E6B4B5F;1B0B1A1B032C06054C4D4E;1C360A2D321C1D1E104F50615152;1D111F53546C55433C3E;1E2E200721220D01563F44;1F23334573;20090C042526242F080157583D;2135041234080162463C3D5A;22270728292A5B636465;2302130E032B47483E66;2402300F0314150568696E;250B031617495C40413C425D6A;26360A18311906054A5E6B4B5F;271A1B2C06054C4D4E60;282D321C1D1E104F506151523F;29111F53546C55433C3E;2A090C042E200721220D015644;2B350423334567;2C2526242F0857583D59;2D001234080162463C3D5A;2E00270728292A5B63646574;2F0B0002130E032B47483E66;30360A0002300F141505686975;31001617495C40413C425D6A676D;3218311906054A5E6B4B3F675F76;331A1B2C06054C4D4E60;34090C042D321C1D1E104F50615152;353504111F53546C55433C6F3E;362E200721220D5644;3723334567;382526242F08015758703D6759;390B123408016246703C3D5A84;3A360A270728292A5B636465;3B02130E2B47483E66;",
   ";00090002272A536C4C4D4E41717A;0100300F3103233C6151523F66;020004180E032406150543405D;03000C041A1D340617054A5E6B4F50;04002D1B555F;050B112526321C2B3C42654B3E60;060A2E2014100547546246;0712070D161F566A;0822192F0148453D44;092C083301575868695B633C3D;0A0937131E495C6459;0B020721282903727A3F3E5A;0C020427032A05536C4C4D4E416D;0D0C04300F03233C6F61515266;0E38180E24061543405D;0F0B001A1D3406174A5E6B4F5078;100A002D1B555F;1100112526321C2B3C42654B3E60;12002E2014100147546246;130012070D161F566A6D;140922192F080148453D44;152C083301575868695B633C3F3D44;160413031E495C6459;17020C0407212829033E5A;1802272A536C4C4D4E41;190B300F3103233C61515266;1A0A180E032406150543405D;1B1A1D340617014A5E6B4F50;1C2D1B555F;1D112526321C2B3C42654B3E60;1E092E2014100147546246;1F12070D161F56736E6A3F;200422192F080148453D44;210C042C083301575868695B633C3D;22131E495C6459;230B0207212829033E5A;240A0227032A05536C4C4D4E41;25300F31233C61515266;26180E2406150543405D;271A1D340617054A5E6B4F50;28092D1B555F;29112526321C2B3C42654B3F3E60;2A042E2014100147546246;2B0C0412070D161F566A67;2C22192F0848453D44;2D0B002C083301575868695B633C3D85;2E0A0013031E495C6459;2F0002072128293E5A;300002272A05536C4C4D4E4175;3100300F31233C6151526E676D66;3209180E2406150543405D;331A1D340617054A5E6B4F503F76;34042D1B555F;350C04112526321C2B3C6F42654B3E60;362E20141047546246;370B12070D161F566A67;380A22192F08014845703D6744;392C083301575868695B63703C3D74;3A131E495C6459;3B02072128293E5A;",
@@ -466,157 +694,171 @@ static DAY_GODS: [&str; 12] = [
 /// 神煞
 #[derive(Debug, Clone)]
 pub struct God {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for God {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for God {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for God {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for God {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl God {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                GOD_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  pub fn get_luck(&self) -> Luck {
-    Luck::from_index(if self.get_index() < 60 { 0 } else { 1 })
-  }
-
-  pub fn get_day_gods(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
-    let mut l: Vec<Self> = Vec::new();
-    let reg: Regex = Regex::new(format!(r";{:02X}(.[^;]*)", day.get_index()).as_str()).unwrap();
-    if let Some(caps) = reg.captures(DAY_GODS[month.get_earth_branch().next(-2).get_index()]) {
-      let data: &str = caps.get(1).unwrap().as_str();
-      for i in (0..data.len()).step_by(2) {
-        let d: &str = &data[i..i + 2];
-        l.push(Self::from_index(isize::from_str_radix(d, 16).unwrap()))
-      }
+    pub fn get_luck(&self) -> Luck {
+        Luck::from_index(if self.get_index() < 60 { 0 } else { 1 })
     }
-    l
-  }
+
+    pub fn get_day_gods(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
+        let mut l: Vec<Self> = Vec::new();
+        let reg: Regex = Regex::new(format!(r";{:02X}(.[^;]*)", day.get_index()).as_str()).unwrap();
+        if let Some(caps) = reg.captures(DAY_GODS[month.get_earth_branch().next(-2).get_index()]) {
+            let data: &str = caps.get(1).unwrap().as_str();
+            for i in (0..data.len()).step_by(2) {
+                let d: &str = &data[i..i + 2];
+                l.push(Self::from_index(isize::from_str_radix(d, 16).unwrap()))
+            }
+        }
+        l
+    }
 }
 
 impl Display for God {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for God {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for God {}
 
-impl Into<LoopTyme> for God {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<God> for LoopTyme {
+    fn from(val: God) -> Self {
+        val.parent
+    }
 }
 
-pub static LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天"];
+pub static LAND_NAMES: [&str; 9] = [
+    "玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天",
+];
 
 /// 九野
 #[derive(Debug, Clone)]
 pub struct Land {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Land {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Land {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Land {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Land {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Land {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                LAND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  /// 方位
-  pub fn get_direction(&self) -> Direction {
-    Direction::from_index(self.get_index() as isize)
-  }
+    /// 方位
+    pub fn get_direction(&self) -> Direction {
+        Direction::from_index(self.get_index() as isize)
+    }
 }
 
 impl Display for Land {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Land {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Land {}
 
-impl Into<LoopTyme> for Land {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Land> for LoopTyme {
+    fn from(val: Land) -> Self {
+        val.parent
+    }
 }
 
 pub static LUCK_NAMES: [&str; 2] = ["吉", "凶"];
@@ -624,249 +866,280 @@ pub static LUCK_NAMES: [&str; 2] = ["吉", "凶"];
 /// 吉凶
 #[derive(Debug, Clone)]
 pub struct Luck {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Luck {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Luck {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Luck {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Luck {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Luck {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                LUCK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Luck {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Luck {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Luck {}
 
-impl Into<LoopTyme> for Luck {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Luck> for LoopTyme {
+    fn from(val: Luck) -> Self {
+        val.parent
+    }
 }
 
-pub static PHASE_NAMES: [&str; 8] = ["新月", "蛾眉月", "上弦月", "盈凸月", "满月", "亏凸月", "下弦月", "残月"];
+pub static PHASE_NAMES: [&str; 8] = [
+    "新月",
+    "蛾眉月",
+    "上弦月",
+    "盈凸月",
+    "满月",
+    "亏凸月",
+    "下弦月",
+    "残月",
+];
 
 /// 月相
 #[derive(Debug, Clone)]
 pub struct Phase {
-  parent: LoopTyme,
-  lunar_year: isize,
-  lunar_month: isize,
+    parent: LoopTyme,
+    lunar_year: isize,
+    lunar_month: isize,
 }
 
 impl Deref for Phase {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Phase {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Phase {
-  fn next(&self, n: isize) -> Self {
-    let size: isize = self.get_size() as isize;
-    let mut i: isize = self.get_index() as isize + n;
-    if i < 0 {
-      i -= size;
+    fn next(&self, n: isize) -> Self {
+        let size: isize = self.get_size() as isize;
+        let mut i: isize = self.get_index() as isize + n;
+        if i < 0 {
+            i -= size;
+        }
+        i /= size;
+        let mut m: LunarMonth = LunarMonth::from_ym(self.lunar_year, self.lunar_month);
+        if i != 0 {
+            m = m.next(i);
+        }
+        Self::from_index(
+            m.get_year(),
+            m.get_month_with_leap(),
+            self.parent.next_index(n) as isize,
+        )
     }
-    i /= size;
-    let mut m: LunarMonth = LunarMonth::from_ym(self.lunar_year, self.lunar_month);
-    if i != 0 {
-      m = m.next(i);
-    }
-    Self::from_index(m.get_year(), m.get_month_with_leap(), self.parent.next_index(n) as isize)
-  }
 }
 
 impl Culture for Phase {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Phase {
-  pub fn from_index(lunar_year: isize, lunar_month: isize, index: isize) -> Self {
-    let m: LunarMonth = LunarMonth::from_ym(lunar_year, lunar_month).next(index / PHASE_NAMES.len() as isize);
-    Self {
-      parent: LoopTyme::from_index(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index),
-      lunar_year: m.get_year(),
-      lunar_month: m.get_month_with_leap(),
+    pub fn from_index(lunar_year: isize, lunar_month: isize, index: isize) -> Self {
+        let m: LunarMonth =
+            LunarMonth::from_ym(lunar_year, lunar_month).next(index / PHASE_NAMES.len() as isize);
+        Self {
+            parent: LoopTyme::from_index(
+                PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+            lunar_year: m.get_year(),
+            lunar_month: m.get_month_with_leap(),
+        }
     }
-  }
 
-  pub fn from_name(lunar_year: isize, lunar_month: isize, name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name),
-      lunar_year,
-      lunar_month,
+    pub fn from_name(lunar_year: isize, lunar_month: isize, name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                PHASE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+            lunar_year,
+            lunar_month,
+        }
     }
-  }
 
-  fn get_start_solar_time(&self) -> SolarTime {
-    let n: isize = ((self.lunar_year - 2000) as f64 * 365.2422 / 29.53058886).floor() as isize;
-    let mut i: isize = 0;
-    let jd: f64 = J2000 + ONE_THIRD;
-    let d: SolarDay = LunarDay::from_ymd(self.lunar_year, self.lunar_month, 1).get_solar_day();
-    loop {
-      let t: f64 = ShouXingUtil::m_sa_lon_t((n + i) as f64 * PI_2) * 36525.0;
-      if !JulianDay::from_julian_day(jd + t - ShouXingUtil::dtt(t)).get_solar_day().is_before(d) {
-        break;
-      }
-      i += 1;
+    fn get_start_solar_time(&self) -> SolarTime {
+        let n: isize = ((self.lunar_year - 2000) as f64 * 365.2422 / 29.53058886).floor() as isize;
+        let mut i: isize = 0;
+        let jd: f64 = J2000 + ONE_THIRD;
+        let d: SolarDay = LunarDay::from_ymd(self.lunar_year, self.lunar_month, 1).get_solar_day();
+        loop {
+            let t: f64 = ShouXingUtil::m_sa_lon_t((n + i) as f64 * PI_2) * 36525.0;
+            if !JulianDay::from_julian_day(jd + t - ShouXingUtil::dtt(t))
+                .get_solar_day()
+                .is_before(d)
+            {
+                break;
+            }
+            i += 1;
+        }
+        let t: f64 = ShouXingUtil::m_sa_lon_t(
+            (n as f64 + i as f64 + [0, 90, 180, 270][self.get_index() / 2] as f64 / 360.0) * PI_2,
+        ) * 36525.0;
+        JulianDay::from_julian_day(jd + t - ShouXingUtil::dtt(t)).get_solar_time()
     }
-    let t: f64 = ShouXingUtil::m_sa_lon_t((n as f64 + i as f64 + [0, 90, 180, 270][self.get_index() / 2] as f64 / 360.0) * PI_2) * 36525.0;
-    JulianDay::from_julian_day(jd + t - ShouXingUtil::dtt(t)).get_solar_time()
-  }
 
-  pub fn get_solar_time(&self) -> SolarTime {
-    let t: SolarTime = self.get_start_solar_time();
-    if self.get_index() % 2 == 1 {
-      t.next(1)
-    } else {
-      t
+    pub fn get_solar_time(&self) -> SolarTime {
+        let t: SolarTime = self.get_start_solar_time();
+        if self.get_index() % 2 == 1 {
+            t.next(1)
+        } else {
+            t
+        }
     }
-  }
 
-  pub fn get_solar_day(&self) -> SolarDay {
-    let d: SolarDay = self.get_start_solar_time().get_solar_day();
-    if self.get_index() % 2 == 1 {
-      d.next(1)
-    } else {
-      d
+    pub fn get_solar_day(&self) -> SolarDay {
+        let d: SolarDay = self.get_start_solar_time().get_solar_day();
+        if self.get_index() % 2 == 1 {
+            d.next(1)
+        } else {
+            d
+        }
     }
-  }
 }
 
 impl Display for Phase {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Phase {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Phase {}
 
-impl Into<LoopTyme> for Phase {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Phase> for LoopTyme {
+    fn from(val: Phase) -> Self {
+        val.parent
+    }
 }
 
 /// 月相第几天
 #[derive(Debug, Clone)]
 pub struct PhaseDay {
-  parent: AbstractCultureDay,
-  phase: Phase,
+    parent: AbstractCultureDay,
+    phase: Phase,
 }
 
 impl Deref for PhaseDay {
-  type Target = AbstractCultureDay;
+    type Target = AbstractCultureDay;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for PhaseDay {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Culture for PhaseDay {
-  fn get_name(&self) -> String {
-    self.phase.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.phase.get_name()
+    }
 }
 
 impl PhaseDay {
-  pub fn new(phase: Phase, day_index: usize) -> Self {
-    let loop_tyme: LoopTyme = phase.clone().into();
-    let abstract_tyme: AbstractTyme = loop_tyme.into();
-    let culture: AbstractCulture = abstract_tyme.into();
-    Self {
-      parent: AbstractCultureDay::new(culture, day_index),
-      phase
+    pub fn new(phase: Phase, day_index: usize) -> Self {
+        let loop_tyme: LoopTyme = phase.clone().into();
+        let abstract_tyme: AbstractTyme = loop_tyme.into();
+        let culture: AbstractCulture = abstract_tyme.into();
+        Self {
+            parent: AbstractCultureDay::new(culture, day_index),
+            phase,
+        }
     }
-  }
 
-  pub fn get_phase(&self) -> Phase {
-    self.phase.clone()
-  }
+    pub fn get_phase(&self) -> Phase {
+        self.phase.clone()
+    }
 }
 
 impl Display for PhaseDay {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
+    }
 }
 
 impl PartialEq for PhaseDay {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for PhaseDay {}
 
-impl Into<AbstractCultureDay> for PhaseDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
-  }
+impl From<PhaseDay> for AbstractCultureDay {
+    fn from(val: PhaseDay) -> Self {
+        val.parent
+    }
 }
 
 pub static SIXTY_NAMES: [&str; 3] = ["上元", "中元", "下元"];
@@ -874,138 +1147,322 @@ pub static SIXTY_NAMES: [&str; 3] = ["上元", "中元", "下元"];
 /// 元（60年=1元）
 #[derive(Debug, Clone)]
 pub struct Sixty {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Sixty {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Sixty {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Sixty {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Sixty {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Sixty {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                SIXTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Sixty {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Sixty {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Sixty {}
 
-impl Into<LoopTyme> for Sixty {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Sixty> for LoopTyme {
+    fn from(val: Sixty) -> Self {
+        val.parent
+    }
 }
 
-pub static SOUND_NAMES: [&str; 30] = ["海中金", "炉中火", "大林木", "路旁土", "剑锋金", "山头火", "涧下水", "城头土", "白蜡金", "杨柳木", "泉中水", "屋上土", "霹雳火", "松柏木", "长流水", "沙中金", "山下火", "平地木", "壁上土", "金箔金", "覆灯火", "天河水", "大驿土", "钗钏金", "桑柘木", "大溪水", "沙中土", "天上火", "石榴木", "大海水"];
+pub static SOUND_NAMES: [&str; 30] = [
+    "海中金",
+    "炉中火",
+    "大林木",
+    "路旁土",
+    "剑锋金",
+    "山头火",
+    "涧下水",
+    "城头土",
+    "白蜡金",
+    "杨柳木",
+    "泉中水",
+    "屋上土",
+    "霹雳火",
+    "松柏木",
+    "长流水",
+    "沙中金",
+    "山下火",
+    "平地木",
+    "壁上土",
+    "金箔金",
+    "覆灯火",
+    "天河水",
+    "大驿土",
+    "钗钏金",
+    "桑柘木",
+    "大溪水",
+    "沙中土",
+    "天上火",
+    "石榴木",
+    "大海水",
+];
 
 /// 纳音
 #[derive(Debug, Clone)]
 pub struct Sound {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Sound {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Sound {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Sound {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Sound {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Sound {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                SOUND_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Sound {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Sound {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Sound {}
 
-impl Into<LoopTyme> for Sound {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Sound> for LoopTyme {
+    fn from(val: Sound) -> Self {
+        val.parent
+    }
 }
 
-pub static TABOO_NAMES: [&str; 140] = ["祭祀", "祈福", "求嗣", "开光", "塑绘", "齐醮", "斋醮", "沐浴", "酬神", "造庙", "祀灶", "焚香", "谢土", "出火", "雕刻", "嫁娶", "订婚", "纳采", "问名", "纳婿", "归宁", "安床", "合帐", "冠笄", "订盟", "进人口", "裁衣", "挽面", "开容", "修坟", "启钻", "破土", "安葬", "立碑", "成服", "除服", "开生坟", "合寿木", "入殓", "移柩", "普渡", "入宅", "安香", "安门", "修造", "起基", "动土", "上梁", "竖柱", "开井开池", "作陂放水", "拆卸", "破屋", "坏垣", "补垣", "伐木做梁", "作灶", "解除", "开柱眼", "穿屏扇架", "盖屋合脊", "开厕", "造仓", "塞穴", "平治道涂", "造桥", "作厕", "筑堤", "开池", "伐木", "开渠", "掘井", "扫舍", "放水", "造屋", "合脊", "造畜稠", "修门", "定磉", "作梁", "修饰垣墙", "架马", "开市", "挂匾", "纳财", "求财", "开仓", "买车", "置产", "雇佣", "出货财", "安机械", "造车器", "经络", "酝酿", "作染", "鼓铸", "造船", "割蜜", "栽种", "取渔", "结网", "牧养", "安碓磑", "习艺", "入学", "理发", "探病", "见贵", "乘船", "渡水", "针灸", "出行", "移徙", "分居", "剃头", "整手足甲", "纳畜", "捕捉", "畋猎", "教牛马", "会亲友", "赴任", "求医", "治病", "词讼", "起基动土", "破屋坏垣", "盖屋", "造仓库", "交易", "立券", "安机", "会友", "求医疗病", "诸事不宜", "馀事勿取", "行丧", "断蚁", "归岫"];
+pub static TABOO_NAMES: [&str; 140] = [
+    "祭祀",
+    "祈福",
+    "求嗣",
+    "开光",
+    "塑绘",
+    "齐醮",
+    "斋醮",
+    "沐浴",
+    "酬神",
+    "造庙",
+    "祀灶",
+    "焚香",
+    "谢土",
+    "出火",
+    "雕刻",
+    "嫁娶",
+    "订婚",
+    "纳采",
+    "问名",
+    "纳婿",
+    "归宁",
+    "安床",
+    "合帐",
+    "冠笄",
+    "订盟",
+    "进人口",
+    "裁衣",
+    "挽面",
+    "开容",
+    "修坟",
+    "启钻",
+    "破土",
+    "安葬",
+    "立碑",
+    "成服",
+    "除服",
+    "开生坟",
+    "合寿木",
+    "入殓",
+    "移柩",
+    "普渡",
+    "入宅",
+    "安香",
+    "安门",
+    "修造",
+    "起基",
+    "动土",
+    "上梁",
+    "竖柱",
+    "开井开池",
+    "作陂放水",
+    "拆卸",
+    "破屋",
+    "坏垣",
+    "补垣",
+    "伐木做梁",
+    "作灶",
+    "解除",
+    "开柱眼",
+    "穿屏扇架",
+    "盖屋合脊",
+    "开厕",
+    "造仓",
+    "塞穴",
+    "平治道涂",
+    "造桥",
+    "作厕",
+    "筑堤",
+    "开池",
+    "伐木",
+    "开渠",
+    "掘井",
+    "扫舍",
+    "放水",
+    "造屋",
+    "合脊",
+    "造畜稠",
+    "修门",
+    "定磉",
+    "作梁",
+    "修饰垣墙",
+    "架马",
+    "开市",
+    "挂匾",
+    "纳财",
+    "求财",
+    "开仓",
+    "买车",
+    "置产",
+    "雇佣",
+    "出货财",
+    "安机械",
+    "造车器",
+    "经络",
+    "酝酿",
+    "作染",
+    "鼓铸",
+    "造船",
+    "割蜜",
+    "栽种",
+    "取渔",
+    "结网",
+    "牧养",
+    "安碓磑",
+    "习艺",
+    "入学",
+    "理发",
+    "探病",
+    "见贵",
+    "乘船",
+    "渡水",
+    "针灸",
+    "出行",
+    "移徙",
+    "分居",
+    "剃头",
+    "整手足甲",
+    "纳畜",
+    "捕捉",
+    "畋猎",
+    "教牛马",
+    "会亲友",
+    "赴任",
+    "求医",
+    "治病",
+    "词讼",
+    "起基动土",
+    "破屋坏垣",
+    "盖屋",
+    "造仓库",
+    "交易",
+    "立券",
+    "安机",
+    "会友",
+    "求医疗病",
+    "诸事不宜",
+    "馀事勿取",
+    "行丧",
+    "断蚁",
+    "归岫",
+];
 static DAY_TABOO: [&str; 12] = [
   "8219000776262322200C1E1D,06292C2E1F;0F11185C0001092A0D7014692982837B7C2C2E302F802D2B,06454F2089;111852828370795B302F404533802D152B39201E23221D212726,0F2E1F010D29;004023222088,0F29111847;11180001032A0D70795B2C2E302F802D4E152B33714161201F26,52095847;0F17000102061979454F3A15477677,241F8920;34357C88,7129;1551000403706A454F3A3D771F262322271E1D21,382B415220;0F000102037039297175261F1D21,454F2E156341;00076A54196348767765,792029711552890D382B;11180001020439332C2E302F2B5844477515634C1F2721,0F520D19267A29717020;297170192C2E2D2F2B3E363F4C,0F52156320010347;4C78,297172380D2A2E0F474841;18115C0001702A2C2E2F5282837129795B6375802D154C,1F208924;1811795B032C2E302F802D4163754C27261E1D2120,010D0F29521F;00401D232288,71290F4720;0F170001020E032A70692C2E302F802D2B0D7129474C201F2322,5211183809615D;0F1811000102062A0D2C2D804B2B672E2F7129,70471F8920;0007343588,0F71296B7080;175447440D15828377656A49,2B2E1F892022;11187129705B79000106032A0D397B6F7C802D2C2B61756627261E0C1D21,0F2E154147;0007385476771548,52061F20;0106111839513A2C2E2D2F8B804B4723221F63,71522920;1118000717161A2C2E3371292B56433D6375363F,0F0103472089;161A7888,292E1F0F3861;11180F00012A0D70795D7B7C39332D2C2E4E4863664C,064F478920;5452828379195D00012A0D7B7C2C2E3348156366242526201E,0F7129;00262788,292C2E1F2B2F;040318111A17332C15290D200C7A,47450638;0004031A170F11332C2E302F1571292A657677451949,70201D52;007B343588,87;00010670175B71292A152322271E,03637C2B38;04067033392C7161262322271E1D210C,;000715547776,521F;181100012C2E2F1F,0F38;70076A363F,2920;7888,292E1F;0F707B7C00012F75,5220;528303395B2F1E20,0F01;4088,87;02060418110D332C2E415B637566262322271F20,520F;0F181100012C2E7129,5220;7C343588,87;0001020603691817452C2E2D498244,412B6A096338;393588,87;076A48,45752F29384C0F204F612B;000301394F2E154763751F27,0F707A802629710D1920;4F2C2E2B383F443D433663,0F0147892015;201E27262322,88;0F000102700D335282835329711563,3804897D4520;6A0339332C20528283531563,29713801000F0C47806B;005088,87;291503000D332E53261F2075,0F5238584F45;003988,87;3435000788,87;150001021745512E443D65262322,2B63387C;394888,87;00036A7415384878,45751F20240F522E824F;00010203332C2E2F1558631F,0F1920707A29712646;0717363F1A2C4F3A67433D8A,71290F010347;",
   "0007010618111A332D302F15262322271E530270164C,560F7129;003988,87;073918111A17332C2E71292322271F1E20481D45548283,38002F70;700F181126151E20001A7919,;5040262788,0F712903;7911192C2E302F00030401060F1571292A75,707C2052;0079701811072C2E01060F33152627200C7A1A302F4576631F2B,80523829;39343588,87;040370181123220F1326271E2021,2915;262322271E202188,1F45;0001060403232226380F767754,56802015;0070071A010618110F5B52836775,632620;00010607155B5C26271E2021165D82,38470F29;3948007888,;528283530339454F0D297115332E2F637520,0F007058;5282835444360F11756415,2C2F29016B472E2B2038;0039504088,;0F0001022E792D3E75663D19,472063703852292B;0F000102032971152C2E19,4720637038522B;343588,87;0F52828303700D332C29712E1F27201E2322,15450175;00261F23221E201D2188,;003988,87;52828354754C2971150301022E,0F63206A0938268941;151A82832627202322,580F7003632E1F297C;00394C786F88,0F2E4420;0704031118528283542D2E4E49201F1E1D2127,292B000C;0F706A151E201D528283544466,47010C2E292F2C38;394088,71294709636F7C44;0F0003450D3329712C2E2F1575,528963705A20587D7C;0F111829711500010370390D332E750C201F,4552822F382B80;0034353988,522E1F;0F1118032A0D545282831A802D2C2E2B71296366774744201F26232221,010900150C;0006261F1E201D212322,0F29381118;0006547677,0F5229151F20;111800010206071979697C67474475664C,0F16298920;000102071282542627201D210C4C78,29580F2E6352031F;00784C793988,0F29702E1F2089;0F03390D332C1929711563261D2E2322,382000521118750C706B;702D155482830F63262720,53292F017D4F38442B2E1F47;4088,030F565A61206B;0F181179005B712980152D4E2A0D533358,52702089;0776776A742623221F200C211D1E,11180F2F5206802B;00343588,060F52;07565A5282835463756677261F20,010F152961;0007363F8A3988,09292C20890F;0F11181200171A7919547638,5215201D;181179000607040D03302F5282834F3A45512B1533664C47,090F702E2089;828354151A4C200C1E23221D212726,030F522E1F;0039787988,1F2E20;111871545282832979397B7C69152B2A0D33485324251F1D1E26,6B00702F800C20;0F18110001027939706954528283685D15565A75201E1D26,29032E;00170F79191A6540,712909387C20;00676588,0F20;0F00071A706A717677492923221E202726,80522E1F;343588,0F5220;111800020D041A796933483E5347446563751F1D212026,010F09150C;262322271E201D21,52450F4F;0038262388,5215;040307177938494C,0F262070;",
@@ -1038,95 +1495,121 @@ static HOUR_TABOO: [&str; 12] = [
 /// 宜忌
 #[derive(Debug, Clone)]
 pub struct Taboo {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Taboo {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Taboo {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Taboo {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Taboo {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Taboo {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                TABOO_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  fn get_taboos(data: [&str; 12], sup_index: usize, sub_index: usize, index: usize) -> Vec<Self> {
-    let mut l: Vec<Self> = Vec::new();
-    let m: Vec<&str> = data[sup_index].split(";").collect();
-    let d: Vec<&str> = m[sub_index].split(",").collect();
-    let s: &str = d[index];
-    for i in (0..s.len()).step_by(2) {
-      let t: &str = &s[i..i + 2];
-      l.push(Self::from_index(isize::from_str_radix(t, 16).unwrap()))
+    fn get_taboos(data: [&str; 12], sup_index: usize, sub_index: usize, index: usize) -> Vec<Self> {
+        let mut l: Vec<Self> = Vec::new();
+        let m: Vec<&str> = data[sup_index].split(";").collect();
+        let d: Vec<&str> = m[sub_index].split(",").collect();
+        let s: &str = d[index];
+        for i in (0..s.len()).step_by(2) {
+            let t: &str = &s[i..i + 2];
+            l.push(Self::from_index(isize::from_str_radix(t, 16).unwrap()))
+        }
+        l
     }
-    l
-  }
 
-  pub fn get_day_recommends(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
-    Self::get_taboos(DAY_TABOO, month.get_earth_branch().get_index(), day.get_index(), 0)
-  }
+    pub fn get_day_recommends(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
+        Self::get_taboos(
+            DAY_TABOO,
+            month.get_earth_branch().get_index(),
+            day.get_index(),
+            0,
+        )
+    }
 
-  pub fn get_day_avoids(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
-    Self::get_taboos(DAY_TABOO, month.get_earth_branch().get_index(), day.get_index(), 1)
-  }
+    pub fn get_day_avoids(month: SixtyCycle, day: SixtyCycle) -> Vec<Self> {
+        Self::get_taboos(
+            DAY_TABOO,
+            month.get_earth_branch().get_index(),
+            day.get_index(),
+            1,
+        )
+    }
 
-  pub fn get_hour_recommends(day: SixtyCycle, hour: SixtyCycle) -> Vec<Self> {
-    Self::get_taboos(HOUR_TABOO, hour.get_earth_branch().get_index(), day.get_index(), 0)
-  }
+    pub fn get_hour_recommends(day: SixtyCycle, hour: SixtyCycle) -> Vec<Self> {
+        Self::get_taboos(
+            HOUR_TABOO,
+            hour.get_earth_branch().get_index(),
+            day.get_index(),
+            0,
+        )
+    }
 
-  pub fn get_hour_avoids(day: SixtyCycle, hour: SixtyCycle) -> Vec<Self> {
-    Self::get_taboos(HOUR_TABOO, hour.get_earth_branch().get_index(), day.get_index(), 1)
-  }
+    pub fn get_hour_avoids(day: SixtyCycle, hour: SixtyCycle) -> Vec<Self> {
+        Self::get_taboos(
+            HOUR_TABOO,
+            hour.get_earth_branch().get_index(),
+            day.get_index(),
+            1,
+        )
+    }
 }
 
 impl Display for Taboo {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Taboo {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Taboo {}
 
-impl Into<LoopTyme> for Taboo {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Taboo> for LoopTyme {
+    fn from(val: Taboo) -> Self {
+        val.parent
+    }
 }
 
 pub static TEN_NAMES: [&str; 6] = ["甲子", "甲戌", "甲申", "甲午", "甲辰", "甲寅"];
@@ -1134,207 +1617,245 @@ pub static TEN_NAMES: [&str; 6] = ["甲子", "甲戌", "甲申", "甲午", "甲�
 /// 旬
 #[derive(Debug, Clone)]
 pub struct Ten {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Ten {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Ten {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Ten {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Ten {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Ten {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                TEN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Ten {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Ten {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Ten {}
 
-impl Into<LoopTyme> for Ten {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Ten> for LoopTyme {
+    fn from(val: Ten) -> Self {
+        val.parent
+    }
 }
 
-pub static TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+pub static TERRAIN_NAMES: [&str; 12] = [
+    "长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养",
+];
 
 /// 地势(长生十二神)
 #[derive(Debug, Clone)]
 pub struct Terrain {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Terrain {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Terrain {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Terrain {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Terrain {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Terrain {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(TERRAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                TERRAIN_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(TERRAIN_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                TERRAIN_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Terrain {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Terrain {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Terrain {}
 
-impl Into<LoopTyme> for Terrain {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Terrain> for LoopTyme {
+    fn from(val: Terrain) -> Self {
+        val.parent
+    }
 }
 
-pub static TWENTY_NAMES: [&str; 9] = ["一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运"];
+pub static TWENTY_NAMES: [&str; 9] = [
+    "一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运",
+];
 
 /// 运（20年=1运，3运=1元）
 #[derive(Debug, Clone)]
 pub struct Twenty {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Twenty {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Twenty {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Twenty {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Twenty {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Twenty {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(TWENTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                TWENTY_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(TWENTY_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                TWENTY_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  pub fn get_sixty(&self) -> Sixty {
-    Sixty::from_index((self.get_index() / 3) as isize)
-  }
+    pub fn get_sixty(&self) -> Sixty {
+        Sixty::from_index((self.get_index() / 3) as isize)
+    }
 }
 
 impl Display for Twenty {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Twenty {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Twenty {}
 
-impl Into<LoopTyme> for Twenty {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Twenty> for LoopTyme {
+    fn from(val: Twenty) -> Self {
+        val.parent
+    }
 }
 
 pub static WEEK_NAMES: [&str; 7] = ["日", "一", "二", "三", "四", "五", "六"];
@@ -1342,135 +1863,157 @@ pub static WEEK_NAMES: [&str; 7] = ["日", "一", "二", "三", "四", "五", "�
 /// 星期
 #[derive(Debug, Clone)]
 pub struct Week {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Week {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Week {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Week {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Week {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Week {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                WEEK_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Week {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Week {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Week {}
 
-impl Into<LoopTyme> for Week {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Week> for LoopTyme {
+    fn from(val: Week) -> Self {
+        val.parent
+    }
 }
 
-pub static ZODIAC_NAMES: [&str; 12] = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+pub static ZODIAC_NAMES: [&str; 12] = [
+    "鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪",
+];
 
 /// 生肖
 #[derive(Debug, Clone)]
 pub struct Zodiac {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Zodiac {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Zodiac {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Zodiac {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Zodiac {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Zodiac {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(ZODIAC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                ZODIAC_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(ZODIAC_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                ZODIAC_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
+        }
     }
-  }
 }
 
 impl Display for Zodiac {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Zodiac {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Zodiac {}
 
-impl Into<LoopTyme> for Zodiac {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Zodiac> for LoopTyme {
+    fn from(val: Zodiac) -> Self {
+        val.parent
+    }
 }
 
 pub static ZONE_NAMES: [&str; 4] = ["东", "北", "西", "南"];
@@ -1478,458 +2021,579 @@ pub static ZONE_NAMES: [&str; 4] = ["东", "北", "西", "南"];
 /// 宫
 #[derive(Debug, Clone)]
 pub struct Zone {
-  parent: LoopTyme,
+    parent: LoopTyme,
 }
 
 impl Deref for Zone {
-  type Target = LoopTyme;
+    type Target = LoopTyme;
 
-  fn deref(&self) -> &Self::Target {
-    &self.parent
-  }
+    fn deref(&self) -> &Self::Target {
+        &self.parent
+    }
 }
 
 impl DerefMut for Zone {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.parent
-  }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.parent
+    }
 }
 
 impl Tyme for Zone {
-  fn next(&self, n: isize) -> Self {
-    Self::from_index(self.parent.next_index(n) as isize)
-  }
+    fn next(&self, n: isize) -> Self {
+        Self::from_index(self.parent.next_index(n) as isize)
+    }
 }
 
 impl Culture for Zone {
-  fn get_name(&self) -> String {
-    self.parent.get_name()
-  }
+    fn get_name(&self) -> String {
+        self.parent.get_name()
+    }
 }
 
 impl Zone {
-  pub fn from_index(index: isize) -> Self {
-    Self {
-      parent: LoopTyme::from_index(ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), index)
+    pub fn from_index(index: isize) -> Self {
+        Self {
+            parent: LoopTyme::from_index(
+                ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                index,
+            ),
+        }
     }
-  }
 
-  pub fn from_name(name: &str) -> Self {
-    Self {
-      parent: LoopTyme::from_name(ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(), name)
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            parent: LoopTyme::from_name(
+                ZONE_NAMES.to_vec().iter().map(|x| x.to_string()).collect(),
+                name,
+            ),
+        }
     }
-  }
 
-  pub fn get_direction(&self) -> Direction {
-    Direction::from_name(self.get_name().as_str())
-  }
+    pub fn get_direction(&self) -> Direction {
+        Direction::from_name(self.get_name().as_str())
+    }
 
-  pub fn get_beast(&self) -> Beast {
-    Beast::from_index(self.get_index() as isize)
-  }
+    pub fn get_beast(&self) -> Beast {
+        Beast::from_index(self.get_index() as isize)
+    }
 }
 
 impl Display for Zone {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for Zone {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
 }
 
 impl Eq for Zone {}
 
-impl Into<LoopTyme> for Zone {
-  fn into(self) -> LoopTyme {
-    self.parent
-  }
+impl From<Zone> for LoopTyme {
+    fn from(val: Zone) -> Self {
+        val.parent
+    }
 }
 
-pub static NUMBERS: [&str; 12] = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
+pub static NUMBERS: [&str; 12] = [
+    "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二",
+];
 
 #[derive(Debug, Clone)]
 pub struct KitchenGodSteed {
-  first_day_sixty_cycle: SixtyCycle,
+    first_day_sixty_cycle: SixtyCycle,
 }
 
 impl Culture for KitchenGodSteed {
-  fn get_name(&self) -> String {
-    "灶马头".to_string()
-  }
+    fn get_name(&self) -> String {
+        "灶马头".to_string()
+    }
 }
 
 impl KitchenGodSteed {
-  pub fn new(lunar_year: isize) -> Self {
-    KitchenGodSteed {
-      first_day_sixty_cycle: LunarDay::from_ymd(lunar_year, 1, 1).get_sixty_cycle(),
+    pub fn new(lunar_year: isize) -> Self {
+        KitchenGodSteed {
+            first_day_sixty_cycle: LunarDay::from_ymd(lunar_year, 1, 1).get_sixty_cycle(),
+        }
     }
-  }
 
-  pub fn from_lunar_year(lunar_year: isize) -> Self {
-    Self::new(lunar_year)
-  }
+    pub fn from_lunar_year(lunar_year: isize) -> Self {
+        Self::new(lunar_year)
+    }
 
-  fn by_heaven_stem(&self, n: isize) -> &str {
-    let parent: LoopTyme = self.first_day_sixty_cycle.get_heaven_stem().into();
-    NUMBERS[parent.steps_to(n)]
-  }
+    fn by_heaven_stem(&self, n: isize) -> &str {
+        let parent: LoopTyme = self.first_day_sixty_cycle.get_heaven_stem().into();
+        NUMBERS[parent.steps_to(n)]
+    }
 
-  fn by_earth_branch(&self, n: isize) -> &str {
-    let parent: LoopTyme = self.first_day_sixty_cycle.get_earth_branch().into();
-    NUMBERS[parent.steps_to(n)]
-  }
+    fn by_earth_branch(&self, n: isize) -> &str {
+        let parent: LoopTyme = self.first_day_sixty_cycle.get_earth_branch().into();
+        NUMBERS[parent.steps_to(n)]
+    }
 
-  pub fn get_mouse(&self) -> String {
-    format!("{}鼠偷粮", self.by_earth_branch(0))
-  }
+    pub fn get_mouse(&self) -> String {
+        format!("{}鼠偷粮", self.by_earth_branch(0))
+    }
 
-  pub fn get_grass(&self) -> String {
-    format!("草子{}分", self.by_earth_branch(0))
-  }
+    pub fn get_grass(&self) -> String {
+        format!("草子{}分", self.by_earth_branch(0))
+    }
 
-  pub fn get_cattle(&self) -> String {
-    format!("{}牛耕田", self.by_earth_branch(1))
-  }
+    pub fn get_cattle(&self) -> String {
+        format!("{}牛耕田", self.by_earth_branch(1))
+    }
 
-  pub fn get_flower(&self) -> String {
-    format!("花收{}分", self.by_earth_branch(3))
-  }
+    pub fn get_flower(&self) -> String {
+        format!("花收{}分", self.by_earth_branch(3))
+    }
 
-  pub fn get_dragon(&self) -> String {
-    format!("{}龙治水", self.by_earth_branch(4))
-  }
+    pub fn get_dragon(&self) -> String {
+        format!("{}龙治水", self.by_earth_branch(4))
+    }
 
-  pub fn get_horse(&self) -> String {
-    format!("{}马驮谷", self.by_earth_branch(6))
-  }
+    pub fn get_horse(&self) -> String {
+        format!("{}马驮谷", self.by_earth_branch(6))
+    }
 
-  pub fn get_chicken(&self) -> String {
-    format!("{}鸡抢米", self.by_earth_branch(9))
-  }
+    pub fn get_chicken(&self) -> String {
+        format!("{}鸡抢米", self.by_earth_branch(9))
+    }
 
-  pub fn get_silkworm(&self) -> String {
-    format!("{}姑看蚕", self.by_earth_branch(9))
-  }
+    pub fn get_silkworm(&self) -> String {
+        format!("{}姑看蚕", self.by_earth_branch(9))
+    }
 
-  pub fn get_pig(&self) -> String {
-    format!("{}屠共猪", self.by_earth_branch(11))
-  }
+    pub fn get_pig(&self) -> String {
+        format!("{}屠共猪", self.by_earth_branch(11))
+    }
 
-  pub fn get_field(&self) -> String {
-    format!("甲田{}分", self.by_heaven_stem(0))
-  }
+    pub fn get_field(&self) -> String {
+        format!("甲田{}分", self.by_heaven_stem(0))
+    }
 
-  pub fn get_cake(&self) -> String {
-    format!("{}人分饼", self.by_heaven_stem(2))
-  }
+    pub fn get_cake(&self) -> String {
+        format!("{}人分饼", self.by_heaven_stem(2))
+    }
 
-  pub fn get_gold(&self) -> String {
-    format!("{}日得金", self.by_heaven_stem(7))
-  }
+    pub fn get_gold(&self) -> String {
+        format!("{}日得金", self.by_heaven_stem(7))
+    }
 
-  pub fn get_people_cakes(&self) -> String {
-    format!("{}人{}丙", self.by_earth_branch(2), self.by_heaven_stem(2))
-  }
+    pub fn get_people_cakes(&self) -> String {
+        format!("{}人{}丙", self.by_earth_branch(2), self.by_heaven_stem(2))
+    }
 
-  pub fn get_people_hoes(&self) -> String {
-    format!("{}人{}锄", self.by_earth_branch(2), self.by_heaven_stem(3))
-  }
+    pub fn get_people_hoes(&self) -> String {
+        format!("{}人{}锄", self.by_earth_branch(2), self.by_heaven_stem(3))
+    }
 }
 
 impl Display for KitchenGodSteed {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
-  }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
 }
 
 impl PartialEq for KitchenGodSteed {
-  fn eq(&self, other: &Self) -> bool {
-    self.get_name() == other.get_name()
-  }
+    fn eq(&self, other: &Self) -> bool {
+        self.first_day_sixty_cycle == other.first_day_sixty_cycle
+    }
 }
 
 impl Eq for KitchenGodSteed {}
 
 pub mod dog;
-pub mod nine;
 pub mod fetus;
+pub mod nine;
 pub mod peng_zu;
 pub mod phenology;
-pub mod star;
 pub mod plumrain;
 pub mod ren;
+pub mod star;
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::culture::dog::DogDay;
-  use crate::tyme::culture::{Animal, Beast, Constellation, Direction, Duty, Element, God, Land, Luck, Taboo};
-  use crate::tyme::sixtycycle::{EarthBranch, HeavenStem};
-  use crate::tyme::solar::{SolarDay, SolarTime};
-  use crate::tyme::Culture;
+    use crate::tyme::culture::dog::DogDay;
+    use crate::tyme::culture::{
+        Animal, Beast, Constellation, Direction, Duty, Element, God, Land, Luck, Taboo,
+    };
+    use crate::tyme::sixtycycle::{EarthBranch, HeavenStem};
+    use crate::tyme::solar::{SolarDay, SolarTime};
+    use crate::tyme::Culture;
 
-  #[test]
-  fn test1() {
-    assert_eq!("龙", Animal::from_name("龙").get_name());
-  }
-
-  #[test]
-  fn test2() {
-    assert_eq!("龙", Animal::from_index(1).get_name());
-    assert_eq!("龙", Animal::from_index(1).to_string());
-    assert_eq!(1, Animal::from_index(1).get_index());
-    assert_eq!(28, Animal::from_index(1).get_size());
-  }
-
-  #[test]
-  fn test3() {
-    assert_eq!("青龙", Beast::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test4() {
-    assert_eq!("白羊", Constellation::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test5() {
-    assert_eq!("北", Direction::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test6() {
-    assert_eq!("建", Duty::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test7() {
-    assert_eq!("木", Element::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test8() {
-    assert_eq!(Element::from_name("木"), Element::from_name("金").get_restrain());
-  }
-
-  #[test]
-  fn test9() {
-    assert_eq!(Element::from_name("火"), Element::from_name("土").get_reinforced());
-  }
-
-  #[test]
-  fn test10() {
-    assert_eq!("玄天", Land::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test11() {
-    assert_eq!("吉", Luck::from_index(0).get_name());
-  }
-
-  #[test]
-  fn test12() {
-    assert_eq!("蛾眉月第2天", SolarDay::from_ymd(2023, 9, 17).get_phase_day().to_string());
-  }
-
-  #[test]
-  fn test13() {
-    assert_eq!("白羊", SolarDay::from_ymd(2020, 3, 21).get_constellation().get_name());
-    assert_eq!("白羊", SolarDay::from_ymd(2020, 4, 19).get_constellation().get_name());
-  }
-
-  #[test]
-  fn test14() {
-    assert_eq!("金牛", SolarDay::from_ymd(2020, 4, 20).get_constellation().get_name());
-    assert_eq!("金牛", SolarDay::from_ymd(2020, 5, 20).get_constellation().get_name());
-  }
-
-  #[test]
-  fn test15() {
-    assert_eq!("双子", SolarDay::from_ymd(2020, 5, 21).get_constellation().get_name());
-    assert_eq!("双子", SolarDay::from_ymd(2020, 6, 21).get_constellation().get_name());
-  }
-
-  #[test]
-  fn test16() {
-    assert_eq!("巨蟹", SolarDay::from_ymd(2020, 6, 22).get_constellation().get_name());
-    assert_eq!("巨蟹", SolarDay::from_ymd(2020, 7, 22).get_constellation().get_name());
-  }
-
-  #[test]
-  fn test17() {
-    assert_eq!("东南", SolarDay::from_ymd(2021, 11, 13).get_lunar_day().get_sixty_cycle().get_heaven_stem().get_mascot_direction().get_name());
-  }
-
-  #[test]
-  fn test18() {
-    assert_eq!("东南", SolarDay::from_ymd(2024, 1, 1).get_lunar_day().get_sixty_cycle().get_heaven_stem().get_mascot_direction().get_name());
-  }
-
-  #[test]
-  fn test19() {
-    assert_eq!("东", SolarDay::from_ymd(2023, 11, 6).get_lunar_day().get_jupiter_direction().get_name());
-  }
-
-  #[test]
-  fn test20() {
-    let d: DogDay = SolarDay::from_ymd(2011, 7, 14).get_dog_day().unwrap();
-    assert_eq!("初伏", d.get_name());
-    assert_eq!("初伏", d.get_dog().to_string());
-    assert_eq!("初伏第1天", d.to_string());
-  }
-
-  #[test]
-  fn test21() {
-    let d: DogDay = SolarDay::from_ymd(2011, 7, 23).get_dog_day().unwrap();
-    assert_eq!("初伏", d.get_name());
-    assert_eq!("初伏", d.get_dog().to_string());
-    assert_eq!("初伏第10天", d.to_string());
-  }
-
-  #[test]
-  fn test22() {
-    let d: DogDay = SolarDay::from_ymd(2011, 7, 24).get_dog_day().unwrap();
-    assert_eq!("中伏", d.get_name());
-    assert_eq!("中伏", d.get_dog().to_string());
-    assert_eq!("中伏第1天", d.to_string());
-  }
-
-  #[test]
-  fn test23() {
-    let d: DogDay = SolarDay::from_ymd(2011, 8, 12).get_dog_day().unwrap();
-    assert_eq!("中伏", d.get_name());
-    assert_eq!("中伏", d.get_dog().to_string());
-    assert_eq!("中伏第20天", d.to_string());
-  }
-
-  #[test]
-  fn test24() {
-    let d: DogDay = SolarDay::from_ymd(2011, 8, 13).get_dog_day().unwrap();
-    assert_eq!("末伏", d.get_name());
-    assert_eq!("末伏", d.get_dog().to_string());
-    assert_eq!("末伏第1天", d.to_string());
-  }
-
-  #[test]
-  fn test25() {
-    let d: DogDay = SolarDay::from_ymd(2011, 8, 22).get_dog_day().unwrap();
-    assert_eq!("末伏", d.get_name());
-    assert_eq!("末伏", d.get_dog().to_string());
-    assert_eq!("末伏第10天", d.to_string());
-  }
-
-  #[test]
-  fn test26() {
-    let d: Option<DogDay> = SolarDay::from_ymd(2011, 7, 13).get_dog_day();
-    assert_eq!(true, d.is_none());
-  }
-
-  #[test]
-  fn test27() {
-    let d: Option<DogDay> = SolarDay::from_ymd(2011, 8, 23).get_dog_day();
-    assert_eq!(true, d.is_none());
-  }
-
-  #[test]
-  fn test28() {
-    let d: DogDay = SolarDay::from_ymd(2012, 7, 18).get_dog_day().unwrap();
-    assert_eq!("初伏", d.get_name());
-    assert_eq!("初伏", d.get_dog().to_string());
-    assert_eq!("初伏第1天", d.to_string());
-  }
-
-  #[test]
-  fn test29() {
-    let d: DogDay = SolarDay::from_ymd(2012, 8, 5).get_dog_day().unwrap();
-    assert_eq!("中伏", d.get_name());
-    assert_eq!("中伏", d.get_dog().to_string());
-    assert_eq!("中伏第9天", d.to_string());
-  }
-
-  #[test]
-  fn test30() {
-    let d: DogDay = SolarDay::from_ymd(2012, 8, 8).get_dog_day().unwrap();
-    assert_eq!("末伏", d.get_name());
-    assert_eq!("末伏", d.get_dog().to_string());
-    assert_eq!("末伏第2天", d.to_string());
-  }
-
-  #[test]
-  fn test31() {
-    assert_eq!("闭", SolarDay::from_ymd(2023, 10, 30).get_lunar_day().get_duty().get_name());
-  }
-
-  #[test]
-  fn test32() {
-    assert_eq!("建", SolarDay::from_ymd(2023, 10, 19).get_lunar_day().get_duty().get_name());
-  }
-
-  #[test]
-  fn test33() {
-    assert_eq!("除", SolarDay::from_ymd(2023, 10, 7).get_lunar_day().get_duty().get_name());
-  }
-
-  #[test]
-  fn test34() {
-    assert_eq!("除", SolarDay::from_ymd(2023, 10, 8).get_lunar_day().get_duty().get_name());
-  }
-
-  #[test]
-  fn test35() {
-    assert_eq!(Element::from_name("土"), Element::from_name("火").get_reinforce());
-  }
-
-  #[test]
-  fn test36() {
-    assert_eq!("火", HeavenStem::from_name("丙").get_element().get_name());
-  }
-
-  #[test]
-  fn test37() {
-    assert_eq!("木", EarthBranch::from_name("寅").get_element().get_name());
-  }
-
-  #[test]
-  fn test38() {
-    assert_eq!(Element::from_name("火"), EarthBranch::from_name("寅").get_element().get_reinforce());
-  }
-
-  #[test]
-  fn test39() {
-    let mut ji: Vec<String> = Vec::new();
-    let mut xiong: Vec<String> = Vec::new();
-    let gods: Vec<God> = SolarDay::from_ymd(2004, 2, 16).get_lunar_day().get_gods();
-    for g in gods.iter() {
-      if "吉" == g.get_luck().get_name() {
-        ji.push(g.get_name());
-      } else {
-        xiong.push(g.get_name());
-      }
+    #[test]
+    fn test1() {
+        assert_eq!("龙", Animal::from_name("龙").get_name());
     }
-    assert_eq!(vec!["天恩", "续世", "明堂"], ji);
-    assert_eq!(vec!["月煞", "月虚", "血支", "天贼", "五虚", "土符", "归忌", "血忌"], xiong);
-  }
 
-  #[test]
-  fn test40() {
-    let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0).get_lunar_hour().get_recommends();
-    let mut l: Vec<String> = Vec::new();
-    for t in taboos.iter() {
-      l.push(t.get_name());
+    #[test]
+    fn test2() {
+        assert_eq!("龙", Animal::from_index(1).get_name());
+        assert_eq!("龙", Animal::from_index(1).to_string());
+        assert_eq!(1, Animal::from_index(1).get_index());
+        assert_eq!(28, Animal::from_index(1).get_size());
     }
-    assert_eq!(vec!["嫁娶", "交易", "开市", "安床", "祭祀", "求财"], l);
-  }
 
-  #[test]
-  fn test41() {
-    let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0).get_lunar_hour().get_avoids();
-    let mut l: Vec<String> = Vec::new();
-    for t in taboos.iter() {
-      l.push(t.get_name());
+    #[test]
+    fn test3() {
+        assert_eq!("青龙", Beast::from_index(0).get_name());
     }
-    assert_eq!(vec!["出行", "移徙", "赴任", "词讼", "祈福", "修造", "求嗣"], l);
-  }
+
+    #[test]
+    fn test4() {
+        assert_eq!("白羊", Constellation::from_index(0).get_name());
+    }
+
+    #[test]
+    fn test5() {
+        assert_eq!("北", Direction::from_index(0).get_name());
+    }
+
+    #[test]
+    fn test6() {
+        assert_eq!("建", Duty::from_index(0).get_name());
+    }
+
+    #[test]
+    fn test7() {
+        assert_eq!("木", Element::from_index(0).get_name());
+    }
+
+    #[test]
+    fn test8() {
+        assert_eq!(
+            Element::from_name("木"),
+            Element::from_name("金").get_restrain()
+        );
+    }
+
+    #[test]
+    fn test9() {
+        assert_eq!(
+            Element::from_name("火"),
+            Element::from_name("土").get_reinforced()
+        );
+    }
+
+    #[test]
+    fn test10() {
+        assert_eq!("玄天", Land::from_index(0).get_name());
+    }
+
+    #[test]
+    fn test11() {
+        assert_eq!("吉", Luck::from_index(0).get_name());
+    }
+
+    #[test]
+    fn test12() {
+        assert_eq!(
+            "蛾眉月第2天",
+            SolarDay::from_ymd(2023, 9, 17).get_phase_day().to_string()
+        );
+    }
+
+    #[test]
+    fn test13() {
+        assert_eq!(
+            "白羊",
+            SolarDay::from_ymd(2020, 3, 21)
+                .get_constellation()
+                .get_name()
+        );
+        assert_eq!(
+            "白羊",
+            SolarDay::from_ymd(2020, 4, 19)
+                .get_constellation()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test14() {
+        assert_eq!(
+            "金牛",
+            SolarDay::from_ymd(2020, 4, 20)
+                .get_constellation()
+                .get_name()
+        );
+        assert_eq!(
+            "金牛",
+            SolarDay::from_ymd(2020, 5, 20)
+                .get_constellation()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test15() {
+        assert_eq!(
+            "双子",
+            SolarDay::from_ymd(2020, 5, 21)
+                .get_constellation()
+                .get_name()
+        );
+        assert_eq!(
+            "双子",
+            SolarDay::from_ymd(2020, 6, 21)
+                .get_constellation()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test16() {
+        assert_eq!(
+            "巨蟹",
+            SolarDay::from_ymd(2020, 6, 22)
+                .get_constellation()
+                .get_name()
+        );
+        assert_eq!(
+            "巨蟹",
+            SolarDay::from_ymd(2020, 7, 22)
+                .get_constellation()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test17() {
+        assert_eq!(
+            "东南",
+            SolarDay::from_ymd(2021, 11, 13)
+                .get_lunar_day()
+                .get_sixty_cycle()
+                .get_heaven_stem()
+                .get_mascot_direction()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test18() {
+        assert_eq!(
+            "东南",
+            SolarDay::from_ymd(2024, 1, 1)
+                .get_lunar_day()
+                .get_sixty_cycle()
+                .get_heaven_stem()
+                .get_mascot_direction()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test19() {
+        assert_eq!(
+            "东",
+            SolarDay::from_ymd(2023, 11, 6)
+                .get_lunar_day()
+                .get_jupiter_direction()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test20() {
+        let d: DogDay = SolarDay::from_ymd(2011, 7, 14).get_dog_day().unwrap();
+        assert_eq!("初伏", d.get_name());
+        assert_eq!("初伏", d.get_dog().to_string());
+        assert_eq!("初伏第1天", d.to_string());
+    }
+
+    #[test]
+    fn test21() {
+        let d: DogDay = SolarDay::from_ymd(2011, 7, 23).get_dog_day().unwrap();
+        assert_eq!("初伏", d.get_name());
+        assert_eq!("初伏", d.get_dog().to_string());
+        assert_eq!("初伏第10天", d.to_string());
+    }
+
+    #[test]
+    fn test22() {
+        let d: DogDay = SolarDay::from_ymd(2011, 7, 24).get_dog_day().unwrap();
+        assert_eq!("中伏", d.get_name());
+        assert_eq!("中伏", d.get_dog().to_string());
+        assert_eq!("中伏第1天", d.to_string());
+    }
+
+    #[test]
+    fn test23() {
+        let d: DogDay = SolarDay::from_ymd(2011, 8, 12).get_dog_day().unwrap();
+        assert_eq!("中伏", d.get_name());
+        assert_eq!("中伏", d.get_dog().to_string());
+        assert_eq!("中伏第20天", d.to_string());
+    }
+
+    #[test]
+    fn test24() {
+        let d: DogDay = SolarDay::from_ymd(2011, 8, 13).get_dog_day().unwrap();
+        assert_eq!("末伏", d.get_name());
+        assert_eq!("末伏", d.get_dog().to_string());
+        assert_eq!("末伏第1天", d.to_string());
+    }
+
+    #[test]
+    fn test25() {
+        let d: DogDay = SolarDay::from_ymd(2011, 8, 22).get_dog_day().unwrap();
+        assert_eq!("末伏", d.get_name());
+        assert_eq!("末伏", d.get_dog().to_string());
+        assert_eq!("末伏第10天", d.to_string());
+    }
+
+    #[test]
+    fn test26() {
+        let d: Option<DogDay> = SolarDay::from_ymd(2011, 7, 13).get_dog_day();
+        assert!(d.is_none());
+    }
+
+    #[test]
+    fn test27() {
+        let d: Option<DogDay> = SolarDay::from_ymd(2011, 8, 23).get_dog_day();
+        assert!(d.is_none());
+    }
+
+    #[test]
+    fn test28() {
+        let d: DogDay = SolarDay::from_ymd(2012, 7, 18).get_dog_day().unwrap();
+        assert_eq!("初伏", d.get_name());
+        assert_eq!("初伏", d.get_dog().to_string());
+        assert_eq!("初伏第1天", d.to_string());
+    }
+
+    #[test]
+    fn test29() {
+        let d: DogDay = SolarDay::from_ymd(2012, 8, 5).get_dog_day().unwrap();
+        assert_eq!("中伏", d.get_name());
+        assert_eq!("中伏", d.get_dog().to_string());
+        assert_eq!("中伏第9天", d.to_string());
+    }
+
+    #[test]
+    fn test30() {
+        let d: DogDay = SolarDay::from_ymd(2012, 8, 8).get_dog_day().unwrap();
+        assert_eq!("末伏", d.get_name());
+        assert_eq!("末伏", d.get_dog().to_string());
+        assert_eq!("末伏第2天", d.to_string());
+    }
+
+    #[test]
+    fn test31() {
+        assert_eq!(
+            "闭",
+            SolarDay::from_ymd(2023, 10, 30)
+                .get_lunar_day()
+                .get_duty()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test32() {
+        assert_eq!(
+            "建",
+            SolarDay::from_ymd(2023, 10, 19)
+                .get_lunar_day()
+                .get_duty()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test33() {
+        assert_eq!(
+            "除",
+            SolarDay::from_ymd(2023, 10, 7)
+                .get_lunar_day()
+                .get_duty()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test34() {
+        assert_eq!(
+            "除",
+            SolarDay::from_ymd(2023, 10, 8)
+                .get_lunar_day()
+                .get_duty()
+                .get_name()
+        );
+    }
+
+    #[test]
+    fn test35() {
+        assert_eq!(
+            Element::from_name("土"),
+            Element::from_name("火").get_reinforce()
+        );
+    }
+
+    #[test]
+    fn test36() {
+        assert_eq!("火", HeavenStem::from_name("丙").get_element().get_name());
+    }
+
+    #[test]
+    fn test37() {
+        assert_eq!("木", EarthBranch::from_name("寅").get_element().get_name());
+    }
+
+    #[test]
+    fn test38() {
+        assert_eq!(
+            Element::from_name("火"),
+            EarthBranch::from_name("寅").get_element().get_reinforce()
+        );
+    }
+
+    #[test]
+    fn test39() {
+        let mut ji: Vec<String> = Vec::new();
+        let mut xiong: Vec<String> = Vec::new();
+        let gods: Vec<God> = SolarDay::from_ymd(2004, 2, 16).get_lunar_day().get_gods();
+        for g in gods.iter() {
+            if "吉" == g.get_luck().get_name() {
+                ji.push(g.get_name());
+            } else {
+                xiong.push(g.get_name());
+            }
+        }
+        assert_eq!(vec!["天恩", "续世", "明堂"], ji);
+        assert_eq!(
+            vec!["月煞", "月虚", "血支", "天贼", "五虚", "土符", "归忌", "血忌"],
+            xiong
+        );
+    }
+
+    #[test]
+    fn test40() {
+        let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0)
+            .get_lunar_hour()
+            .get_recommends();
+        let mut l: Vec<String> = Vec::new();
+        for t in taboos.iter() {
+            l.push(t.get_name());
+        }
+        assert_eq!(vec!["嫁娶", "交易", "开市", "安床", "祭祀", "求财"], l);
+    }
+
+    #[test]
+    fn test41() {
+        let taboos: Vec<Taboo> = SolarTime::from_ymd_hms(2024, 4, 22, 0, 0, 0)
+            .get_lunar_hour()
+            .get_avoids();
+        let mut l: Vec<String> = Vec::new();
+        for t in taboos.iter() {
+            l.push(t.get_name());
+        }
+        assert_eq!(
+            vec!["出行", "移徙", "赴任", "词讼", "祈福", "修造", "求嗣"],
+            l
+        );
+    }
 }
