@@ -52,7 +52,7 @@ impl PlumRain {
 
 impl Display for PlumRain {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -64,9 +64,9 @@ impl PartialEq for PlumRain {
 
 impl Eq for PlumRain {}
 
-impl Into<LoopTyme> for PlumRain {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<PlumRain> for LoopTyme {
+  fn from(val: PlumRain) -> Self {
+    val.parent
   }
 }
 
@@ -118,7 +118,7 @@ impl Display for PlumRainDay {
     if self.plum_rain.get_index() == 0 {
       write!(f, "{}第{}天", self.get_name(), self.get_day_index() + 1)
     } else {
-      write!(f, "{}", self.plum_rain.get_name())
+      f.write_str(&self.plum_rain.get_name())
     }
   }
 }
@@ -131,9 +131,9 @@ impl PartialEq for PlumRainDay {
 
 impl Eq for PlumRainDay {}
 
-impl Into<AbstractCultureDay> for PlumRainDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<PlumRainDay> for AbstractCultureDay {
+  fn from(val: PlumRainDay) -> Self {
+    val.parent
   }
 }
 

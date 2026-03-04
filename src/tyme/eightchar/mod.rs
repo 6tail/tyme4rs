@@ -8,7 +8,7 @@ use crate::tyme::culture::Duty;
 use crate::tyme::eightchar::provider::{ChildLimitProvider, DefaultChildLimitProvider};
 use crate::tyme::enums::{Gender, YinYang};
 use crate::tyme::lunar::LunarYear;
-use crate::tyme::sixtycycle::{EarthBranch, HeavenStem, SixtyCycle, SixtyCycleYear, ThreePillars};
+use crate::tyme::sixtycycle::{HeavenStem, SixtyCycle, SixtyCycleYear, ThreePillars};
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
 
 pub mod provider;
@@ -59,38 +59,20 @@ impl EightChar {
 
   pub fn get_fetal_origin(&self) -> SixtyCycle {
     let m: SixtyCycle = self.get_month();
-    SixtyCycle::from_name(format!("{}{}", m.get_heaven_stem().next(1).get_name(), m.get_earth_branch().next(3).get_name()).as_str())
+    SixtyCycle::from_index(m.get_heaven_stem().next(1).get_index() as isize * 6 - m.get_earth_branch().next(3).get_index() as isize * 5)
   }
 
   pub fn get_fetal_breath(&self) -> SixtyCycle {
     let d: SixtyCycle = self.get_day();
-    SixtyCycle::from_name(format!("{}{}", d.get_heaven_stem().next(5).get_name(), EarthBranch::from_index(13 - (d.get_earth_branch().get_index() as isize)).get_name()).as_str())
+    SixtyCycle::from_index(d.get_heaven_stem().next(5).get_index() as isize * 6 + d.get_earth_branch().get_index() as isize * 5 - 65)
   }
 
   pub fn get_own_sign(&self) -> SixtyCycle {
-    let mut m: isize = self.get_month().get_earth_branch().get_index() as isize - 1;
-    if m < 1 {
-      m += 12;
-    }
-    let mut h: isize = self.hour.get_earth_branch().get_index() as isize - 1;
-    if h < 1 {
-      h += 12;
-    }
-    let mut offset: isize = m + h;
-    offset = if offset >= 14 { 26 } else { 14 } - offset;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.get_year().get_heaven_stem().get_index() as isize) + 1) * 2 + offset - 1).get_name(), EarthBranch::from_index(offset + 1).get_name()).as_str())
+    SixtyCycle::from_index(self.get_year().get_heaven_stem().get_index() as isize * 12 + (27 - self.get_month().get_earth_branch().get_index() as isize - self.hour.get_earth_branch().get_index() as isize) % 12 + 2)
   }
 
   pub fn get_body_sign(&self) -> SixtyCycle {
-    let mut offset: isize = self.get_month().get_earth_branch().get_index() as isize - 1;
-    if offset < 1 {
-      offset += 12;
-    }
-    offset += self.hour.get_earth_branch().get_index() as isize + 1;
-    if offset > 12 {
-      offset -= 12;
-    }
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(((self.get_year().get_heaven_stem().get_index() as isize) + 1) * 2 + offset - 1).get_name(), EarthBranch::from_index(offset + 1).get_name()).as_str())
+    SixtyCycle::from_index(self.get_year().get_heaven_stem().get_index() as isize * 12 + (11 + self.get_month().get_earth_branch().get_index() as isize - self.hour.get_earth_branch().get_index() as isize) % 12 + 2)
   }
 
   #[deprecated(since = "1.3.0", note = "please use SixtyCycleDay.get_duty() instead")]
@@ -166,7 +148,7 @@ impl EightChar {
 
 impl Display for EightChar {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 

@@ -30,9 +30,10 @@ impl LegalHoliday {
     let reg: Regex = Regex::new(format!("{:0>four$}{:0>two$}{:0>two$}{}", year, month, day, r"[0-1][0-8][\+|-]\d{2}", four = 4, two = 2).as_str()).unwrap();
     if reg.is_match(LEGAL_HOLIDAY_DATA) {
       let data: &str = reg.find(LEGAL_HOLIDAY_DATA).unwrap().as_str();
+      let chars: Vec<char> = data.chars().collect();
       let day: SolarDay = SolarDay::from_ymd(year, month, day);
-      let index: usize = data.chars().nth(9).unwrap() as usize - 48;
-      let work: bool = '0' == (data.chars().nth(8).unwrap());
+      let index: usize = *chars.get(9).unwrap() as usize - 48;
+      let work: bool = '0' == (*chars.get(8).unwrap());
       Some(Self {
         day,
         index,

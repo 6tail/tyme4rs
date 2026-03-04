@@ -1,7 +1,7 @@
+use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::string::ToString;
-use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 
 pub static NINE_NAMES: [&str; 9] = ["一九", "二九", "三九", "四九", "五九", "六九", "七九", "八九", "九九"];
 
@@ -53,7 +53,7 @@ impl Nine {
 
 impl Display for Nine {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -65,9 +65,9 @@ impl PartialEq for Nine {
 
 impl Eq for Nine {}
 
-impl Into<LoopTyme> for Nine {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Nine> for LoopTyme {
+  fn from(val: Nine) -> Self {
+    val.parent
   }
 }
 
@@ -128,17 +128,17 @@ impl PartialEq for NineDay {
 
 impl Eq for NineDay {}
 
-impl Into<AbstractCultureDay> for NineDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<NineDay> for AbstractCultureDay {
+  fn from(val: NineDay) -> Self {
+    val.parent
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::nine::NineDay;
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test0() {

@@ -1,10 +1,10 @@
+use std::f64::consts::PI;
 use lazy_static::lazy_static;
 
-pub static PI64: f64 = 3.14159265358979323846;
-pub static PI_2: f64 = PI64 * 2.0;
+pub static PI_2: f64 = PI * 2.0;
 pub static ONE_THIRD: f64 = 1.0 / 3.0;
 static SECOND_PER_DAY: f64 = 86400.0;
-static SECOND_PER_RAD: f64 = 180.0 * 3600.0 / PI64;
+static SECOND_PER_RAD: f64 = 180.0 * 3600.0 / PI;
 static NUT_B: [f64; 50] = [
   2.1824, -33.75705, 36e-6, -1720.0, 920.0,
   3.5069, 1256.66393, 11e-6, -132.0, 57.0,
@@ -447,7 +447,7 @@ impl ShouXingUtil {
   }
 
   pub fn sa_lon(t: f64, n: isize) -> f64 {
-    Self::elon(t, n) + Self::nutation_lon2(t) + Self::gxc_sun_lon(t) + PI64
+    Self::elon(t, n) + Self::nutation_lon2(t) + Self::gxc_sun_lon(t) + PI
   }
 
   pub fn dt_ext(y: f64, jsd: f64) -> f64 {
@@ -491,7 +491,7 @@ impl ShouXingUtil {
 
   pub fn sa_lon_t(w: f64) -> f64 {
     let mut v: f64 = 628.3319653318;
-    let mut t = (w - 1.75347 - PI64) / v;
+    let mut t = (w - 1.75347 - PI) / v;
     v = Self::ev(t);
     t += (w - Self::sa_lon(t, 10)) / v;
     v = Self::ev(t);
@@ -500,7 +500,7 @@ impl ShouXingUtil {
   }
 
   pub fn m_sa_lon(t: f64, mn: isize, sn: isize) -> f64 {
-    Self::mlon(t, mn) + (-3.4E-6) - (Self::elon(t, sn) + Self::gxc_sun_lon(t) + PI64)
+    Self::mlon(t, mn) + (-3.4E-6) - (Self::elon(t, sn) + Self::gxc_sun_lon(t) + PI)
   }
 
   pub fn m_sa_lon_t(w: f64) -> f64 {
@@ -515,9 +515,9 @@ impl ShouXingUtil {
 
   pub fn sa_lon_t2(w: f64) -> f64 {
     let v: f64 = 628.3319653318;
-    let mut t: f64 = (w - 1.75347 - PI64) / v;
+    let mut t: f64 = (w - 1.75347 - PI) / v;
     t -= (0.000005297 * t * t + 0.0334166 * (4.669257 + 628.307585 * t).cos() + 0.0002061 * (2.67823 + 628.307585 * t).cos() * t) / v;
-    t += (w - Self::elon(t, 8) - PI64 + (20.5 + 17.2 * (2.1824 - 33.75705 * t).sin()) / SECOND_PER_RAD) / v;
+    t += (w - Self::elon(t, 8) - PI + (20.5 + 17.2 * (2.1824 - 33.75705 * t).sin()) / SECOND_PER_RAD) / v;
     t
   }
 
@@ -616,7 +616,7 @@ impl ShouXingUtil {
     let f2: f64 = QI_KB[size - 1] - pc;
     let f3: f64 = 2436935.0;
     if jd < f1 || jd >= f3 {
-      d = (Self::qi_high(((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI64 / 12.0) + 0.5).floor();
+      d = (Self::qi_high(((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI / 12.0) + 0.5).floor();
     } else if jd >= f1 && jd < f2 {
       while i < size {
         if jd + pc < QI_KB[i + 2] {
@@ -631,7 +631,7 @@ impl ShouXingUtil {
       }
       d -= 2451545.0;
     } else if jd >= f2 {
-      d = (Self::qi_low(((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI64 / 12.0) + 0.5).floor();
+      d = (Self::qi_low(((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI / 12.0) + 0.5).floor();
       let from: usize = ((jd - f2) / 365.2422 * 24.0) as usize;
       let n: &str = &QB[from..from + 1];
       if n == "1" {
@@ -649,7 +649,7 @@ impl ShouXingUtil {
   }
 
   pub fn qi_accurate2(jd: f64) -> f64 {
-    let d: f64 = PI64 / 12.0;
+    let d: f64 = PI / 12.0;
     let w: f64 = ((jd + 293.0) / 365.2422 * 24.0).floor() * d;
     let a: f64 = Self::qi_accurate(w);
     if a - jd > 5.0 {

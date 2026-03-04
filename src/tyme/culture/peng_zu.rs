@@ -2,8 +2,8 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::string::ToString;
 
-use crate::tyme::{Culture, LoopTyme, Tyme};
 use crate::tyme::sixtycycle::SixtyCycle;
+use crate::tyme::{Culture, LoopTyme, Tyme};
 
 /// 彭祖百忌
 #[derive(Debug, Clone)]
@@ -38,7 +38,7 @@ impl PengZu {
 
 impl Display for PengZu {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -100,7 +100,7 @@ impl PengZuHeavenStem {
 
 impl Display for PengZuHeavenStem {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -112,9 +112,9 @@ impl PartialEq for PengZuHeavenStem {
 
 impl Eq for PengZuHeavenStem {}
 
-impl Into<LoopTyme> for PengZuHeavenStem {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<PengZuHeavenStem> for LoopTyme {
+  fn from(val: PengZuHeavenStem) -> Self {
+    val.parent
   }
 }
 
@@ -168,7 +168,7 @@ impl PengZuEarthBranch {
 
 impl Display for PengZuEarthBranch {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -180,8 +180,8 @@ impl PartialEq for PengZuEarthBranch {
 
 impl Eq for PengZuEarthBranch {}
 
-impl Into<LoopTyme> for PengZuEarthBranch {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<PengZuEarthBranch> for LoopTyme {
+  fn from(val: PengZuEarthBranch) -> Self {
+    val.parent
   }
 }

@@ -185,15 +185,14 @@ impl LunarFestival {
         });
       }
     }
-    if month == 12 && day > 28 {
+    if month.abs() == 12 && day > 28 {
       reg = Regex::new(r"@\d{2}2").unwrap();
       if reg.is_match(LUNAR_FESTIVAL_DATA) {
         let data: &str = reg.find(LUNAR_FESTIVAL_DATA).unwrap().as_str();
         let di: &str = &data[1..3];
         let index: usize = usize::from_str(di).unwrap();
 
-        let next_day: LunarDay = lunar_day.next(1);
-        if next_day.get_month() == 1 && next_day.get_day() == 1 {
+        if lunar_day.next(1).get_year() != year {
           return Some(Self {
             festival_type: FestivalType::EVE,
             day: lunar_day,

@@ -1,6 +1,6 @@
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
-use crate::tyme::{Culture, LoopTyme, Tyme};
 
 pub static SEVEN_STAR_NAMES: [&str; 7] = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -52,7 +52,7 @@ impl SevenStar {
 
 impl Display for SevenStar {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -64,8 +64,8 @@ impl PartialEq for SevenStar {
 
 impl Eq for SevenStar {}
 
-impl Into<LoopTyme> for SevenStar {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<SevenStar> for LoopTyme {
+  fn from(val: SevenStar) -> Self {
+    val.parent
   }
 }

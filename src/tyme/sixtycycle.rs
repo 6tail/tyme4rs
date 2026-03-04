@@ -141,7 +141,7 @@ impl HeavenStem {
 
 impl Display for HeavenStem {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -153,9 +153,9 @@ impl PartialEq for HeavenStem {
 
 impl Eq for HeavenStem {}
 
-impl Into<LoopTyme> for HeavenStem {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<HeavenStem> for LoopTyme {
+  fn from(val: HeavenStem) -> Self {
+    val.parent
   }
 }
 
@@ -303,7 +303,7 @@ impl EarthBranch {
 
 impl Display for EarthBranch {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -315,9 +315,9 @@ impl PartialEq for EarthBranch {
 
 impl Eq for EarthBranch {}
 
-impl Into<LoopTyme> for EarthBranch {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<EarthBranch> for LoopTyme {
+  fn from(val: EarthBranch) -> Self {
+    val.parent
   }
 }
 
@@ -396,7 +396,7 @@ impl SixtyCycle {
 
 impl Display for SixtyCycle {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -408,9 +408,9 @@ impl PartialEq for SixtyCycle {
 
 impl Eq for SixtyCycle {}
 
-impl Into<LoopTyme> for SixtyCycle {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<SixtyCycle> for LoopTyme {
+  fn from(val: SixtyCycle) -> Self {
+    val.parent
   }
 }
 
@@ -464,7 +464,7 @@ impl HideHeavenStem {
 
 impl Display for HideHeavenStem {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -476,9 +476,9 @@ impl PartialEq for HideHeavenStem {
 
 impl Eq for HideHeavenStem {}
 
-impl Into<AbstractCulture> for HideHeavenStem {
-  fn into(self) -> AbstractCulture {
-    self.parent
+impl From<HideHeavenStem> for AbstractCulture {
+  fn from(val: HideHeavenStem) -> Self {
+    val.parent
   }
 }
 
@@ -540,9 +540,9 @@ impl PartialEq for HideHeavenStemDay {
 
 impl Eq for HideHeavenStemDay {}
 
-impl Into<AbstractCultureDay> for HideHeavenStemDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<HideHeavenStemDay> for AbstractCultureDay {
+  fn from(val: HideHeavenStemDay) -> Self {
+    val.parent
   }
 }
 
@@ -585,10 +585,9 @@ impl SixtyCycleYear {
   }
 
   pub fn get_first_month(&self) -> SixtyCycleMonth {
-    let h: HeavenStem = HeavenStem::from_index((self.get_sixty_cycle().get_heaven_stem().get_index() as isize + 1) * 2);
     SixtyCycleMonth {
       year: *self,
-      month: SixtyCycle::from_name(format!("{}寅", h.get_name()).as_str())
+      month: SixtyCycle::from_index(self.get_year() * 12 - 46)
     }
   }
 
@@ -621,7 +620,7 @@ impl SixtyCycleYear {
 
 impl Display for SixtyCycleYear {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -986,7 +985,7 @@ impl SixtyCycleHour {
     if h == 23 {
       return 0;
     }
-    (h + 1) / 2
+    h.div_ceil(2)
   }
 
   pub fn get_eight_char(&self) -> EightChar {
@@ -1120,7 +1119,7 @@ impl ThreePillars {
 
 impl Display for ThreePillars {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 

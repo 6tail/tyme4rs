@@ -74,7 +74,7 @@ impl TwentyEightStar {
 
 impl Display for TwentyEightStar {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -86,8 +86,8 @@ impl PartialEq for TwentyEightStar {
 
 impl Eq for TwentyEightStar {}
 
-impl Into<LoopTyme> for TwentyEightStar {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<TwentyEightStar> for LoopTyme {
+  fn from(val: TwentyEightStar) -> Self {
+    val.parent
   }
 }

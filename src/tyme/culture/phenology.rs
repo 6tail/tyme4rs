@@ -1,6 +1,7 @@
 use crate::tyme::jd::{JulianDay, J2000};
-use crate::tyme::util::{ShouXingUtil, PI64};
+use crate::tyme::util::ShouXingUtil;
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
+use std::f64::consts::PI;
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 
@@ -68,14 +69,14 @@ impl Phenology {
 
   /// 儒略日
   pub fn get_julian_day(&self) -> JulianDay {
-    let t: f64 = ShouXingUtil::sa_lon_t((self.get_year() as f64 - 2000f64 + (self.get_index() as f64 - 18f64) * 5.0 / 360f64 + 1f64) * 2f64 * PI64);
+    let t: f64 = ShouXingUtil::sa_lon_t((self.get_year() as f64 - 2000f64 + (self.get_index() as f64 - 18f64) * 5.0 / 360f64 + 1f64) * 2f64 * PI);
     JulianDay::from_julian_day(t * 36525f64 + J2000 + 8.0 / 24f64 - ShouXingUtil::dtt(t * 36525f64))
   }
 }
 
 impl Display for Phenology {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -87,9 +88,9 @@ impl PartialEq for Phenology {
 
 impl Eq for Phenology {}
 
-impl Into<LoopTyme> for Phenology {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Phenology> for LoopTyme {
+  fn from(val: Phenology) -> Self {
+    val.parent
   }
 }
 
@@ -143,7 +144,7 @@ impl ThreePhenology {
 
 impl Display for ThreePhenology {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -155,9 +156,9 @@ impl PartialEq for ThreePhenology {
 
 impl Eq for ThreePhenology {}
 
-impl Into<LoopTyme> for ThreePhenology {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<ThreePhenology> for LoopTyme {
+  fn from(val: ThreePhenology) -> Self {
+    val.parent
   }
 }
 
@@ -218,9 +219,9 @@ impl PartialEq for PhenologyDay {
 
 impl Eq for PhenologyDay {}
 
-impl Into<AbstractCultureDay> for PhenologyDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<PhenologyDay> for AbstractCultureDay {
+  fn from(val: PhenologyDay) -> Self {
+    val.parent
   }
 }
 

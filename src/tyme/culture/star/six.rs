@@ -1,6 +1,6 @@
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
-use crate::tyme::{Culture, LoopTyme, Tyme};
 
 pub static SIX_STAR_NAMES: [&str; 6] = ["先胜", "友引", "先负", "佛灭", "大安", "赤口"];
 
@@ -52,7 +52,7 @@ impl SixStar {
 
 impl Display for SixStar {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -64,17 +64,17 @@ impl PartialEq for SixStar {
 
 impl Eq for SixStar {}
 
-impl Into<LoopTyme> for SixStar {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<SixStar> for LoopTyme {
+  fn from(val: SixStar) -> Self {
+    val.parent
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::star::six::SixStar;
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test1() {

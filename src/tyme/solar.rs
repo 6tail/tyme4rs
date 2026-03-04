@@ -1,21 +1,22 @@
-use std::fmt::{Display, Formatter};
-use std::ops::{Deref, DerefMut};
-use std::str::FromStr;
-use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Constellation, Phase, PhaseDay, Week};
 use crate::tyme::culture::dog::{Dog, DogDay};
 use crate::tyme::culture::nine::{Nine, NineDay};
 use crate::tyme::culture::phenology::{Phenology, PhenologyDay};
 use crate::tyme::culture::plumrain::{PlumRain, PlumRainDay};
+use crate::tyme::culture::{Constellation, Phase, PhaseDay, Week};
 use crate::tyme::enums::HideHeavenStemType;
 use crate::tyme::festival::SolarFestival;
 use crate::tyme::holiday::LegalHoliday;
-use crate::tyme::jd::{J2000, JulianDay};
+use crate::tyme::jd::{JulianDay, J2000};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
 use crate::tyme::rabbyung::{RabByungDay, RabByungYear};
 use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay, SixtyCycleDay, SixtyCycleHour};
 use crate::tyme::unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit};
 use crate::tyme::util::ShouXingUtil;
+use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
+use std::fmt::{Display, Formatter};
+use std::ops::{Deref, DerefMut};
+use std::str::FromStr;
+use crate::tyme::event::Event;
 
 /// 公历年
 #[derive(Debug, Copy, Clone)]
@@ -175,7 +176,7 @@ impl SolarYear {
 
 impl Display for SolarYear {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -712,11 +713,10 @@ pub struct SolarWeek {
 
 impl Tyme for SolarWeek {
   fn next(&self, n: isize) -> Self {
-    let mut d: isize = self.get_index() as isize;
+    let mut d: isize = self.get_index() as isize + n;
     let mut m: SolarMonth = self.get_solar_month();
     let start_index: usize = self.get_start();
     if n > 0 {
-      d += n;
       let mut week_count: isize = m.get_week_count(start_index) as isize;
       while d >= week_count {
         d -= week_count;
@@ -727,7 +727,6 @@ impl Tyme for SolarWeek {
         week_count = m.get_week_count(start_index) as isize;
       }
     } else if n < 0 {
-      d += n;
       while d < 0 {
         if m.get_first_day().get_week().get_index() != start_index {
           d -= 1;
@@ -1184,41 +1183,23 @@ impl SolarDay {
   /// let dog_day: Option<DogDay> = SolarDay::from_ymd(2023, 9, 12).get_dog_day();
   /// ```
   pub fn get_dog_day(&self) -> Option<DogDay> {
-    let xia_zhi: SolarTerm = SolarTerm::from_index(self.get_year(), 12);
-    // 第1个庚日
-    let mut start: SolarDay = xia_zhi.get_solar_day();
-    // 第3个庚日，即初伏第1天
-    let parent: LoopTyme = start.get_lunar_day().get_sixty_cycle().get_heaven_stem().into();
-    start = start.next(parent.steps_to(6) as isize + 20);
-    let mut days: isize = self.subtract(start);
-    // 初伏以前
-    if days < 0 {
+    let year: isize = self.get_year();
+    // 初伏，夏至后第3个庚日
+    let d0: SolarDay = Event::builder().term_heaven_stem(12, 6, 20).build().get_solar_day(year).unwrap();
+    // 中伏，夏至后第4个庚日
+    let d1: SolarDay = Event::builder().term_heaven_stem(12, 6, 30).build().get_solar_day(year).unwrap();
+    // 末伏，立秋后第1个庚日
+    let d2: SolarDay = Event::builder().term_heaven_stem(15, 6, 0).build().get_solar_day(year).unwrap();
+    if self.is_before(d0) || self.is_after(d2.next(9)) {
       return None;
     }
-    if days < 10 {
-      return Some(DogDay::new(Dog::from_index(0), days as usize));
+    if !self.is_before(d2) {
+      return Some(DogDay::new(Dog::from_index(2), self.subtract(d2) as usize));
     }
-    // 第4个庚日，中伏第1天
-    start = start.next(10);
-    days = self.subtract(start);
-    if days < 10 {
-      return Some(DogDay::new(Dog::from_index(1), days as usize));
+    if !self.is_before(d1) {
+      return Some(DogDay::new(Dog::from_index(1), self.subtract(d1) as usize));
     }
-    // 第5个庚日，中伏第11天或末伏第1天
-    start = start.next(10);
-    days = self.subtract(start);
-    // 立秋
-    if xia_zhi.next(3).get_solar_day().is_after(start) {
-      if days < 10 {
-        return Some(DogDay::new(Dog::from_index(1), days as usize + 10));
-      }
-      start = start.next(10);
-      days = self.subtract(start);
-    }
-    if days < 10 {
-      return Some(DogDay::new(Dog::from_index(2), days as usize));
-    }
-    None
+    Some(DogDay::new(Dog::from_index(0), self.subtract(d0) as usize))
   }
 
   /// 数九天
@@ -1303,19 +1284,11 @@ impl SolarDay {
   }
 
   pub fn get_plum_rain_day(&self) -> Option<PlumRainDay> {
-    // 芒种
-    let grain_in_ear: SolarTerm = SolarTerm::from_index(self.get_year(), 11);
-    let mut start: SolarDay = grain_in_ear.get_solar_day();
-    // 芒种后的第1个丙日
-    let mut parent: LoopTyme = start.get_lunar_day().get_sixty_cycle().get_heaven_stem().into();
-    start = start.next(parent.steps_to(2) as isize);
-
-    // 小暑
-    let mut end: SolarDay = grain_in_ear.next(2).get_solar_day();
-    // 小暑后的第1个未日
-    parent = end.get_lunar_day().get_sixty_cycle().get_earth_branch().into();
-    end = end.next(parent.steps_to(7) as isize);
-
+    let year: isize = self.get_year();
+    // 入梅，芒种后第1个丙日
+    let start: SolarDay = Event::builder().term_heaven_stem(11, 2, 0).build().get_solar_day(year).unwrap();
+    // 出梅，小暑后第1个未日
+    let end: SolarDay = Event::builder().term_earth_branch(13, 7, 0).build().get_solar_day(year).unwrap();
     if self.is_before(start) || self.is_after(end) {
       return None;
     }
@@ -1792,7 +1765,7 @@ impl SolarTerm {
 
 impl Display for SolarTerm {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1804,9 +1777,9 @@ impl PartialEq for SolarTerm {
 
 impl Eq for SolarTerm {}
 
-impl Into<LoopTyme> for SolarTerm {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<SolarTerm> for LoopTyme {
+  fn from(val: SolarTerm) -> Self {
+    val.parent
   }
 }
 
@@ -1879,18 +1852,18 @@ impl PartialEq for SolarTermDay {
 
 impl Eq for SolarTermDay {}
 
-impl Into<AbstractCultureDay> for SolarTermDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<SolarTermDay> for AbstractCultureDay {
+  fn from(val: SolarTermDay) -> Self {
+    val.parent
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::{Culture, Tyme};
   use crate::tyme::lunar::LunarWeek;
   use crate::tyme::sixtycycle::HideHeavenStemDay;
   use crate::tyme::solar::{SolarDay, SolarHalfYear, SolarMonth, SolarSeason, SolarTerm, SolarTime, SolarWeek, SolarYear};
+  use crate::tyme::{Culture, Tyme};
 
   #[test]
   fn test0() {

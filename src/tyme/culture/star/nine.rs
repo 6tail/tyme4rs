@@ -1,7 +1,7 @@
+use crate::tyme::culture::{Direction, Element};
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
-use crate::tyme::{Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Direction, Element};
 
 pub static DIPPER_NAMES: [&str; 9] = ["天枢", "天璇", "天玑", "天权", "玉衡", "开阳", "摇光", "洞明", "隐元"];
 
@@ -53,7 +53,7 @@ impl Dipper {
 
 impl Display for Dipper {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -65,9 +65,9 @@ impl PartialEq for Dipper {
 
 impl Eq for Dipper {}
 
-impl Into<LoopTyme> for Dipper {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Dipper> for LoopTyme {
+  fn from(val: Dipper) -> Self {
+    val.parent
   }
 }
 
@@ -149,18 +149,18 @@ impl PartialEq for NineStar {
 
 impl Eq for NineStar {}
 
-impl Into<LoopTyme> for NineStar {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<NineStar> for LoopTyme {
+  fn from(val: NineStar) -> Self {
+    val.parent
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::star::nine::NineStar;
   use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test0() {

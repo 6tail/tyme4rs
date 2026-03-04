@@ -1,11 +1,11 @@
+use crate::tyme::culture::Direction;
+use crate::tyme::enums::Side;
+use crate::tyme::lunar::{LunarDay, LunarMonth};
+use crate::tyme::sixtycycle::{SixtyCycle, SixtyCycleDay};
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::string::ToString;
-use crate::tyme::culture::Direction;
-use crate::tyme::enums::Side;
-use crate::tyme::{Culture, LoopTyme, Tyme};
-use crate::tyme::lunar::{LunarDay, LunarMonth};
-use crate::tyme::sixtycycle::{SixtyCycle, SixtyCycleDay};
 
 /// 逐日胎神
 #[derive(Debug, Clone)]
@@ -86,7 +86,7 @@ impl FetusDay {
 
 impl Display for FetusDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -142,7 +142,7 @@ impl FetusHeavenStem {
 
 impl Display for FetusHeavenStem {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -154,9 +154,9 @@ impl PartialEq for FetusHeavenStem {
 
 impl Eq for FetusHeavenStem {}
 
-impl Into<LoopTyme> for FetusHeavenStem {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<FetusHeavenStem> for LoopTyme {
+  fn from(val: FetusHeavenStem) -> Self {
+    val.parent
   }
 }
 
@@ -204,7 +204,7 @@ impl FetusEarthBranch {
 
 impl Display for FetusEarthBranch {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -216,9 +216,9 @@ impl PartialEq for FetusEarthBranch {
 
 impl Eq for FetusEarthBranch {}
 
-impl Into<LoopTyme> for FetusEarthBranch {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<FetusEarthBranch> for LoopTyme {
+  fn from(val: FetusEarthBranch) -> Self {
+    val.parent
   }
 }
 
@@ -273,7 +273,7 @@ impl FetusMonth {
 
 impl Display for FetusMonth {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -285,9 +285,9 @@ impl PartialEq for FetusMonth {
 
 impl Eq for FetusMonth {}
 
-impl Into<LoopTyme> for FetusMonth {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<FetusMonth> for LoopTyme {
+  fn from(val: FetusMonth) -> Self {
+    val.parent
   }
 }
 

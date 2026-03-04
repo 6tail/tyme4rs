@@ -39,7 +39,7 @@ impl AbstractCulture {
 
 impl Display for AbstractCulture {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -123,7 +123,7 @@ impl AbstractTyme {
 
 impl Display for AbstractTyme {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.parent.get_name())
+    f.write_str(&self.parent.get_name())
   }
 }
 
@@ -135,9 +135,9 @@ impl PartialEq for AbstractTyme {
 
 impl Eq for AbstractTyme {}
 
-impl Into<AbstractCulture> for AbstractTyme {
-  fn into(self) -> AbstractCulture {
-    self.parent
+impl From<AbstractTyme> for AbstractCulture {
+  fn from(val: AbstractTyme) -> Self {
+    val.parent
   }
 }
 
@@ -176,24 +176,13 @@ impl DerefMut for LoopTyme {
 
 impl LoopTyme {
   pub fn new(names: Vec<String>, name: &str) -> Result<Self, String> {
-    let mut real_index: Option<usize> = None;
-    for i in 0..names.len() {
-      if names[i].to_string() == name {
-        real_index = Some(i);
-        break;
-      }
-    }
-    match real_index {
-      None => {
-        Err(format!("illegal name: {}", name))
-      }
-      Some(n) => {
-        Ok(Self {
-          parent: AbstractTyme::new(),
-          names,
-          index: n,
-        })
-      }
+    match names.iter().position(|x| x == name) {
+      None => Err(format!("illegal name: {}", name)),
+      Some(n) => Ok(Self {
+        parent: AbstractTyme::new(),
+        names,
+        index: n,
+      }),
     }
   }
 
@@ -231,11 +220,16 @@ impl LoopTyme {
   pub fn steps_to(&self, target_index: isize) -> usize {
     self.index_of_index(target_index - self.index as isize)
   }
+
+  pub fn steps_back_to(&self, target_index: isize) -> isize {
+    let n: isize = self.get_size() as isize;
+    -((self.index as isize - target_index + n) % n)
+  }
 }
 
 impl Display for LoopTyme {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -247,9 +241,9 @@ impl PartialEq for LoopTyme {
 
 impl Eq for LoopTyme {}
 
-impl Into<AbstractTyme> for LoopTyme {
-  fn into(self) -> AbstractTyme {
-    self.parent
+impl From<LoopTyme> for AbstractTyme {
+  fn from(val: LoopTyme) -> Self {
+    val.parent
   }
 }
 
@@ -265,3 +259,4 @@ pub mod holiday;
 pub mod festival;
 pub mod eightchar;
 pub mod rabbyung;
+pub mod event;

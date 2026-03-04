@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FestivalType {
   DAY,
   TERM,
@@ -10,62 +10,46 @@ pub enum FestivalType {
 impl FestivalType {
   pub fn from_code(code: usize) -> Result<Self, String> {
     match code {
-      0 => {
-        Ok(Self::DAY)
-      }
-      1 => {
-        Ok(Self::TERM)
-      }
-      2 => {
-        Ok(Self::EVE)
-      }
-      _ => {
-        Err(format!("illegal FestivalType code: {}", code))
-      }
+      0 => Ok(Self::DAY),
+      1 => Ok(Self::TERM),
+      2 => Ok(Self::EVE),
+      _ => Err(format!("illegal FestivalType code: {}", code)),
     }
   }
 
   pub fn from_name(name: &str) -> Result<Self, String> {
     match name {
-      "日期" => {
-        Ok(Self::DAY)
-      }
-      "节气" => {
-        Ok(Self::TERM)
-      }
-      "除夕" => {
-        Ok(Self::EVE)
-      }
-      _ => {
-        Err(format!("illegal FestivalType name: {}", name))
-      }
+      "日期" => Ok(Self::DAY),
+      "节气" => Ok(Self::TERM),
+      "除夕" => Ok(Self::EVE),
+      _ => Err(format!("illegal FestivalType name: {}", name)),
     }
   }
 
   pub fn get_name(&self) -> String {
     self.to_string()
   }
+
+  pub fn get_code(&self) -> usize {
+    match self {
+      Self::DAY => 0,
+      Self::TERM => 1,
+      Self::EVE => 2,
+    }
+  }
 }
 
 impl Display for FestivalType {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::DAY => write!(f, "{}", "日期"),
-      Self::TERM => write!(f, "{}", "节气"),
-      Self::EVE => write!(f, "{}", "除夕")
+      Self::DAY => f.write_str("日期"),
+      Self::TERM => f.write_str("节气"),
+      Self::EVE => f.write_str("除夕"),
     }
   }
 }
 
-impl PartialEq for FestivalType {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
-}
-
-impl Eq for FestivalType {}
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum HideHeavenStemType {
   RESIDUAL,
   MIDDLE,
@@ -75,35 +59,19 @@ pub enum HideHeavenStemType {
 impl HideHeavenStemType {
   pub fn from_code(code: usize) -> Result<Self, String> {
     match code {
-      0 => {
-        Ok(Self::RESIDUAL)
-      }
-      1 => {
-        Ok(Self::MIDDLE)
-      }
-      2 => {
-        Ok(Self::MAIN)
-      }
-      _ => {
-        Err(format!("illegal HideHeavenStemType code: {}", code))
-      }
+      0 => Ok(Self::RESIDUAL),
+      1 => Ok(Self::MIDDLE),
+      2 => Ok(Self::MAIN),
+      _ => Err(format!("illegal HideHeavenStemType code: {}", code)),
     }
   }
 
   pub fn from_name(name: &str) -> Result<Self, String> {
     match name {
-      "余气" => {
-        Ok(Self::RESIDUAL)
-      }
-      "中气" => {
-        Ok(Self::MIDDLE)
-      }
-      "本气" => {
-        Ok(Self::MAIN)
-      }
-      _ => {
-        Err(format!("illegal HideHeavenStemType name: {}", name))
-      }
+      "余气" => Ok(Self::RESIDUAL),
+      "中气" => Ok(Self::MIDDLE),
+      "本气" => Ok(Self::MAIN),
+      _ => Err(format!("illegal HideHeavenStemType name: {}", name)),
     }
   }
 
@@ -115,22 +83,14 @@ impl HideHeavenStemType {
 impl Display for HideHeavenStemType {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::RESIDUAL => write!(f, "{}", "余气"),
-      Self::MIDDLE => write!(f, "{}", "中气"),
-      Self::MAIN => write!(f, "{}", "本气")
+      Self::RESIDUAL => f.write_str("余气"),
+      Self::MIDDLE => f.write_str("中气"),
+      Self::MAIN => f.write_str("本气"),
     }
   }
 }
 
-impl PartialEq for HideHeavenStemType {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
-}
-
-impl Eq for HideHeavenStemType {}
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Gender {
   WOMAN,
   MAN,
@@ -139,29 +99,17 @@ pub enum Gender {
 impl Gender {
   pub fn from_code(code: usize) -> Result<Self, String> {
     match code {
-      0 => {
-        Ok(Self::WOMAN)
-      }
-      1 => {
-        Ok(Self::MAN)
-      }
-      _ => {
-        Err(format!("illegal Gender code: {}", code))
-      }
+      0 => Ok(Self::WOMAN),
+      1 => Ok(Self::MAN),
+      _ => Err(format!("illegal Gender code: {}", code)),
     }
   }
 
   pub fn from_name(name: &str) -> Result<Self, String> {
     match name {
-      "女" => {
-        Ok(Self::WOMAN)
-      }
-      "男" => {
-        Ok(Self::MAN)
-      }
-      _ => {
-        Err(format!("illegal Gender name: {}", name))
-      }
+      "女" => Ok(Self::WOMAN),
+      "男" => Ok(Self::MAN),
+      _ => Err(format!("illegal Gender name: {}", name)),
     }
   }
 
@@ -173,21 +121,13 @@ impl Gender {
 impl Display for Gender {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::WOMAN => write!(f, "{}", "女"),
-      Self::MAN => write!(f, "{}", "男")
+      Self::WOMAN => f.write_str("女"),
+      Self::MAN => f.write_str("男"),
     }
   }
 }
 
-impl PartialEq for Gender {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
-}
-
-impl Eq for Gender {}
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Side {
   IN,
   OUT,
@@ -196,29 +136,17 @@ pub enum Side {
 impl Side {
   pub fn from_code(code: usize) -> Result<Self, String> {
     match code {
-      0 => {
-        Ok(Self::IN)
-      }
-      1 => {
-        Ok(Self::OUT)
-      }
-      _ => {
-        Err(format!("illegal Side code: {}", code))
-      }
+      0 => Ok(Self::IN),
+      1 => Ok(Self::OUT),
+      _ => Err(format!("illegal Side code: {}", code)),
     }
   }
 
   pub fn from_name(name: &str) -> Result<Self, String> {
     match name {
-      "内" => {
-        Ok(Self::IN)
-      }
-      "外" => {
-        Ok(Self::OUT)
-      }
-      _ => {
-        Err(format!("illegal Side name: {}", name))
-      }
+      "内" => Ok(Self::IN),
+      "外" => Ok(Self::OUT),
+      _ => Err(format!("illegal Side name: {}", name)),
     }
   }
 
@@ -230,21 +158,13 @@ impl Side {
 impl Display for Side {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::IN => write!(f, "{}", "内"),
-      Self::OUT => write!(f, "{}", "外")
+      Self::IN => f.write_str("内"),
+      Self::OUT => f.write_str("外"),
     }
   }
 }
 
-impl PartialEq for Side {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
-  }
-}
-
-impl Eq for Side {}
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum YinYang {
   YIN,
   YANG,
@@ -254,29 +174,17 @@ pub enum YinYang {
 impl YinYang {
   pub fn from_code(code: usize) -> Result<Self, String> {
     match code {
-      0 => {
-        Ok(Self::YIN)
-      }
-      1 => {
-        Ok(Self::YANG)
-      }
-      _ => {
-        Err(format!("illegal YinYang code: {}", code))
-      }
+      0 => Ok(Self::YIN),
+      1 => Ok(Self::YANG),
+      _ => Err(format!("illegal YinYang code: {}", code)),
     }
   }
 
   pub fn from_name(name: &str) -> Result<Self, String> {
     match name {
-      "阴" => {
-        Ok(Self::YIN)
-      }
-      "阳" => {
-        Ok(Self::YANG)
-      }
-      _ => {
-        Err(format!("illegal YinYang name: {}", name))
-      }
+      "阴" => Ok(Self::YIN),
+      "阳" => Ok(Self::YANG),
+      _ => Err(format!("illegal YinYang name: {}", name)),
     }
   }
 
@@ -288,19 +196,76 @@ impl YinYang {
 impl Display for YinYang {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::YIN => write!(f, "{}", "阴"),
-      Self::YANG => write!(f, "{}", "阳")
+      Self::YIN => f.write_str("阴"),
+      Self::YANG => f.write_str("阳"),
     }
   }
 }
 
-impl PartialEq for YinYang {
-  fn eq(&self, other: &Self) -> bool {
-    self.to_string() == other.to_string()
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum EventType {
+  SolarDay,
+  SolarWeek,
+  LunarDay,
+  TermDay,
+  TermHs,
+  TermEb
+}
+
+
+impl EventType {
+  pub fn from_code(code: usize) -> Result<Self, String> {
+    match code {
+      0 => Ok(Self::SolarDay),
+      1 => Ok(Self::SolarWeek),
+      2 => Ok(Self::LunarDay),
+      3 => Ok(Self::TermDay),
+      4 => Ok(Self::TermHs),
+      5 => Ok(Self::TermEb),
+      _ => Err(format!("illegal EventType code: {}", code)),
+    }
+  }
+
+  pub fn from_name(name: &str) -> Result<Self, String> {
+    match name {
+      "公历日期" => Ok(Self::SolarDay),
+      "几月第几个星期几" => Ok(Self::SolarWeek),
+      "农历日期" => Ok(Self::LunarDay),
+      "节气日期" => Ok(Self::TermDay),
+      "节气天干" => Ok(Self::TermHs),
+      "节气地支" => Ok(Self::TermEb),
+      _ => Err(format!("illegal EventType name: {}", name)),
+    }
+  }
+
+  pub fn get_name(&self) -> String {
+    self.to_string()
+  }
+
+  pub fn get_code(&self) -> usize {
+    match self {
+      Self::SolarDay => 0,
+      Self::SolarWeek => 1,
+      Self::LunarDay => 2,
+      Self::TermDay => 3,
+      Self::TermHs => 4,
+      Self::TermEb => 5,
+    }
   }
 }
 
-impl Eq for YinYang {}
+impl Display for EventType {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::SolarDay => f.write_str("公历日期"),
+      Self::SolarWeek => f.write_str("几月第几个星期几"),
+      Self::LunarDay => f.write_str("农历日期"),
+      Self::TermDay => f.write_str("节气日期"),
+      Self::TermHs => f.write_str("节气天干"),
+      Self::TermEb => f.write_str("节气地支"),
+    }
+  }
+}
 
 #[cfg(test)]
 mod tests {

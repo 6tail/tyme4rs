@@ -114,7 +114,7 @@ impl JulianDay {
 
 impl Display for JulianDay {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 

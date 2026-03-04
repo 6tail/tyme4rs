@@ -1,6 +1,6 @@
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
-use crate::tyme::{Culture, LoopTyme, Tyme};
 
 pub static TEN_STAR_NAMES: [&str; 10] = ["比肩", "劫财", "食神", "伤官", "偏财", "正财", "七杀", "正官", "偏印", "正印"];
 
@@ -52,7 +52,7 @@ impl TenStar {
 
 impl Display for TenStar {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -64,8 +64,8 @@ impl PartialEq for TenStar {
 
 impl Eq for TenStar {}
 
-impl Into<LoopTyme> for TenStar {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<TenStar> for LoopTyme {
+  fn from(val: TenStar) -> Self {
+    val.parent
   }
 }

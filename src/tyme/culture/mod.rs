@@ -59,7 +59,7 @@ impl Animal {
 
 impl Display for Animal {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -71,9 +71,9 @@ impl PartialEq for Animal {
 
 impl Eq for Animal {}
 
-impl Into<LoopTyme> for Animal {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Animal> for LoopTyme {
+  fn from(val: Animal) -> Self {
+    val.parent
   }
 }
 
@@ -127,7 +127,7 @@ impl Beast {
 
 impl Display for Beast {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -139,9 +139,9 @@ impl PartialEq for Beast {
 
 impl Eq for Beast {}
 
-impl Into<LoopTyme> for Beast {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Beast> for LoopTyme {
+  fn from(val: Beast) -> Self {
+    val.parent
   }
 }
 
@@ -195,7 +195,7 @@ impl Constellation {
 
 impl Display for Constellation {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -207,9 +207,9 @@ impl PartialEq for Constellation {
 
 impl Eq for Constellation {}
 
-impl Into<LoopTyme> for Constellation {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Constellation> for LoopTyme {
+  fn from(val: Constellation) -> Self {
+    val.parent
   }
 }
 
@@ -268,7 +268,7 @@ impl Direction {
 
 impl Display for Direction {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -280,9 +280,9 @@ impl PartialEq for Direction {
 
 impl Eq for Direction {}
 
-impl Into<LoopTyme> for Direction {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Direction> for LoopTyme {
+  fn from(val: Direction) -> Self {
+    val.parent
   }
 }
 
@@ -336,7 +336,7 @@ impl Duty {
 
 impl Display for Duty {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -348,9 +348,9 @@ impl PartialEq for Duty {
 
 impl Eq for Duty {}
 
-impl Into<LoopTyme> for Duty {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Duty> for LoopTyme {
+  fn from(val: Duty) -> Self {
+    val.parent
   }
 }
 
@@ -429,7 +429,7 @@ impl Element {
 
 impl Display for Element {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -441,9 +441,9 @@ impl PartialEq for Element {
 
 impl Eq for Element {}
 
-impl Into<LoopTyme> for Element {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Element> for LoopTyme {
+  fn from(val: Element) -> Self {
+    val.parent
   }
 }
 
@@ -528,7 +528,7 @@ impl God {
 
 impl Display for God {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -540,9 +540,9 @@ impl PartialEq for God {
 
 impl Eq for God {}
 
-impl Into<LoopTyme> for God {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<God> for LoopTyme {
+  fn from(val: God) -> Self {
+    val.parent
   }
 }
 
@@ -601,7 +601,7 @@ impl Land {
 
 impl Display for Land {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -613,9 +613,9 @@ impl PartialEq for Land {
 
 impl Eq for Land {}
 
-impl Into<LoopTyme> for Land {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Land> for LoopTyme {
+  fn from(val: Land) -> Self {
+    val.parent
   }
 }
 
@@ -669,7 +669,7 @@ impl Luck {
 
 impl Display for Luck {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -681,9 +681,9 @@ impl PartialEq for Luck {
 
 impl Eq for Luck {}
 
-impl Into<LoopTyme> for Luck {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Luck> for LoopTyme {
+  fn from(val: Luck) -> Self {
+    val.parent
   }
 }
 
@@ -788,7 +788,7 @@ impl Phase {
 
 impl Display for Phase {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -800,9 +800,9 @@ impl PartialEq for Phase {
 
 impl Eq for Phase {}
 
-impl Into<LoopTyme> for Phase {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Phase> for LoopTyme {
+  fn from(val: Phase) -> Self {
+    val.parent
   }
 }
 
@@ -863,9 +863,9 @@ impl PartialEq for PhaseDay {
 
 impl Eq for PhaseDay {}
 
-impl Into<AbstractCultureDay> for PhaseDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<PhaseDay> for AbstractCultureDay {
+  fn from(val: PhaseDay) -> Self {
+    val.parent
   }
 }
 
@@ -919,7 +919,7 @@ impl Sixty {
 
 impl Display for Sixty {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -931,9 +931,9 @@ impl PartialEq for Sixty {
 
 impl Eq for Sixty {}
 
-impl Into<LoopTyme> for Sixty {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Sixty> for LoopTyme {
+  fn from(val: Sixty) -> Self {
+    val.parent
   }
 }
 
@@ -987,7 +987,7 @@ impl Sound {
 
 impl Display for Sound {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -999,9 +999,9 @@ impl PartialEq for Sound {
 
 impl Eq for Sound {}
 
-impl Into<LoopTyme> for Sound {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Sound> for LoopTyme {
+  fn from(val: Sound) -> Self {
+    val.parent
   }
 }
 
@@ -1111,7 +1111,7 @@ impl Taboo {
 
 impl Display for Taboo {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1123,9 +1123,9 @@ impl PartialEq for Taboo {
 
 impl Eq for Taboo {}
 
-impl Into<LoopTyme> for Taboo {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Taboo> for LoopTyme {
+  fn from(val: Taboo) -> Self {
+    val.parent
   }
 }
 
@@ -1179,7 +1179,7 @@ impl Ten {
 
 impl Display for Ten {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1191,9 +1191,9 @@ impl PartialEq for Ten {
 
 impl Eq for Ten {}
 
-impl Into<LoopTyme> for Ten {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Ten> for LoopTyme {
+  fn from(val: Ten) -> Self {
+    val.parent
   }
 }
 
@@ -1247,7 +1247,7 @@ impl Terrain {
 
 impl Display for Terrain {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1259,9 +1259,9 @@ impl PartialEq for Terrain {
 
 impl Eq for Terrain {}
 
-impl Into<LoopTyme> for Terrain {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Terrain> for LoopTyme {
+  fn from(val: Terrain) -> Self {
+    val.parent
   }
 }
 
@@ -1319,7 +1319,7 @@ impl Twenty {
 
 impl Display for Twenty {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1331,9 +1331,9 @@ impl PartialEq for Twenty {
 
 impl Eq for Twenty {}
 
-impl Into<LoopTyme> for Twenty {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Twenty> for LoopTyme {
+  fn from(val: Twenty) -> Self {
+    val.parent
   }
 }
 
@@ -1387,7 +1387,7 @@ impl Week {
 
 impl Display for Week {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1399,9 +1399,9 @@ impl PartialEq for Week {
 
 impl Eq for Week {}
 
-impl Into<LoopTyme> for Week {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Week> for LoopTyme {
+  fn from(val: Week) -> Self {
+    val.parent
   }
 }
 
@@ -1455,7 +1455,7 @@ impl Zodiac {
 
 impl Display for Zodiac {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1467,9 +1467,9 @@ impl PartialEq for Zodiac {
 
 impl Eq for Zodiac {}
 
-impl Into<LoopTyme> for Zodiac {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Zodiac> for LoopTyme {
+  fn from(val: Zodiac) -> Self {
+    val.parent
   }
 }
 
@@ -1531,7 +1531,7 @@ impl Zone {
 
 impl Display for Zone {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -1543,9 +1543,9 @@ impl PartialEq for Zone {
 
 impl Eq for Zone {}
 
-impl Into<LoopTyme> for Zone {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Zone> for LoopTyme {
+  fn from(val: Zone) -> Self {
+    val.parent
   }
 }
 
@@ -1642,13 +1642,13 @@ impl KitchenGodSteed {
 
 impl Display for KitchenGodSteed {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
 impl PartialEq for KitchenGodSteed {
   fn eq(&self, other: &Self) -> bool {
-    self.get_name() == other.get_name()
+    self.first_day_sixty_cycle == other.first_day_sixty_cycle && self.get_name() == other.get_name()
   }
 }
 

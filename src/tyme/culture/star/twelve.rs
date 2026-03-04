@@ -1,7 +1,7 @@
+use crate::tyme::culture::Luck;
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
-use crate::tyme::{Culture, LoopTyme, Tyme};
-use crate::tyme::culture::Luck;
 
 pub static ECLIPTIC_NAMES: [&str; 2] = ["黄道", "黑道"];
 
@@ -57,7 +57,7 @@ impl Ecliptic {
 
 impl Display for Ecliptic {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -69,9 +69,9 @@ impl PartialEq for Ecliptic {
 
 impl Eq for Ecliptic {}
 
-impl Into<LoopTyme> for Ecliptic {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Ecliptic> for LoopTyme {
+  fn from(val: Ecliptic) -> Self {
+    val.parent
   }
 }
 
@@ -129,7 +129,7 @@ impl TwelveStar {
 
 impl Display for TwelveStar {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -141,17 +141,17 @@ impl PartialEq for TwelveStar {
 
 impl Eq for TwelveStar {}
 
-impl Into<LoopTyme> for TwelveStar {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<TwelveStar> for LoopTyme {
+  fn from(val: TwelveStar) -> Self {
+    val.parent
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::star::twelve::TwelveStar;
   use crate::tyme::solar::SolarDay;
+  use crate::tyme::Culture;
 
   #[test]
   fn test1() {

@@ -44,12 +44,12 @@ lazy_static! {
       let mut l: Vec<isize> = vec![];
       for y in 0..size {
         let z: usize = y * 2;
-        let s: &str = &m[z..z + 2];
+        let s: Vec<char> = m[z..z + 2].chars().collect();
         let mut t: isize = 0;
         let mut c: isize = 1;
         let mut x: isize = 1;
         while x > -1 {
-          t += c * chars.find(s.chars().nth(x as usize).unwrap()).unwrap() as isize;
+          t += c * chars.find(*s.get(x as usize).unwrap()).unwrap() as isize;
           c *= 64;
           x -= 1;
         }
@@ -144,11 +144,13 @@ impl LunarYear {
 
   pub fn get_months(&self) -> Vec<LunarMonth> {
     let mut l: Vec<LunarMonth> = Vec::new();
-    let year: isize = self.get_year();
-    let mut m: LunarMonth = LunarMonth::from_ym(year, 1);
-    while m.get_year() == year {
-      l.push(m);
-      m = m.next(1);
+    let y: isize = self.get_year();
+    let leap_month: isize = self.get_leap_month() as isize;
+    for i in 1..13 {
+      l.push(LunarMonth::from_ym(y, i));
+      if i == leap_month {
+        l.push(LunarMonth::from_ym(y, -i));
+      }
     }
     l
   }
@@ -189,7 +191,7 @@ impl LunarYear {
 
 impl Display for LunarYear {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -342,7 +344,7 @@ impl LunarMonth {
   pub fn get_index_in_year(&self) -> usize {
     let month: usize = self.get_month();
     let mut index: usize = month - 1;
-    if self.is_leap() {
+    if self.leap {
       index += 1;
     } else {
       let leap_month: usize = self.get_lunar_year().get_leap_month();
@@ -396,8 +398,7 @@ impl LunarMonth {
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    let month: isize = self.get_month() as isize;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(self.get_lunar_year().get_sixty_cycle().get_heaven_stem().get_index() as isize * 2 + month + 1).get_name(), EarthBranch::from_index(month + 1).get_name()).as_str())
+    SixtyCycle::from_index(self.get_year() * 12 + self.get_month() as isize - 47)
   }
 
   pub fn get_jupiter_direction(&self) -> Direction {
@@ -493,7 +494,7 @@ impl LunarSeason {
 
 impl Display for LunarSeason {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -505,9 +506,9 @@ impl PartialEq for LunarSeason {
 
 impl Eq for LunarSeason {}
 
-impl Into<LoopTyme> for LunarSeason {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<LunarSeason> for LoopTyme {
+  fn from(val: LunarSeason) -> Self {
+    val.parent
   }
 }
 
@@ -536,33 +537,29 @@ impl DerefMut for LunarWeek {
 
 impl Tyme for LunarWeek {
   fn next(&self, n: isize) -> Self {
-    if n == 0 {
-      self.clone()
-    } else {
-      let mut d: isize = (self.get_index() as isize) + n;
-      let mut m: LunarMonth = self.get_lunar_month();
-      let start_index: usize = self.get_start();
-      if n > 0 {
-        let mut week_count: isize = m.get_week_count(start_index) as isize;
-        while d >= week_count {
-          d -= week_count;
-          m = m.next(1);
-          if m.get_first_day().get_week().get_index() != start_index {
-            d += 1;
-          }
-          week_count = m.get_week_count(start_index) as isize;
+    let mut d: isize = (self.get_index() as isize) + n;
+    let mut m: LunarMonth = self.get_lunar_month();
+    let start_index: usize = self.get_start();
+    if n > 0 {
+      let mut week_count: isize = m.get_week_count(start_index) as isize;
+      while d >= week_count {
+        d -= week_count;
+        m = m.next(1);
+        if m.get_first_day().get_week().get_index() != start_index {
+          d += 1;
         }
-      } else {
-        while d < 0 {
-          if m.get_first_day().get_week().get_index() != start_index {
-            d -= 1;
-          }
-          m = m.next(-1);
-          d += m.get_week_count(start_index) as isize;
-        }
+        week_count = m.get_week_count(start_index) as isize;
       }
-      Self::from_ym(m.get_year(), m.get_month_with_leap(), d as usize, start_index)
+    } else {
+      while d < 0 {
+        if m.get_first_day().get_week().get_index() != start_index {
+          d -= 1;
+        }
+        m = m.next(-1);
+        d += m.get_week_count(start_index) as isize;
+      }
     }
+    Self::from_ym(m.get_year(), m.get_month_with_leap(), d as usize, start_index)
   }
 }
 
@@ -733,7 +730,8 @@ impl LunarDay {
     let a_month: isize = self.get_month();
     let b_month: isize = target.get_month();
     if a_month != b_month {
-      return a_month.abs() < b_month.abs();
+      let t: isize = b_month.abs();
+      return a_month == t || a_month.abs() < t;
     }
     self.get_day() < target.get_day()
   }
@@ -747,7 +745,8 @@ impl LunarDay {
     let a_month: isize = self.get_month();
     let b_month: isize = target.get_month();
     if a_month != b_month {
-      return a_month.abs() >= b_month.abs();
+      let t: isize = a_month.abs();
+      return t == b_month || t > b_month.abs();
     }
     self.get_day() > target.get_day()
   }
@@ -766,8 +765,7 @@ impl LunarDay {
 
   /// 干支
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    let offset: isize = self.get_lunar_month().get_first_julian_day().next((self.get_day() as isize) - 12).get_day() as isize;
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(offset).get_name(), EarthBranch::from_index(offset).get_name()).as_str())
+    SixtyCycle::from_index(self.get_lunar_month().get_first_julian_day().next((self.get_day() as isize) - 12).get_day() as isize)
   }
 
   /// 建除十二值神
@@ -1070,12 +1068,13 @@ impl LunarHour {
   }
 
   pub fn get_sixty_cycle(&self) -> SixtyCycle {
-    let earth_branch_index: isize = self.get_index_in_day() as isize % 12;
-    let mut d: SixtyCycle = self.get_lunar_day().get_sixty_cycle();
+    let mut e: isize = self.get_index_in_day() as isize;
+    let mut h: HeavenStem = self.get_lunar_day().get_sixty_cycle().get_heaven_stem();
     if self.get_hour() >= 23 {
-      d = d.next(1);
+      h = h.next(1);
+      e = 0;
     }
-    SixtyCycle::from_name(format!("{}{}", HeavenStem::from_index(d.get_heaven_stem().get_index() as isize % 5 * 2 + earth_branch_index).get_name(), EarthBranch::from_index(earth_branch_index).get_name()).as_str())
+    SixtyCycle::from_index(h.get_index() as isize * 12 + e)
   }
 
   pub fn get_solar_time(&self) -> SolarTime {

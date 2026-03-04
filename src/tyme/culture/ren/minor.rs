@@ -1,7 +1,7 @@
+use crate::tyme::culture::{Element, Luck};
+use crate::tyme::{Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
-use crate::tyme::{Culture, LoopTyme, Tyme};
-use crate::tyme::culture::{Element, Luck};
 
 pub static SIX_STAR_NAMES: [&str; 6] = ["大安", "留连", "速喜", "赤口", "小吉", "空亡"];
 
@@ -63,7 +63,7 @@ impl MinorRen {
 
 impl Display for MinorRen {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -75,17 +75,17 @@ impl PartialEq for MinorRen {
 
 impl Eq for MinorRen {}
 
-impl Into<LoopTyme> for MinorRen {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<MinorRen> for LoopTyme {
+  fn from(val: MinorRen) -> Self {
+    val.parent
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::tyme::Culture;
   use crate::tyme::culture::ren::minor::MinorRen;
   use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
+  use crate::tyme::Culture;
 
   #[test]
   fn test1() {

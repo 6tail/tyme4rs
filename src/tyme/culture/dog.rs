@@ -52,7 +52,7 @@ impl Dog {
 
 impl Display for Dog {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.get_name())
+    f.write_str(&self.get_name())
   }
 }
 
@@ -64,9 +64,9 @@ impl PartialEq for Dog {
 
 impl Eq for Dog {}
 
-impl Into<LoopTyme> for Dog {
-  fn into(self) -> LoopTyme {
-    self.parent
+impl From<Dog> for LoopTyme {
+  fn from(val: Dog) -> Self {
+    val.parent
   }
 }
 
@@ -127,9 +127,9 @@ impl PartialEq for DogDay {
 
 impl Eq for DogDay {}
 
-impl Into<AbstractCultureDay> for DogDay {
-  fn into(self) -> AbstractCultureDay {
-    self.parent
+impl From<DogDay> for AbstractCultureDay {
+  fn from(val: DogDay) -> Self {
+    val.parent
   }
 }
 
