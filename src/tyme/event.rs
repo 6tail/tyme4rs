@@ -383,11 +383,6 @@ impl EventBuilder {
         self
     }
 
-    fn term(self, t: EventType, a: isize, b: isize, c: isize) -> Self {
-        let n: isize = if c.abs() > 31 { c.signum() * 31 } else { 0 };
-        self.content(t, a, b, c - n).offset(n)
-    }
-
     pub fn name(mut self, name: &str) -> Self {
         self.name = name.to_string();
         self
@@ -421,7 +416,7 @@ impl EventBuilder {
     }
 
     pub fn term_day(self, term_index: usize, delay_days: isize) -> Self {
-        self.term(EventType::TermDay, term_index as isize, 0, delay_days)
+        self.content(EventType::TermDay, term_index as isize, 0, delay_days)
     }
 
     pub fn term_heaven_stem(
@@ -430,7 +425,7 @@ impl EventBuilder {
         heaven_stem_index: usize,
         delay_days: isize,
     ) -> Self {
-        self.term(
+        self.content(
             EventType::TermHs,
             term_index as isize,
             heaven_stem_index as isize,
@@ -444,7 +439,7 @@ impl EventBuilder {
         earth_branch_index: usize,
         delay_days: isize,
     ) -> Self {
-        self.term(
+        self.content(
             EventType::TermEb,
             term_index as isize,
             earth_branch_index as isize,
@@ -479,7 +474,7 @@ impl EventBuilder {
 pub struct EventManager {}
 
 impl EventManager {
-    pub fn delete(name: &str) {
+    pub fn remove(name: &str) {
         let reg: Regex = Regex::new(format!("{}{}", EVENT_MANAGER_REGEX, name).as_str()).unwrap();
         let mut s: MutexGuard<String> = EVENT_MANAGER_DATA.lock().unwrap();
         let str: &str = s.as_str();
@@ -628,10 +623,7 @@ mod tests {
 
         EventManager::update(
             "情人节",
-            Event::builder()
-                .solar_day(2, 14, 0)
-                .start_year(270)
-                .build(),
+            Event::builder().solar_day(2, 14, 0).start_year(270).build(),
         );
         EventManager::update(
             "国际消费者权益日",
@@ -646,7 +638,10 @@ mod tests {
         );
         EventManager::update(
             "万圣夜",
-            Event::builder().solar_day(10, 31, 0).start_year(600).build(),
+            Event::builder()
+                .solar_day(10, 31, 0)
+                .start_year(600)
+                .build(),
         );
         EventManager::update(
             "万圣节",
@@ -654,11 +649,17 @@ mod tests {
         );
         EventManager::update(
             "平安夜",
-            Event::builder().solar_day(12, 24, 0).start_year(336).build(),
+            Event::builder()
+                .solar_day(12, 24, 0)
+                .start_year(336)
+                .build(),
         );
         EventManager::update(
             "圣诞节",
-            Event::builder().solar_day(12, 25, 0).start_year(336).build(),
+            Event::builder()
+                .solar_day(12, 25, 0)
+                .start_year(336)
+                .build(),
         );
 
         EventManager::update(
@@ -693,9 +694,21 @@ mod tests {
         // 清明前1天
         EventManager::update("寒食节", Event::builder().term_day(7, -1).build());
         // 立春后第5个戊日
-        EventManager::update("春社", Event::builder().term_heaven_stem(3, 4, 40).build());
+        EventManager::update(
+            "春社",
+            Event::builder()
+                .term_heaven_stem(3, 4, 30)
+                .offset(10)
+                .build(),
+        );
         // 立秋后第5个戊日
-        EventManager::update("秋社", Event::builder().term_heaven_stem(15, 4, 40).build());
+        EventManager::update(
+            "秋社",
+            Event::builder()
+                .term_heaven_stem(15, 4, 30)
+                .offset(10)
+                .build(),
+        );
 
         // 夏至后第3个庚日
         EventManager::update("入伏", Event::builder().term_heaven_stem(12, 6, 20).build());

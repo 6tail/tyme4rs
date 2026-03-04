@@ -124,3 +124,6 @@
 2. 重构：藏历。
 3. 新增：事件。
 4. 优化：代码和算法(感谢[Hjiassen](https://github.com/Hjiassen "https://github.com/Hjiassen"))。
+
+## [1.4.0] - 2026-03-04
+1. 优化：事件。
