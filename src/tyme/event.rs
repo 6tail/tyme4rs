@@ -630,7 +630,7 @@ mod tests {
             "情人节",
             Event::builder()
                 .solar_day(2, 14, 0)
-                .start_year(1986)
+                .start_year(270)
                 .build(),
         );
         EventManager::update(
@@ -642,23 +642,23 @@ mod tests {
         );
         EventManager::update(
             "愚人节",
-            Event::builder().solar_day(4, 1, 0).start_year(0).build(),
+            Event::builder().solar_day(4, 1, 0).start_year(1564).build(),
         );
         EventManager::update(
             "万圣夜",
-            Event::builder().solar_day(10, 31, 0).start_year(0).build(),
+            Event::builder().solar_day(10, 31, 0).start_year(600).build(),
         );
         EventManager::update(
             "万圣节",
-            Event::builder().solar_day(11, 1, 0).start_year(0).build(),
+            Event::builder().solar_day(11, 1, 0).start_year(600).build(),
         );
         EventManager::update(
             "平安夜",
-            Event::builder().solar_day(12, 24, 0).start_year(0).build(),
+            Event::builder().solar_day(12, 24, 0).start_year(336).build(),
         );
         EventManager::update(
             "圣诞节",
-            Event::builder().solar_day(12, 25, 0).start_year(0).build(),
+            Event::builder().solar_day(12, 25, 0).start_year(336).build(),
         );
 
         EventManager::update(
@@ -679,14 +679,14 @@ mod tests {
             "父亲节",
             Event::builder()
                 .solar_week(6, 3, 0)
-                .start_year(1914)
+                .start_year(1972)
                 .build(),
         );
         EventManager::update(
             "感恩节",
             Event::builder()
                 .solar_week(11, 4, 4)
-                .start_year(1914)
+                .start_year(1941)
                 .build(),
         );
 
