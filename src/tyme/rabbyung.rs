@@ -52,7 +52,7 @@ impl RabByungElement {
 
     pub fn from_name(name: &str) -> Self {
         Self {
-            parent: Element::from_name(&*name.replace("铁", "金")),
+            parent: Element::from_name(&name.replace("铁", "金")),
         }
     }
 
@@ -144,7 +144,7 @@ impl RabByungYear {
         element_index: usize,
         zodiac_index: usize,
     ) -> Result<Self, String> {
-        if rab_byung_index < 0 || rab_byung_index > 150 {
+        if !(0..=150).contains(&rab_byung_index) {
             return Err(format!("illegal rab-byung index: {}", rab_byung_index));
         }
         if element_index >= ELEMENT_NAMES.len() {
@@ -161,7 +161,7 @@ impl RabByungYear {
     }
 
     pub fn validate(year: isize) -> Result<(), String> {
-        if year < 1027 || year > 9999 {
+        if !(1027..=9999).contains(&year) {
             Err(format!("illegal rab-byung year: {}", year))
         } else {
             Ok(())
@@ -399,11 +399,11 @@ impl RabByungMonth {
     }
 
     pub fn validate(year: isize, month: isize) -> Result<(), String> {
-        if month == 0 || month > 12 || month < -12 {
+        if month == 0 || !(-12..=12).contains(&month) {
             return Err(format!("illegal rab-byung month: {}", month));
         }
 
-        if year < 1950 || year > 2050 {
+        if !(1950..=2050).contains(&year) {
             return Err(format!(
                 "rab-byung year {} must between 1950 and 2050",
                 year
@@ -411,7 +411,7 @@ impl RabByungMonth {
         }
 
         let leap: bool = month < 0;
-        let m: usize = month.abs() as usize;
+        let m: usize = month.unsigned_abs();
         if year == 1950 && m < 12 {
             return Err(format!(
                 "month {} must be 12 in rab-byung year {}",
@@ -571,12 +571,7 @@ impl RabByungMonth {
 
 impl Display for RabByungMonth {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            self.get_rab_byung_year().to_string(),
-            self.get_name()
-        )
+        write!(f, "{}{}", self.get_rab_byung_year(), self.get_name())
     }
 }
 
@@ -639,7 +634,7 @@ impl RabByungDay {
     }
 
     pub fn validate(year: isize, month: isize, day: isize) -> Result<(), String> {
-        if day == 0 || day < -30 || day > 30 {
+        if day == 0 || !(-30..=30).contains(&day) {
             return Err(format!("illegal day {} in {}", day, month));
         }
 
@@ -732,10 +727,8 @@ impl RabByungDay {
                 if t > -d {
                     t -= 1;
                 }
-            } else if d > 0 {
-                if t > d {
-                    t += 1;
-                }
+            } else if d > 0 && t > d {
+                t += 1;
             }
         }
         if self.leap {
@@ -751,12 +744,7 @@ impl RabByungDay {
 
 impl Display for RabByungDay {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            self.get_rab_byung_month().to_string(),
-            self.get_name()
-        )
+        write!(f, "{}{}", self.get_rab_byung_month(), self.get_name())
     }
 }
 

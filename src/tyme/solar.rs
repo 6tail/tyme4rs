@@ -59,7 +59,7 @@ impl SolarYear {
     }
 
     pub fn validate(year: isize) -> Result<(), String> {
-        if year < 1 || year > 9999 {
+        if !(1..=9999).contains(&year) {
             Err(format!("illegal solar year: {}", year))
         } else {
             Ok(())
@@ -83,12 +83,10 @@ impl SolarYear {
     pub fn get_day_count(&self) -> usize {
         if 1582 == self.get_year() {
             355
+        } else if self.is_leap() {
+            366
         } else {
-            if self.is_leap() {
-                366
-            } else {
-                365
-            }
+            365
         }
     }
 
@@ -516,7 +514,7 @@ impl SolarMonth {
     }
 
     pub fn validate(year: isize, month: usize) -> Result<(), String> {
-        if month < 1 || month > 12 {
+        if !(1..=12).contains(&month) {
             Err(format!("illegal solar month: {}", month))
         } else {
             SolarYear::validate(year)?;
@@ -943,12 +941,10 @@ impl SolarDay {
             } else {
                 Ok(())
             }
+        } else if day > SolarMonth::from_ym(year, month).get_day_count() {
+            Err(format!("illegal solar day: {}-{}-{}", year, month, day))
         } else {
-            if day > SolarMonth::from_ym(year, month).get_day_count() {
-                Err(format!("illegal solar day: {}-{}-{}", year, month, day))
-            } else {
-                Ok(())
-            }
+            Ok(())
         }
     }
 
@@ -1189,7 +1185,7 @@ impl SolarDay {
     pub fn get_constellation(&self) -> Constellation {
         let mut index: isize = 8;
         let y: usize = self.get_month() * 100 + self.get_day();
-        if y > 1221 || y < 120 {
+        if !(120..=1221).contains(&y) {
             index = 9;
         } else if y < 219 {
             index = 10;
@@ -1453,7 +1449,7 @@ pub struct SolarTime {
 impl Tyme for SolarTime {
     fn next(&self, n: isize) -> Self {
         if n == 0 {
-            self.clone()
+            *self
         } else {
             let mut ts: isize = (self.get_second() as isize) + n;
             let mut tm: isize = (self.get_minute() as isize) + ts / 60;
@@ -1869,7 +1865,7 @@ impl SolarTerm {
     /// let is_jie: bool = term.is_qi();
     /// ```
     pub fn is_qi(&self) -> bool {
-        self.get_index() % 2 == 0
+        self.get_index().is_multiple_of(2)
     }
 
     /// 儒略日（精确到秒）

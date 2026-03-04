@@ -47,7 +47,7 @@ impl DerefMut for Event {
 
 impl Culture for Event {
     fn get_name(&self) -> String {
-        format!("{}", self.name)
+        self.name.to_string()
     }
 }
 
@@ -143,18 +143,15 @@ impl Event {
         if year < self.get_start_year() {
             return None;
         }
-        let d: Option<SolarDay>;
-        match t {
-            EventType::SolarDay => d = self.get_solar_day_by_solar_day(year),
-            EventType::LunarDay => d = self.get_solar_day_by_lunar_day(year),
-            EventType::SolarWeek => d = self.get_solar_day_by_week(year),
-            EventType::TermDay => d = self.get_solar_day_by_term(year),
-            EventType::TermHs => d = self.get_solar_day_by_term_heaven_stem(year),
-            EventType::TermEb => d = self.get_solar_day_by_term_earth_branch(year),
-        }
-        if d.is_none() {
-            return None;
-        }
+        let d: Option<SolarDay> = match t {
+            EventType::SolarDay => self.get_solar_day_by_solar_day(year),
+            EventType::LunarDay => self.get_solar_day_by_lunar_day(year),
+            EventType::SolarWeek => self.get_solar_day_by_week(year),
+            EventType::TermDay => self.get_solar_day_by_term(year),
+            EventType::TermHs => self.get_solar_day_by_term_heaven_stem(year),
+            EventType::TermEb => self.get_solar_day_by_term_earth_branch(year),
+        };
+        d?;
         let chars: Vec<char> = self.data.chars().collect();
         let offset: isize = EVENT_MANAGER_CHARS
             .iter()
@@ -387,15 +384,8 @@ impl EventBuilder {
     }
 
     fn term(self, t: EventType, a: isize, b: isize, c: isize) -> Self {
-        let mut d: isize = c;
-        let n: isize = 0;
-        if d > 31 {
-            d = 31;
-        } else if d < -31 {
-            d = -31;
-        }
-        d -= n;
-        self.content(t, a, b, d).offset(n)
+        let n: isize = if c.abs() > 31 { c.signum() * 31 } else { 0 };
+        self.content(t, a, b, c - n).offset(n)
     }
 
     pub fn name(mut self, name: &str) -> Self {
@@ -501,9 +491,9 @@ impl EventManager {
         let mut s: MutexGuard<String> = EVENT_MANAGER_DATA.lock().unwrap();
         let str: &str = s.as_str();
         if reg.is_match(str) {
-            *s = reg.replace_all(str, &*data).to_string();
+            *s = reg.replace_all(str, data).to_string();
         } else {
-            *s = str.to_owned() + &*data;
+            *s = str.to_owned() + data;
         }
     }
 
@@ -516,7 +506,7 @@ impl EventManager {
     pub fn update(name: &str, e: Event) {
         let s: String = e.get_name();
         let mut n: &str = s.as_str();
-        if n.len() < 1 {
+        if n.is_empty() {
             n = name;
         }
         Self::save_or_update(name, format!("{}{}", e.get_data(), n).as_str())

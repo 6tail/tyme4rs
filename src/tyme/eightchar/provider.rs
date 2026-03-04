@@ -18,6 +18,12 @@ pub trait EightCharProvider {
 #[derive(Debug, Copy, Clone)]
 pub struct DefaultEightCharProvider {}
 
+impl Default for DefaultEightCharProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DefaultEightCharProvider {
     pub fn new() -> Self {
         Self {}
@@ -33,6 +39,12 @@ impl EightCharProvider for DefaultEightCharProvider {
 /// Lunar流派2的八字计算（晚子时日柱算当天）
 #[derive(Debug, Copy, Clone)]
 pub struct LunarSect2EightCharProvider {}
+
+impl Default for LunarSect2EightCharProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl LunarSect2EightCharProvider {
     pub fn new() -> Self {
@@ -58,6 +70,12 @@ pub struct AbstractChildLimitProvider {}
 impl ChildLimitProvider for AbstractChildLimitProvider {
     fn get_info(&self, _birth_time: SolarTime, _term: SolarTerm) -> ChildLimitInfo {
         unimplemented!()
+    }
+}
+
+impl Default for AbstractChildLimitProvider {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -118,6 +136,12 @@ pub struct DefaultChildLimitProvider {
     parent: AbstractChildLimitProvider,
 }
 
+impl Default for DefaultChildLimitProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DefaultChildLimitProvider {
     pub fn new() -> Self {
         Self {
@@ -133,7 +157,7 @@ impl ChildLimitProvider for DefaultChildLimitProvider {
             .get_julian_day()
             .get_solar_time()
             .subtract(birth_time)
-            .abs() as usize;
+            .unsigned_abs();
         // 3天 = 1年，3天=60*60*24*3秒=259200秒 = 1年
         let year: usize = seconds / 259200;
         seconds %= 259200;
@@ -160,6 +184,12 @@ pub struct China95ChildLimitProvider {
     parent: AbstractChildLimitProvider,
 }
 
+impl Default for China95ChildLimitProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl China95ChildLimitProvider {
     pub fn new() -> Self {
         Self {
@@ -175,7 +205,7 @@ impl ChildLimitProvider for China95ChildLimitProvider {
             .get_julian_day()
             .get_solar_time()
             .subtract(birth_time)
-            .abs() as usize
+            .unsigned_abs()
             / 60;
         let year: usize = minutes / 4320;
         minutes %= 4320;
@@ -191,6 +221,12 @@ impl ChildLimitProvider for China95ChildLimitProvider {
 #[derive(Debug, Copy, Clone)]
 pub struct LunarSect1ChildLimitProvider {
     parent: AbstractChildLimitProvider,
+}
+
+impl Default for LunarSect1ChildLimitProvider {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl LunarSect1ChildLimitProvider {
@@ -232,7 +268,7 @@ impl ChildLimitProvider for LunarSect1ChildLimitProvider {
         let mut month: isize = day_diff * 4 + month_diff;
         let day: isize = hour_diff * 10 - month_diff * 30;
         let year: isize = month / 12;
-        month = month - year * 12;
+        month -= year * 12;
 
         self.parent.next(
             birth_time,
@@ -252,6 +288,12 @@ pub struct LunarSect2ChildLimitProvider {
     parent: AbstractChildLimitProvider,
 }
 
+impl Default for LunarSect2ChildLimitProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LunarSect2ChildLimitProvider {
     pub fn new() -> Self {
         Self {
@@ -267,7 +309,7 @@ impl ChildLimitProvider for LunarSect2ChildLimitProvider {
             .get_julian_day()
             .get_solar_time()
             .subtract(birth_time)
-            .abs() as usize
+            .unsigned_abs()
             / 60;
         let year: usize = minutes / 4320;
         minutes %= 4320;

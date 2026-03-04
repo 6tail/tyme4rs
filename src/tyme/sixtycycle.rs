@@ -284,13 +284,11 @@ impl EarthBranch {
             self.get_hide_heaven_stem_main(),
             HideHeavenStemType::MAIN,
         ));
-        match self.get_hide_heaven_stem_middle() {
-            Some(x) => l.push(HideHeavenStem::new(x, HideHeavenStemType::MIDDLE)),
-            None => {}
+        if let Some(x) = self.get_hide_heaven_stem_middle() {
+            l.push(HideHeavenStem::new(x, HideHeavenStemType::MIDDLE))
         }
-        match self.get_hide_heaven_stem_residual() {
-            Some(x) => l.push(HideHeavenStem::new(x, HideHeavenStemType::RESIDUAL)),
-            None => {}
+        if let Some(x) = self.get_hide_heaven_stem_residual() {
+            l.push(HideHeavenStem::new(x, HideHeavenStemType::RESIDUAL))
         }
         l
     }
@@ -497,8 +495,8 @@ impl HideHeavenStem {
     pub fn new(heaven_stem: HeavenStem, hide_heaven_stem_type: HideHeavenStemType) -> Self {
         Self {
             parent: AbstractCulture::new(),
-            heaven_stem: heaven_stem,
-            hide_heaven_stem_type: hide_heaven_stem_type,
+            heaven_stem,
+            hide_heaven_stem_type,
         }
     }
 
@@ -506,7 +504,7 @@ impl HideHeavenStem {
         Self {
             parent: AbstractCulture::new(),
             heaven_stem: HeavenStem::from_index(heaven_stem_index),
-            hide_heaven_stem_type: hide_heaven_stem_type,
+            hide_heaven_stem_type,
         }
     }
 
@@ -514,7 +512,7 @@ impl HideHeavenStem {
         Self {
             parent: AbstractCulture::new(),
             heaven_stem: HeavenStem::from_name(heaven_stem_name),
-            hide_heaven_stem_type: hide_heaven_stem_type,
+            hide_heaven_stem_type,
         }
     }
 
@@ -636,7 +634,7 @@ impl Culture for SixtyCycleYear {
 
 impl SixtyCycleYear {
     pub fn new(year: isize) -> Result<Self, String> {
-        if year < -1 || year > 9999 {
+        if !(-1..=9999).contains(&year) {
             Err(format!("illegal sixty cycle year: {}", year))
         } else {
             Ok(Self { year })
@@ -796,7 +794,7 @@ impl SixtyCycleMonth {
 
 impl Display for SixtyCycleMonth {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.year.to_string(), self.get_name())
+        write!(f, "{}{}", self.year, self.get_name())
     }
 }
 
@@ -1042,10 +1040,8 @@ impl SixtyCycleHour {
             if solar_time.is_before(spring_solar_time) {
                 lunar_year = lunar_year.next(-1);
             }
-        } else if lunar_year.get_year() < solar_year {
-            if !solar_time.is_before(spring_solar_time) {
-                lunar_year = lunar_year.next(1);
-            }
+        } else if lunar_year.get_year() < solar_year && !solar_time.is_before(spring_solar_time) {
+            lunar_year = lunar_year.next(1);
         }
         let term: SolarTerm = solar_time.get_term();
         let mut index: isize = term.get_index() as isize - 3;

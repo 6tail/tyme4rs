@@ -22,6 +22,12 @@ impl Culture for AbstractCulture {
     }
 }
 
+impl Default for AbstractCulture {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AbstractCulture {
     pub fn new() -> Self {
         Self {}
@@ -107,6 +113,12 @@ impl Deref for AbstractTyme {
 impl DerefMut for AbstractTyme {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.parent
+    }
+}
+
+impl Default for AbstractTyme {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

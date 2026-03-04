@@ -114,7 +114,7 @@ impl SolarFestival {
     }
 
     pub fn get_type(&self) -> FestivalType {
-        self.festival_type.clone()
+        self.festival_type
     }
 
     pub fn get_index(&self) -> usize {
@@ -305,7 +305,7 @@ impl LunarFestival {
     }
 
     pub fn get_type(&self) -> FestivalType {
-        self.festival_type.clone()
+        self.festival_type
     }
 
     pub fn get_index(&self) -> usize {

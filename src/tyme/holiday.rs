@@ -72,7 +72,7 @@ impl LegalHoliday {
 
     pub fn next(&self, n: isize) -> Option<Self> {
         if n == 0 {
-            return Some(self.clone());
+            return Some(*self);
         }
         let year: isize = self.day.get_year();
         let month: usize = self.day.get_month();

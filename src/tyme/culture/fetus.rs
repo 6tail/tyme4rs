@@ -55,7 +55,7 @@ impl FetusDay {
     }
 
     pub fn get_side(&self) -> Side {
-        self.side.clone()
+        self.side
     }
 
     pub fn get_direction(&self) -> Direction {

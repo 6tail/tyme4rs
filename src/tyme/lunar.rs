@@ -108,7 +108,7 @@ impl LunarYear {
     }
 
     pub fn validate(year: isize) -> Result<(), String> {
-        if year < -1 || year > 9999 {
+        if !(-1..=9999).contains(&year) {
             Err(format!("illegal lunar year: {}", year))
         } else {
             Ok(())
@@ -238,7 +238,7 @@ pub struct LunarMonth {
 impl Tyme for LunarMonth {
     fn next(&self, n: isize) -> Self {
         if n == 0 {
-            return self.clone();
+            return *self;
         }
         let mut m: isize = self.get_index_in_year() as isize + 1 + n;
         let mut y: LunarYear = self.get_lunar_year();
@@ -301,10 +301,10 @@ impl LunarMonth {
     }
 
     pub fn validate(year: isize, month: isize) -> Result<(), String> {
-        if month == 0 || month > 12 || month < -12 {
+        if month == 0 || !(-12..=12).contains(&month) {
             Err(format!("illegal lunar month: {}", month))
         } else {
-            let m: usize = month.abs() as usize;
+            let m: usize = month.unsigned_abs();
             if month < 0 && m != LunarYear::from_year(year).get_leap_month() {
                 return Err(format!("illegal leap month {} in lunar year {}", m, year));
             }
@@ -1156,7 +1156,7 @@ impl LunarHour {
     }
 
     pub fn get_index_in_day(&self) -> usize {
-        (self.get_hour() + 1) / 2
+        self.get_hour().div_ceil(2)
     }
 
     pub fn is_before(&self, target: LunarHour) -> bool {
