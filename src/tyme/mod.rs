@@ -234,6 +234,15 @@ impl LoopTyme {
         let n: isize = self.get_size() as isize;
         -((self.index as isize - target_index + n) % n)
     }
+
+    pub fn steps_close_to(&self, target_index: isize) -> isize {
+        let d1: isize = self.steps_to(target_index) as isize;
+        let d2: isize = self.steps_back_to(target_index);
+        if d1 <= d2.abs() {
+            return d1;
+        }
+        d2
+    }
 }
 
 impl Display for LoopTyme {
