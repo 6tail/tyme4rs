@@ -6,7 +6,7 @@ use crate::tyme::solar::SolarDay;
 use crate::tyme::Culture;
 
 pub static LEGAL_HOLIDAY_NAMES: [&str; 9] = [
-    "元旦节",
+    "元旦",
     "春节",
     "清明节",
     "劳动节",
@@ -196,7 +196,7 @@ mod tests {
     #[test]
     fn test2() {
         let d: LegalHoliday = LegalHoliday::from_ymd(2001, 12, 29).unwrap();
-        assert_eq!("2001年12月29日 元旦节(班)", d.to_string());
+        assert_eq!("2001年12月29日 元旦(班)", d.to_string());
         assert_eq!(true, d.next(-1).is_none());
     }
 

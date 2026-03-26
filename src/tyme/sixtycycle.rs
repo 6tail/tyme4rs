@@ -943,9 +943,11 @@ impl SixtyCycleDay {
         );
         if d.is_before(w) {
             return NineStar::from_index(w.subtract(d) - 1);
-        } else if d.is_before(s) {
+        }
+        if d.is_before(s) {
             return NineStar::from_index(d.subtract(w));
-        } else if d.is_before(n) {
+        }
+        if d.is_before(n) {
             return NineStar::from_index(n.subtract(d) - 1);
         }
         NineStar::from_index(d.subtract(n))

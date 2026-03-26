@@ -10,13 +10,13 @@ use crate::tyme::{AbstractCulture, Culture, Tyme};
 
 pub static SOLAR_FESTIVAL_NAMES: [&str; 10] = [
     "元旦",
-    "三八妇女节",
+    "妇女节",
     "植树节",
-    "五一劳动节",
-    "五四青年节",
-    "六一儿童节",
+    "劳动节",
+    "青年节",
+    "儿童节",
     "建党节",
-    "八一建军节",
+    "建军节",
     "教师节",
     "国庆节",
 ];
@@ -383,11 +383,11 @@ mod tests {
         let f: Option<SolarFestival> = SolarFestival::from_index(2023, 0);
         assert_eq!(false, f.is_none());
         assert_eq!(
-            "2024年5月1日 五一劳动节",
+            "2024年5月1日 劳动节",
             f.unwrap().next(13).unwrap().to_string()
         );
         assert_eq!(
-            "2022年8月1日 八一建军节",
+            "2022年8月1日 建军节",
             f.unwrap().next(-3).unwrap().to_string()
         );
     }
@@ -397,7 +397,7 @@ mod tests {
         let f: Option<SolarFestival> = SolarFestival::from_index(2023, 0);
         assert_eq!(false, f.is_none());
         assert_eq!(
-            "2022年3月8日 三八妇女节",
+            "2022年3月8日 妇女节",
             f.unwrap().next(-9).unwrap().to_string()
         );
     }
@@ -413,7 +413,7 @@ mod tests {
     fn test8() {
         let f: Option<SolarFestival> = SolarDay::from_ymd(2021, 5, 4).get_festival();
         assert_eq!(false, f.is_none());
-        assert_eq!("2021年5月4日 五四青年节", f.unwrap().to_string());
+        assert_eq!("2021年5月4日 青年节", f.unwrap().to_string());
     }
 
     #[test]
