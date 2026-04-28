@@ -53,6 +53,7 @@ impl AbstractFestival {
         }
     }
 
+    #[deprecated(since = "1.4.3")]
     pub fn get_type(&self) -> FestivalType {
         self.festival_type
     }
