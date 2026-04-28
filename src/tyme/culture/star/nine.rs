@@ -88,6 +88,7 @@ impl From<Dipper> for LoopTyme {
 }
 
 pub static NINE_STAR_NAMES: [&str; 9] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+pub static NINE_STAR_COLORS: [&str; 9] = ["白", "黑", "碧", "绿", "黄", "白", "赤", "白", "紫"];
 
 /// 九星
 #[derive(Debug, Clone)]
@@ -149,11 +150,11 @@ impl NineStar {
     }
 
     pub fn get_color(&self) -> String {
-        ["白", "黑", "碧", "绿", "黄", "白", "赤", "白", "紫"][self.get_index()].to_string()
+        NINE_STAR_COLORS[self.get_index()].to_string()
     }
 
     pub fn get_element(&self) -> Element {
-        Element::from_index([4, 2, 0, 0, 2, 3, 3, 2, 1][self.get_index()])
+        self.get_direction().get_element()
     }
 
     pub fn get_dipper(&self) -> Dipper {

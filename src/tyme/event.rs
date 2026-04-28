@@ -52,7 +52,7 @@ impl Culture for Event {
 }
 
 impl Event {
-    fn new(name: &str, data: &str) -> Result<Self, String> {
+    pub fn new(name: &str, data: &str) -> Result<Self, String> {
         Self::validate(data)?;
         Ok(Self {
             parent: AbstractCulture::new(),
@@ -94,19 +94,34 @@ impl Event {
         self.data.clone()
     }
 
+    fn get_char_index(&self, index: usize) -> usize {
+        let t: char = self.data.chars().nth(index).unwrap();
+        EVENT_MANAGER_CHARS.iter().position(|&c| c == t).unwrap()
+    }
+
+    pub fn get_value(&self, index: usize) -> isize {
+        self.get_char_index(index) as isize - 31
+    }
+
+    pub fn get_month(&self, year: isize) -> (isize, isize) {
+        let mut y: isize = year;
+        let mut m: isize = self.get_value(2);
+        if m > 12 {
+            m = 1;
+            y += 1;
+        }
+        (y, m)
+    }
+
     pub fn get_type(&self) -> EventType {
-        let t: char = self.data.chars().nth(1).unwrap();
-        let i: usize = EVENT_MANAGER_CHARS.iter().position(|&c| c == t).unwrap();
-        EventType::from_code(i).unwrap()
+        EventType::from_code(self.get_char_index(1)).unwrap()
     }
 
     pub fn get_start_year(&self) -> isize {
         let mut n: isize = 0;
         let size: isize = EVENT_MANAGER_CHARS.len() as isize;
-        let chars: Vec<char> = self.data.chars().collect();
         for i in 0..3 {
-            let t: char = chars[6 + i];
-            n = n * size + EVENT_MANAGER_CHARS.iter().position(|&c| c == t).unwrap() as isize;
+            n = n * size + self.get_char_index(6 + i) as isize;
         }
         n
     }
@@ -152,12 +167,7 @@ impl Event {
             EventType::TermEb => self.get_solar_day_by_term_earth_branch(year),
         };
         d?;
-        let chars: Vec<char> = self.data.chars().collect();
-        let offset: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[5])
-            .unwrap() as isize
-            - 31;
+        let offset: isize = self.get_value(5);
         if offset != 0 {
             return Some(d.unwrap().next(offset));
         }
@@ -165,29 +175,12 @@ impl Event {
     }
 
     fn get_solar_day_by_solar_day(&self, year: isize) -> Option<SolarDay> {
-        let mut y: isize = year;
-        let chars: Vec<char> = self.data.chars().collect();
-        let mut m: usize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[2])
-            .unwrap()
-            - 31;
-        if m > 12 {
-            m = 1;
-            y += 1;
-        }
-        let d: usize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[3])
-            .unwrap()
-            - 31;
-        let delay: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[4])
-            .unwrap() as isize
-            - 31;
-        let month: SolarMonth = SolarMonth::from_ym(y, m);
-        let last_day: usize = month.get_day_count();
+        let month: (isize, isize) = self.get_month(year);
+        let y: isize = month.0;
+        let m: usize = month.1 as usize;
+        let d: usize = self.get_value(3) as usize;
+        let delay: isize = self.get_value(4);
+        let last_day: usize = SolarMonth::from_ym(y, m).get_day_count();
         if d > last_day {
             if 0 == delay {
                 return None;
@@ -200,29 +193,12 @@ impl Event {
     }
 
     fn get_solar_day_by_lunar_day(&self, year: isize) -> Option<SolarDay> {
-        let mut y: isize = year;
-        let chars: Vec<char> = self.data.chars().collect();
-        let mut m: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[2])
-            .unwrap() as isize
-            - 31;
-        if m > 12 {
-            m = 1;
-            y += 1;
-        }
-        let d: usize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[3])
-            .unwrap()
-            - 31;
-        let delay: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[4])
-            .unwrap() as isize
-            - 31;
-        let month: LunarMonth = LunarMonth::from_ym(y, m);
-        let last_day: usize = month.get_day_count();
+        let month: (isize, isize) = self.get_month(year);
+        let y: isize = month.0;
+        let m: isize = month.1;
+        let d: usize = self.get_value(3) as usize;
+        let delay: isize = self.get_value(4);
+        let last_day: usize = LunarMonth::from_ym(y, m).get_day_count();
         if d > last_day {
             if 0 == delay {
                 return None;
@@ -241,30 +217,14 @@ impl Event {
     }
 
     fn get_solar_day_by_week(&self, year: isize) -> Option<SolarDay> {
-        let chars: Vec<char> = self.data.chars().collect();
         // 第几个星期
-        let n: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[3])
-            .unwrap() as isize
-            - 31;
+        let n: isize = self.get_value(3);
         if n == 0 {
             return None;
         }
-        let m: SolarMonth = SolarMonth::from_ym(
-            year,
-            (EVENT_MANAGER_CHARS
-                .iter()
-                .position(|&c| c == chars[2])
-                .unwrap() as isize
-                - 31) as usize,
-        );
+        let m: SolarMonth = SolarMonth::from_ym(year, self.get_value(2) as usize);
         // 星期几
-        let w: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[4])
-            .unwrap() as isize
-            - 31;
+        let w: isize = self.get_value(4);
         if n > 0 {
             // 当月第1天
             let d: SolarDay = m.get_first_day();
@@ -278,21 +238,8 @@ impl Event {
     }
 
     fn get_solar_day_by_term(&self, year: isize) -> Option<SolarDay> {
-        let chars: Vec<char> = self.data.chars().collect();
-        let offset: isize = EVENT_MANAGER_CHARS
-            .iter()
-            .position(|&c| c == chars[4])
-            .unwrap() as isize
-            - 31;
-        let d: SolarDay = SolarTerm::from_index(
-            year,
-            EVENT_MANAGER_CHARS
-                .iter()
-                .position(|&c| c == chars[2])
-                .unwrap() as isize
-                - 31,
-        )
-        .get_solar_day();
+        let d: SolarDay = SolarTerm::from_index(year, self.get_value(2)).get_solar_day();
+        let offset: isize = self.get_value(4);
         if offset != 0 {
             return Some(d.next(offset));
         }
@@ -301,38 +248,24 @@ impl Event {
 
     fn get_solar_day_by_term_heaven_stem(&self, year: isize) -> Option<SolarDay> {
         let d: SolarDay = self.get_solar_day_by_term(year)?;
-        let chars: Vec<char> = self.data.chars().collect();
         Some(
             d.next(
                 d.get_lunar_day()
                     .get_sixty_cycle()
                     .get_heaven_stem()
-                    .steps_to(
-                        EVENT_MANAGER_CHARS
-                            .iter()
-                            .position(|&c| c == chars[3])
-                            .unwrap() as isize
-                            - 31,
-                    ) as isize,
+                    .steps_to(self.get_value(3)) as isize,
             ),
         )
     }
 
     fn get_solar_day_by_term_earth_branch(&self, year: isize) -> Option<SolarDay> {
         let d: SolarDay = self.get_solar_day_by_term(year)?;
-        let chars: Vec<char> = self.data.chars().collect();
         Some(
             d.next(
                 d.get_lunar_day()
                     .get_sixty_cycle()
                     .get_earth_branch()
-                    .steps_to(
-                        EVENT_MANAGER_CHARS
-                            .iter()
-                            .position(|&c| c == chars[3])
-                            .unwrap() as isize
-                            - 31,
-                    ) as isize,
+                    .steps_to(self.get_value(3)) as isize,
             ),
         )
     }
@@ -367,20 +300,22 @@ impl EventBuilder {
         }
     }
 
-    fn encode_type(t: EventType) -> char {
-        if let Some(c) = EVENT_MANAGER_CHARS.get(t.get_code()) {
+    fn get_char(&self, index: usize) -> char {
+        if let Some(c) = EVENT_MANAGER_CHARS.get(index) {
             *c
         } else {
             '_'
         }
     }
 
-    fn content(mut self, t: EventType, a: isize, b: isize, c: isize) -> Self {
-        self.data[1] = Self::encode_type(t);
-        self.data[2] = *EVENT_MANAGER_CHARS.get((31 + a) as usize).unwrap();
-        self.data[3] = *EVENT_MANAGER_CHARS.get((31 + b) as usize).unwrap();
-        self.data[4] = *EVENT_MANAGER_CHARS.get((31 + c) as usize).unwrap();
+    fn set_value(mut self, index: usize, n: isize) -> Self {
+        self.data[index] = self.get_char((31 + n) as usize);
         self
+    }
+
+    fn content(mut self, t: EventType, a: isize, b: isize, c: isize) -> Self {
+        self.data[1] = self.get_char(t.get_code());
+        self.set_value(2, a).set_value(3, b).set_value(4, c)
     }
 
     pub fn name(mut self, name: &str) -> Self {
@@ -451,17 +386,14 @@ impl EventBuilder {
         let size: usize = EVENT_MANAGER_CHARS.len();
         let mut n: isize = year;
         for i in 0..3 {
-            self.data[8 - i] = *EVENT_MANAGER_CHARS
-                .get((n % size as isize) as usize)
-                .unwrap();
+            self.data[8 - i] = self.get_char((n % size as isize) as usize);
             n /= size as isize;
         }
         self
     }
 
-    pub fn offset(mut self, days: isize) -> Self {
-        self.data[5] = *EVENT_MANAGER_CHARS.get((31 + days) as usize).unwrap();
-        self
+    pub fn offset(self, days: isize) -> Self {
+        self.set_value(5, days)
     }
 
     pub fn build(self) -> Event {
@@ -515,13 +447,13 @@ mod tests {
 
     fn setup() {
         // 公历现代节日
-        // *EVENT_MANAGER_DATA.lock().unwrap() = "@0VV__0Ux公历现代节日:元旦@0Xc__0Ux公历现代节日:三八妇女节@0Xg__0_Q公历现代节日:植树节@0ZV__0Ux公历现代节日:五一劳动节@0ZY__0Ux公历现代节日:五四青年节@0aV__0Ux公历现代节日:六一儿童节@0bV__0Uo公历现代节日:建党节@0cV__0Ug公历现代节日:八一建军节@0de__0_V公历现代节日:教师节@0eV__0Ux公历现代节日:国庆节".to_string();
+        // *EVENT_MANAGER_DATA.lock().unwrap() = "@0VV__0Ux公历现代节日:元旦@0Xc__0Ux公历现代节日:妇女节@0Xg__0_Q公历现代节日:植树节@0ZV__0Ux公历现代节日:劳动节@0ZY__0Ux公历现代节日:青年节@0aV__0Ux公历现代节日:儿童节@0bV__0Uo公历现代节日:建党节@0cV__0Ug公历现代节日:建军节@0de__0_V公历现代节日:教师节@0eV__0Ux公历现代节日:国庆节".to_string();
         EventManager::update(
             "公历现代节日:元旦",
             Event::builder().solar_day(1, 1, 0).start_year(1950).build(),
         );
         EventManager::update(
-            "公历现代节日:三八妇女节",
+            "公历现代节日:妇女节",
             Event::builder().solar_day(3, 8, 0).start_year(1950).build(),
         );
         EventManager::update(
@@ -532,15 +464,15 @@ mod tests {
                 .build(),
         );
         EventManager::update(
-            "公历现代节日:五一劳动节",
+            "公历现代节日:劳动节",
             Event::builder().solar_day(5, 1, 0).start_year(1950).build(),
         );
         EventManager::update(
-            "公历现代节日:五四青年节",
+            "公历现代节日:青年节",
             Event::builder().solar_day(5, 4, 0).start_year(1950).build(),
         );
         EventManager::update(
-            "公历现代节日:六一儿童节",
+            "公历现代节日:儿童节",
             Event::builder().solar_day(6, 1, 0).start_year(1950).build(),
         );
         EventManager::update(
@@ -548,7 +480,7 @@ mod tests {
             Event::builder().solar_day(7, 1, 0).start_year(1941).build(),
         );
         EventManager::update(
-            "公历现代节日:八一建军节",
+            "公历现代节日:建军节",
             Event::builder().solar_day(8, 1, 0).start_year(1933).build(),
         );
         EventManager::update(

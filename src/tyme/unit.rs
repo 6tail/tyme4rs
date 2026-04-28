@@ -183,6 +183,10 @@ impl DerefMut for SecondUnit {
     }
 }
 
+/// 周名称
+pub static WEEK_UNIT_NAMES: [&str; 6] =
+    ["第一周", "第二周", "第三周", "第四周", "第五周", "第六周"];
+
 /// 周
 #[derive(Debug, Copy, Clone)]
 pub struct WeekUnit {

@@ -2,6 +2,7 @@ use crate::tyme::culture::dog::{Dog, DogDay};
 use crate::tyme::culture::nine::{Nine, NineDay};
 use crate::tyme::culture::phenology::{Phenology, PhenologyDay};
 use crate::tyme::culture::plumrain::{PlumRain, PlumRainDay};
+use crate::tyme::culture::star::nine::NineStar;
 use crate::tyme::culture::{Constellation, Phase, PhaseDay, Week};
 use crate::tyme::enums::HideHeavenStemType;
 use crate::tyme::event::Event;
@@ -11,7 +12,7 @@ use crate::tyme::jd::{JulianDay, J2000};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
 use crate::tyme::rabbyung::{RabByungDay, RabByungYear};
 use crate::tyme::sixtycycle::{HideHeavenStem, HideHeavenStemDay, SixtyCycleDay, SixtyCycleHour};
-use crate::tyme::unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit};
+use crate::tyme::unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit, WEEK_UNIT_NAMES};
 use crate::tyme::util::ShouXingUtil;
 use crate::tyme::{AbstractCulture, AbstractCultureDay, AbstractTyme, Culture, LoopTyme, Tyme};
 use std::fmt::{Display, Formatter};
@@ -710,10 +711,6 @@ impl PartialEq for SolarMonth {
 
 impl Eq for SolarMonth {}
 
-/// 公历周名称
-pub static SOLAR_WEEK_NAMES: [&str; 6] =
-    ["第一周", "第二周", "第三周", "第四周", "第五周", "第六周"];
-
 /// 公历周
 #[derive(Debug, Clone)]
 pub struct SolarWeek {
@@ -750,7 +747,7 @@ impl Tyme for SolarWeek {
 
 impl Culture for SolarWeek {
     fn get_name(&self) -> String {
-        SOLAR_WEEK_NAMES[self.get_index()].to_string()
+        WEEK_UNIT_NAMES[self.get_index()].to_string()
     }
 }
 
@@ -911,7 +908,7 @@ impl Culture for SolarDay {
 }
 
 impl Deref for SolarDay {
-    type Target = MonthUnit;
+    type Target = DayUnit;
 
     fn deref(&self) -> &Self::Target {
         &self.parent
@@ -1422,6 +1419,45 @@ impl SolarDay {
     pub fn get_phase(&self) -> Phase {
         self.get_phase_day().get_phase()
     }
+
+    /// 九星
+    pub fn get_nine_star(&self) -> NineStar {
+        let y: isize = self.get_year();
+        let winter_solstice: SolarDay = SolarTerm::from_index(y, 0).get_solar_day();
+        let summer_solstice: SolarDay = SolarTerm::from_index(y, 12).get_solar_day();
+        let next_winter_solstice: SolarDay = SolarTerm::from_index(y + 1, 0).get_solar_day();
+        // 距冬至最近的甲子日
+        let w: SolarDay = winter_solstice.next(
+            winter_solstice
+                .get_lunar_day()
+                .get_sixty_cycle()
+                .steps_close_to(0),
+        );
+        // 距夏至最近的甲子日
+        let s: SolarDay = summer_solstice.next(
+            summer_solstice
+                .get_lunar_day()
+                .get_sixty_cycle()
+                .steps_close_to(0),
+        );
+        // 距下个冬至最近的甲子日
+        let n: SolarDay = next_winter_solstice.next(
+            next_winter_solstice
+                .get_lunar_day()
+                .get_sixty_cycle()
+                .steps_close_to(0),
+        );
+        if self.is_before(w) {
+            return NineStar::from_index(w.subtract(*self) - 1);
+        }
+        if self.is_before(s) {
+            return NineStar::from_index(self.subtract(w));
+        }
+        if self.is_before(n) {
+            return NineStar::from_index(n.subtract(*self) - 1);
+        }
+        NineStar::from_index(self.subtract(n))
+    }
 }
 
 impl Display for SolarDay {
@@ -1774,7 +1810,7 @@ impl Tyme for SolarTerm {
         let i: isize = self.get_index() as isize + n;
         Self::from_index(
             (self.year * size + i) / size,
-            self.parent.index_of_index(i) as isize,
+            self.index_of_index(i) as isize,
         )
     }
 }

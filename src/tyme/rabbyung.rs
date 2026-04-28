@@ -9,6 +9,8 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::str::{Chars, Split};
 
+pub static RAB_BYUNG_ELEMENT_NAMES: [&str; 5] = ["木", "火", "土", "铁", "水"];
+
 /// 藏历五行
 #[derive(Debug, Clone)]
 pub struct RabByungElement {
@@ -39,20 +41,34 @@ impl Tyme for RabByungElement {
 
 impl Culture for RabByungElement {
     fn get_name(&self) -> String {
-        self.parent.get_name().replace("金", "铁")
+        self.parent.get_name()
     }
 }
 
 impl RabByungElement {
     pub fn from_index(index: isize) -> Self {
         Self {
-            parent: Element::from_index(index),
+            parent: Element::new_from_index(
+                RAB_BYUNG_ELEMENT_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                index,
+            ),
         }
     }
 
     pub fn from_name(name: &str) -> Self {
         Self {
-            parent: Element::from_name(&name.replace("铁", "金")),
+            parent: Element::new_from_name(
+                RAB_BYUNG_ELEMENT_NAMES
+                    .to_vec()
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect(),
+                name,
+            ),
         }
     }
 

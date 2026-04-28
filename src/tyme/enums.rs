@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[deprecated(since = "1.4.3")]
 pub enum FestivalType {
     DAY,
     TERM,

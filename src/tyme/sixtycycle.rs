@@ -915,42 +915,7 @@ impl SixtyCycleDay {
 
     /// 九星
     pub fn get_nine_star(&self) -> NineStar {
-        let d: SolarDay = self.solar_day;
-        let y: isize = d.get_year();
-        let winter_solstice: SolarDay = SolarTerm::from_index(y, 0).get_solar_day();
-        let summer_solstice: SolarDay = SolarTerm::from_index(y, 12).get_solar_day();
-        let next_winter_solstice: SolarDay = SolarTerm::from_index(y + 1, 0).get_solar_day();
-        // 距冬至最近的甲子日
-        let w: SolarDay = winter_solstice.next(
-            winter_solstice
-                .get_lunar_day()
-                .get_sixty_cycle()
-                .steps_close_to(0),
-        );
-        // 距夏至最近的甲子日
-        let s: SolarDay = summer_solstice.next(
-            summer_solstice
-                .get_lunar_day()
-                .get_sixty_cycle()
-                .steps_close_to(0),
-        );
-        // 距下个冬至最近的甲子日
-        let n: SolarDay = next_winter_solstice.next(
-            next_winter_solstice
-                .get_lunar_day()
-                .get_sixty_cycle()
-                .steps_close_to(0),
-        );
-        if d.is_before(w) {
-            return NineStar::from_index(w.subtract(d) - 1);
-        }
-        if d.is_before(s) {
-            return NineStar::from_index(d.subtract(w));
-        }
-        if d.is_before(n) {
-            return NineStar::from_index(n.subtract(d) - 1);
-        }
-        NineStar::from_index(d.subtract(n))
+        self.solar_day.get_nine_star()
     }
 
     pub fn get_hours(&self) -> Vec<SixtyCycleHour> {

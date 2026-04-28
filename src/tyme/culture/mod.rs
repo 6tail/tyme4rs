@@ -451,30 +451,38 @@ impl Culture for Element {
 }
 
 impl Element {
-    pub fn from_index(index: isize) -> Self {
+    pub fn new_from_index(names: Vec<String>, index: isize) -> Self {
         Self {
-            parent: LoopTyme::from_index(
-                ELEMENT_NAMES
-                    .to_vec()
-                    .iter()
-                    .map(|x| x.to_string())
-                    .collect(),
-                index,
-            ),
+            parent: LoopTyme::from_index(names, index),
         }
     }
 
-    pub fn from_name(name: &str) -> Self {
+    pub fn new_from_name(names: Vec<String>, name: &str) -> Self {
         Self {
-            parent: LoopTyme::from_name(
-                ELEMENT_NAMES
-                    .to_vec()
-                    .iter()
-                    .map(|x| x.to_string())
-                    .collect(),
-                name,
-            ),
+            parent: LoopTyme::from_name(names, name),
         }
+    }
+
+    pub fn from_index(index: isize) -> Self {
+        Self::new_from_index(
+            ELEMENT_NAMES
+                .to_vec()
+                .iter()
+                .map(|x| x.to_string())
+                .collect(),
+            index,
+        )
+    }
+
+    pub fn from_name(name: &str) -> Self {
+        Self::new_from_name(
+            ELEMENT_NAMES
+                .to_vec()
+                .iter()
+                .map(|x| x.to_string())
+                .collect(),
+            name,
+        )
     }
 
     /// 我生者
