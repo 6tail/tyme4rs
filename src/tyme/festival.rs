@@ -139,10 +139,10 @@ impl SolarFestival {
 
     pub fn from_ymd(year: isize, month: usize, day: usize) -> Option<Self> {
         let d: SolarDay = SolarDay::from_ymd(year, month, day);
-        for i in 0..SOLAR_FESTIVAL_NAMES.len() {
+        for (i, name) in SOLAR_FESTIVAL_NAMES.iter().enumerate() {
             let start: usize = i * 8;
             let e: Event = Event::new(
-                SOLAR_FESTIVAL_NAMES[i],
+                name,
                 format!("@{}", &SOLAR_FESTIVAL_DATA[start..start + 8]).as_str(),
             )
             .unwrap();
@@ -269,10 +269,10 @@ impl LunarFestival {
 
     pub fn from_ymd(year: isize, month: isize, day: usize) -> Option<Self> {
         let d: LunarDay = LunarDay::from_ymd(year, month, day);
-        for i in 0..LUNAR_FESTIVAL_NAMES.len() {
+        for (i, name) in LUNAR_FESTIVAL_NAMES.iter().enumerate() {
             let start: usize = i * 8;
             let e: Event = Event::new(
-                LUNAR_FESTIVAL_NAMES[i],
+                name,
                 format!("@{}", &LUNAR_FESTIVAL_DATA[start..start + 8]).as_str(),
             )
             .unwrap();
