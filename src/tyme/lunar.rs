@@ -22,7 +22,7 @@ use crate::tyme::sixtycycle::{
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTime};
 use crate::tyme::unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit, WEEK_UNIT_NAMES};
 use crate::tyme::util::ShouXingUtil;
-use crate::tyme::{Culture, LoopTyme, Tyme};
+use crate::tyme::{AbstractCulture, Culture, LoopTyme, Tyme};
 
 lazy_static! {
     static ref LEAP_MONTH_YEAR: Vec<Vec<isize>> = {
@@ -108,11 +108,7 @@ impl LunarYear {
     }
 
     pub fn validate(year: isize) -> Result<(), String> {
-        if !(-1..=9999).contains(&year) {
-            Err(format!("illegal lunar year: {}", year))
-        } else {
-            Ok(())
-        }
+        AbstractCulture::validate_range(year, -1, 9999, "lunar year")
     }
 
     pub fn from_year(year: isize) -> Self {
@@ -791,33 +787,11 @@ impl LunarDay {
     }
 
     pub fn is_before(&self, target: LunarDay) -> bool {
-        let a_year: isize = self.get_year();
-        let b_year: isize = target.get_year();
-        if a_year != b_year {
-            return a_year < b_year;
-        }
-        let a_month: isize = self.get_month();
-        let b_month: isize = target.get_month();
-        if a_month != b_month {
-            let t: isize = b_month.abs();
-            return a_month == t || a_month.abs() < t;
-        }
-        self.get_day() < target.get_day()
+        self.get_compare_index() < target.get_compare_index()
     }
 
     pub fn is_after(&self, target: LunarDay) -> bool {
-        let a_year: isize = self.get_year();
-        let b_year: isize = target.get_year();
-        if a_year != b_year {
-            return a_year > b_year;
-        }
-        let a_month: isize = self.get_month();
-        let b_month: isize = target.get_month();
-        if a_month != b_month {
-            let t: isize = a_month.abs();
-            return t == b_month || t > b_month.abs();
-        }
-        self.get_day() > target.get_day()
+        self.get_compare_index() > target.get_compare_index()
     }
 
     /// 当天的年干支（立春换）
@@ -1021,21 +995,13 @@ impl Tyme for LunarHour {
         if n == 0 {
             self.clone()
         } else {
-            let h: isize = (self.get_hour() as isize) + n * 2;
-            let diff: isize = if h < 0 { -1 } else { 1 };
-            let mut hour: isize = h.abs();
-            let mut days: isize = hour / 24 * diff;
-            hour = (hour % 24) * diff;
-            if hour < 0 {
-                hour += 24;
-                days -= 1;
-            }
-            let d: LunarDay = self.get_lunar_day().next(days);
+            let h: isize = self.get_hour() as isize + n * 2;
+            let d: LunarDay = self.get_lunar_day().next(self.floor_div(h, 24));
             Self::from_ymd_hms(
                 d.get_year(),
                 d.get_month(),
                 d.get_day(),
-                hour as usize,
+                self.index_of(h, 24),
                 self.get_minute(),
                 self.get_second(),
             )
@@ -1118,43 +1084,11 @@ impl LunarHour {
     }
 
     pub fn is_before(&self, target: LunarHour) -> bool {
-        let a_day: LunarDay = self.get_lunar_day();
-        let b_day: LunarDay = target.get_lunar_day();
-        if a_day != b_day {
-            return a_day.is_before(b_day);
-        }
-        let a_hour: usize = self.get_hour();
-        let b_hour: usize = target.get_hour();
-        if a_hour != b_hour {
-            return a_hour < b_hour;
-        }
-        let a_minute: usize = self.get_minute();
-        let b_minute: usize = target.get_minute();
-        if a_minute != b_minute {
-            a_minute < b_minute
-        } else {
-            self.get_second() < target.get_second()
-        }
+        self.get_compare_index() < target.get_compare_index()
     }
 
     pub fn is_after(&self, target: LunarHour) -> bool {
-        let a_day: LunarDay = self.get_lunar_day();
-        let b_day: LunarDay = target.get_lunar_day();
-        if a_day != b_day {
-            return a_day.is_after(b_day);
-        }
-        let a_hour: usize = self.get_hour();
-        let b_hour: usize = target.get_hour();
-        if a_hour != b_hour {
-            return a_hour > b_hour;
-        }
-        let a_minute: usize = self.get_minute();
-        let b_minute: usize = target.get_minute();
-        if a_minute != b_minute {
-            a_minute > b_minute
-        } else {
-            self.get_second() > target.get_second()
-        }
+        self.get_compare_index() > target.get_compare_index()
     }
 
     #[deprecated(since = "1.3.0", note = "please use SixtyCycleHour.get_year() instead")]

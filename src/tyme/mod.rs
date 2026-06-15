@@ -41,6 +41,22 @@ impl AbstractCulture {
         }
         i as usize
     }
+
+    pub fn floor_div(&self, x: isize, y: isize) -> isize {
+        let mut r: isize = x / y;
+        if (x ^ y) < 0 && x % y != 0 {
+            r -= 1;
+        }
+        r
+    }
+
+    pub fn validate_range(value: isize, min: isize, max: isize, field: &str) -> Result<(), String> {
+        if !(min..=max).contains(&value) {
+            Err(format!("illegal {}: {}", field, value))
+        } else {
+            Ok(())
+        }
+    }
 }
 
 impl Display for AbstractCulture {
@@ -270,6 +286,7 @@ pub mod eightchar;
 pub mod enums;
 pub mod event;
 pub mod festival;
+pub mod hijri;
 pub mod holiday;
 pub mod jd;
 pub mod lunar;

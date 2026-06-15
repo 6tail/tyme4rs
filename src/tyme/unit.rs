@@ -1,4 +1,4 @@
-use crate::tyme::AbstractTyme;
+use crate::tyme::{AbstractCulture, AbstractTyme};
 use std::ops::{Deref, DerefMut};
 
 /// 年
@@ -35,6 +35,11 @@ impl YearUnit {
     pub fn get_year(&self) -> isize {
         self.year
     }
+
+    /// 用于比较大小的索引
+    pub fn get_compare_index(&self) -> isize {
+        self.year * 10000
+    }
 }
 
 /// 月
@@ -57,6 +62,17 @@ impl MonthUnit {
     /// 月
     pub fn get_month(&self) -> isize {
         self.month
+    }
+
+    /// 用于比较大小的索引
+    pub fn get_compare_index(&self) -> isize {
+        let m: isize;
+        if self.month > 0 {
+            m = self.month * 2;
+        } else {
+            m = -self.month * 2 + 1;
+        }
+        self.parent.get_compare_index() + m * 100
     }
 }
 
@@ -94,6 +110,11 @@ impl DayUnit {
     /// 日
     pub fn get_day(&self) -> isize {
         self.day
+    }
+
+    /// 用于比较大小的索引
+    pub fn get_compare_index(&self) -> isize {
+        self.parent.get_compare_index() + self.day
     }
 }
 
@@ -142,15 +163,9 @@ impl SecondUnit {
     }
 
     pub fn validate(hour: usize, minute: usize, second: usize) -> Result<(), String> {
-        if hour > 23 {
-            Err(format!("illegal hour: {}", hour))
-        } else if minute > 59 {
-            Err(format!("illegal minute: {}", minute))
-        } else if second > 59 {
-            Err(format!("illegal second: {}", second))
-        } else {
-            Ok(())
-        }
+        AbstractCulture::validate_range(hour as isize, 0, 23, "hour")?;
+        AbstractCulture::validate_range(minute as isize, 0, 59, "minute")?;
+        AbstractCulture::validate_range(second as isize, 0, 59, "second")
     }
 
     /// 时
@@ -166,6 +181,16 @@ impl SecondUnit {
     /// 秒
     pub fn get_second(&self) -> usize {
         self.second
+    }
+
+    /// 当天秒数
+    pub fn get_seconds_in_day(&self) -> usize {
+        self.hour * 3600 + self.minute * 60 + self.second
+    }
+
+    /// 用于比较大小的索引
+    pub fn get_compare_index(&self) -> isize {
+        self.parent.get_compare_index() * 86400 + self.get_seconds_in_day() as isize
     }
 }
 
@@ -208,13 +233,8 @@ impl WeekUnit {
     }
 
     pub fn validate(index: usize, start: usize) -> Result<(), String> {
-        if index > 5 {
-            Err(format!("illegal week index: {}", index))
-        } else if start > 6 {
-            Err(format!("illegal week start: {}", start))
-        } else {
-            Ok(())
-        }
+        AbstractCulture::validate_range(index as isize, 0, 5, "week index")?;
+        AbstractCulture::validate_range(start as isize, 0, 6, "week start")
     }
 
     /// 索引，0-6

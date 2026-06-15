@@ -634,11 +634,12 @@ impl Culture for SixtyCycleYear {
 
 impl SixtyCycleYear {
     pub fn new(year: isize) -> Result<Self, String> {
-        if !(-1..=9999).contains(&year) {
-            Err(format!("illegal sixty cycle year: {}", year))
-        } else {
-            Ok(Self { year })
-        }
+        Self::validate(year)?;
+        Ok(Self { year })
+    }
+
+    pub fn validate(year: isize) -> Result<(), String> {
+        AbstractCulture::validate_range(year, -1, 9999, "sixty cycle year")
     }
 
     pub fn from_year(year: isize) -> Self {

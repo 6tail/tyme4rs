@@ -7,6 +7,7 @@ use crate::tyme::culture::{Constellation, Phase, PhaseDay, Week};
 use crate::tyme::enums::HideHeavenStemType;
 use crate::tyme::event::Event;
 use crate::tyme::festival::SolarFestival;
+use crate::tyme::hijri::HijriDay;
 use crate::tyme::holiday::LegalHoliday;
 use crate::tyme::jd::{JulianDay, J2000};
 use crate::tyme::lunar::{LunarDay, LunarHour, LunarMonth};
@@ -60,11 +61,7 @@ impl SolarYear {
     }
 
     pub fn validate(year: isize) -> Result<(), String> {
-        if !(1..=9999).contains(&year) {
-            Err(format!("illegal solar year: {}", year))
-        } else {
-            Ok(())
-        }
+        AbstractCulture::validate_range(year, 1, 9999, "solar year")
     }
 
     pub fn from_year(year: isize) -> Self {
@@ -235,12 +232,8 @@ impl SolarHalfYear {
     }
 
     pub fn validate(year: isize, index: usize) -> Result<(), String> {
-        if index > 1 {
-            Err(format!("illegal solar half year index: {}", index))
-        } else {
-            SolarYear::validate(year)?;
-            Ok(())
-        }
+        AbstractCulture::validate_range(index as isize, 0, 1, "solar half year index")?;
+        SolarYear::validate(year)
     }
 
     pub fn from_index(year: isize, index: usize) -> Self {
@@ -382,12 +375,8 @@ impl SolarSeason {
     }
 
     pub fn validate(year: isize, index: usize) -> Result<(), String> {
-        if index > 3 {
-            Err(format!("illegal solar season index: {}", index))
-        } else {
-            SolarYear::validate(year)?;
-            Ok(())
-        }
+        AbstractCulture::validate_range(index as isize, 0, 3, "solar season index")?;
+        SolarYear::validate(year)
     }
 
     pub fn from_index(year: isize, index: usize) -> Self {
@@ -515,12 +504,8 @@ impl SolarMonth {
     }
 
     pub fn validate(year: isize, month: usize) -> Result<(), String> {
-        if !(1..=12).contains(&month) {
-            Err(format!("illegal solar month: {}", month))
-        } else {
-            SolarYear::validate(year)?;
-            Ok(())
-        }
+        AbstractCulture::validate_range(month as isize, 1, 12, "solar month")?;
+        SolarYear::validate(year)
     }
 
     pub fn from_ym(year: isize, month: usize) -> Self {
@@ -930,15 +915,15 @@ impl SolarDay {
     }
 
     pub fn validate(year: isize, month: usize, day: usize) -> Result<(), String> {
-        if day < 1 {
-            Err(format!("illegal solar day: {}-{}-{}", year, month, day))
-        } else if 1582 == year && 10 == month {
-            if (day > 4 && day < 15) || day > 31 {
-                Err(format!("illegal solar day: {}-{}-{}", year, month, day))
+        let mut illegal: bool = day < 1;
+        if !illegal {
+            if 1582 == year && 10 == month {
+                illegal = (day > 4 && day < 15) || day > 31;
             } else {
-                Ok(())
+                illegal = day > SolarMonth::from_ym(year, month).get_day_count();
             }
-        } else if day > SolarMonth::from_ym(year, month).get_day_count() {
+        }
+        if illegal {
             Err(format!("illegal solar day: {}-{}-{}", year, month, day))
         } else {
             Ok(())
@@ -1091,33 +1076,11 @@ impl SolarDay {
     }
 
     pub fn is_before(&self, target: SolarDay) -> bool {
-        let a_year: isize = self.get_year();
-        let b_year: isize = target.get_year();
-        if a_year != b_year {
-            return a_year < b_year;
-        }
-        let a_month: usize = self.get_month();
-        let b_month: usize = target.get_month();
-        if a_month != b_month {
-            a_month < b_month
-        } else {
-            self.get_day() < target.get_day()
-        }
+        self.get_compare_index() < target.get_compare_index()
     }
 
     pub fn is_after(&self, target: SolarDay) -> bool {
-        let a_year: isize = self.get_year();
-        let b_year: isize = target.get_year();
-        if a_year != b_year {
-            return a_year > b_year;
-        }
-        let a_month: usize = self.get_month();
-        let b_month: usize = target.get_month();
-        if a_month != b_month {
-            a_month > b_month
-        } else {
-            self.get_day() > target.get_day()
-        }
+        self.get_compare_index() > target.get_compare_index()
     }
 
     /// 位于当年的索引
@@ -1180,32 +1143,13 @@ impl SolarDay {
     /// let constellation: Constellation = SolarDay::from_ymd(2023, 9, 12).get_constellation();
     /// ```
     pub fn get_constellation(&self) -> Constellation {
-        let mut index: isize = 8;
-        let y: usize = self.get_month() * 100 + self.get_day();
-        if !(120..=1221).contains(&y) {
-            index = 9;
-        } else if y < 219 {
-            index = 10;
-        } else if y < 321 {
-            index = 11;
-        } else if y < 420 {
-            index = 0;
-        } else if y < 521 {
-            index = 1;
-        } else if y < 622 {
-            index = 2;
-        } else if y < 723 {
-            index = 3;
-        } else if y < 823 {
-            index = 4;
-        } else if y < 923 {
-            index = 5;
-        } else if y < 1024 {
-            index = 6;
-        } else if y < 1123 {
-            index = 7;
+        let days: [usize; 12] = [19, 18, 20, 19, 20, 21, 22, 22, 22, 23, 22, 21];
+        let m: usize = self.get_month() - 1;
+        let mut offset: isize = 0;
+        if self.get_day() > days[m] {
+            offset = 1;
         }
-        Constellation::from_index(index)
+        Constellation::from_index(9 + m as isize + offset)
     }
 
     /// 三伏天
@@ -1458,6 +1402,18 @@ impl SolarDay {
         }
         NineStar::from_index(self.subtract(n))
     }
+
+    /// 回历日
+    pub fn get_hijri_day(&self) -> HijriDay {
+        let mut d: isize = self.subtract(SolarDay::from_ymd(622, 7, 16));
+        let z: isize = self.floor_div(d, 10631);
+        d -= z * 10631;
+        let y: isize = ((d as f64 + 0.5) / 354.366).floor() as isize;
+        d -= (y as f64 * 354.366 + 0.5).floor() as isize;
+        let m: usize = ((d as f64 + 0.11) / 29.51).floor() as usize;
+        d -= (m as f64 * 29.5 + 0.5).floor() as isize;
+        HijriDay::from_ymd(z * 30 + y + 1, m + 1, (d + 1) as usize)
+    }
 }
 
 impl Display for SolarDay {
@@ -1487,34 +1443,16 @@ impl Tyme for SolarTime {
         if n == 0 {
             *self
         } else {
-            let mut ts: isize = (self.get_second() as isize) + n;
-            let mut tm: isize = (self.get_minute() as isize) + ts / 60;
-            ts %= 60;
-            if ts < 0 {
-                ts += 60;
-                tm -= 1;
-            }
-            let mut th: isize = (self.get_hour() as isize) + tm / 60;
-            tm %= 60;
-            if tm < 0 {
-                tm += 60;
-                th -= 1;
-            }
-            let mut td: isize = th / 24;
-            th %= 24;
-            if th < 0 {
-                th += 24;
-                td -= 1;
-            }
-
-            let d: SolarDay = self.get_solar_day().next(td);
+            let t: isize = self.get_seconds_in_day() as isize + n;
+            let s: usize = self.index_of(t, 86400);
+            let d: SolarDay = self.get_solar_day().next(self.floor_div(t, 86400));
             Self::from_ymd_hms(
                 d.get_year(),
                 d.get_month(),
                 d.get_day(),
-                th as usize,
-                tm as usize,
-                ts as usize,
+                s / 3600,
+                s % 3600 / 60,
+                s % 60,
             )
         }
     }
@@ -1627,43 +1565,11 @@ impl SolarTime {
     }
 
     pub fn is_before(&self, target: SolarTime) -> bool {
-        let a_day: SolarDay = self.get_solar_day();
-        let b_day: SolarDay = target.get_solar_day();
-        if a_day != b_day {
-            return a_day.is_before(b_day);
-        }
-        let a_hour: usize = self.get_hour();
-        let b_hour: usize = target.get_hour();
-        if a_hour != b_hour {
-            return a_hour < b_hour;
-        }
-        let a_minute: usize = self.get_minute();
-        let b_minute: usize = target.get_minute();
-        if a_minute != b_minute {
-            a_minute < b_minute
-        } else {
-            self.get_second() < target.get_second()
-        }
+        self.get_compare_index() < target.get_compare_index()
     }
 
     pub fn is_after(&self, target: SolarTime) -> bool {
-        let a_day: SolarDay = self.get_solar_day();
-        let b_day: SolarDay = target.get_solar_day();
-        if a_day != b_day {
-            return a_day.is_after(b_day);
-        }
-        let a_hour: usize = self.get_hour();
-        let b_hour: usize = target.get_hour();
-        if a_hour != b_hour {
-            return a_hour > b_hour;
-        }
-        let a_minute: usize = self.get_minute();
-        let b_minute: usize = target.get_minute();
-        if a_minute != b_minute {
-            a_minute > b_minute
-        } else {
-            self.get_second() > target.get_second()
-        }
+        self.get_compare_index() > target.get_compare_index()
     }
 
     /// 节气
@@ -1714,16 +1620,9 @@ impl SolarTime {
     }
 
     pub fn subtract(&self, target: SolarTime) -> isize {
-        let mut days: isize = self.get_solar_day().subtract(target.get_solar_day());
-        let cs: usize = self.get_hour() * 3600 + self.get_minute() * 60 + self.get_second();
-        let ts: usize = target.get_hour() * 3600 + target.get_minute() * 60 + target.get_second();
-        let mut seconds: isize = cs as isize - ts as isize;
-        if seconds < 0 {
-            seconds += 86400;
-            days -= 1;
-        }
-        seconds += days * 86400;
-        seconds
+        self.get_solar_day().subtract(target.get_solar_day()) * 86400
+            + self.get_seconds_in_day() as isize
+            - target.get_seconds_in_day() as isize
     }
 
     pub fn get_lunar_hour(&self) -> LunarHour {

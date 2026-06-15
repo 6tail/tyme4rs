@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 
-use crate::tyme::enums::{EventType, FestivalType};
+use crate::tyme::enums::EventType;
 use crate::tyme::event::Event;
 use crate::tyme::lunar::LunarDay;
 use crate::tyme::solar::{SolarDay, SolarTerm, SolarTermDay};
@@ -12,8 +12,6 @@ use crate::tyme::{AbstractTyme, Culture, Tyme};
 #[derive(Debug, Clone)]
 pub struct AbstractFestival {
     parent: AbstractTyme,
-    /// 类型
-    festival_type: FestivalType,
     /// 索引
     index: usize,
     /// 日
@@ -43,19 +41,13 @@ impl Culture for AbstractFestival {
 }
 
 impl AbstractFestival {
-    pub fn new(festival_type: FestivalType, index: usize, event: Event, day: DayUnit) -> Self {
+    pub fn new(index: usize, event: Event, day: DayUnit) -> Self {
         Self {
             parent: AbstractTyme::new(),
-            festival_type,
             index,
             day,
             event,
         }
-    }
-
-    #[deprecated(since = "1.4.3")]
-    pub fn get_type(&self) -> FestivalType {
-        self.festival_type
     }
 
     pub fn get_index(&self) -> usize {
@@ -123,10 +115,9 @@ impl Culture for SolarFestival {
 }
 
 impl SolarFestival {
-    pub fn new(festival_type: FestivalType, index: usize, event: Event, day: SolarDay) -> Self {
+    pub fn new(index: usize, event: Event, day: SolarDay) -> Self {
         Self {
             parent: AbstractFestival::new(
-                festival_type,
                 index,
                 event,
                 DayUnit::new(
@@ -150,7 +141,7 @@ impl SolarFestival {
             let m: usize = e.get_value(2) as usize;
             let day: usize = e.get_value(3) as usize;
             if d.get_year() >= e.get_start_year() && d.get_month() == m && d.get_day() == day {
-                return Some(Self::new(FestivalType::DAY, i, e, d));
+                return Some(Self::new(i, e, d));
             }
         }
         None
@@ -171,12 +162,7 @@ impl SolarFestival {
         }
         let m: usize = e.get_value(2) as usize;
         let d: usize = e.get_value(3) as usize;
-        Some(Self::new(
-            FestivalType::DAY,
-            index,
-            e,
-            SolarDay::from_ymd(year, m, d),
-        ))
+        Some(Self::new(index, e, SolarDay::from_ymd(year, m, d)))
     }
 
     pub fn get_day(&self) -> SolarDay {
@@ -257,10 +243,9 @@ impl Culture for LunarFestival {
 }
 
 impl LunarFestival {
-    pub fn new(festival_type: FestivalType, index: usize, event: Event, day: LunarDay) -> Self {
+    pub fn new(index: usize, event: Event, day: LunarDay) -> Self {
         Self {
             parent: AbstractFestival::new(
-                festival_type,
                 index,
                 event,
                 DayUnit::new(day.get_year(), day.get_month(), day.get_day() as isize),
@@ -283,7 +268,7 @@ impl LunarFestival {
                     if 0 == offset {
                         if d.get_month() == e.get_value(2) && d.get_day() == e.get_value(3) as usize
                         {
-                            return Some(LunarFestival::new(FestivalType::DAY, i, e, d));
+                            return Some(LunarFestival::new(i, e, d));
                         }
                     } else {
                         let m: (isize, isize) = e.get_month(d.get_year());
@@ -292,7 +277,7 @@ impl LunarFestival {
                             && next.get_month() == m.1
                             && next.get_day() == e.get_value(3) as usize
                         {
-                            return Some(LunarFestival::new(FestivalType::DAY, i, e, d));
+                            return Some(LunarFestival::new(i, e, d));
                         }
                     }
                 }
@@ -301,7 +286,7 @@ impl LunarFestival {
                     if term.day_index == 0
                         && term.get_solar_term().index == e.get_value(2) as usize % 24
                     {
-                        return Some(LunarFestival::new(FestivalType::TERM, i, e, d));
+                        return Some(LunarFestival::new(i, e, d));
                     }
                 }
                 _ => {}
@@ -328,12 +313,11 @@ impl LunarFestival {
                 if 0 != offset {
                     d = d.next(offset);
                 }
-                Some(LunarFestival::new(FestivalType::DAY, index, e, d))
+                Some(LunarFestival::new(index, e, d))
             }
             EventType::TermDay => {
                 let offset: isize = e.get_value(2);
                 Some(LunarFestival::new(
-                    FestivalType::TERM,
                     index,
                     e,
                     SolarTerm::from_index(year, offset)

@@ -3141,34 +3141,60 @@ impl ShouXingUtil {
         t * 36525.0 + ONE_THIRD
     }
 
-    pub fn calc_shuo(pjd: f64) -> f64 {
-        let size: usize = SHUO_KB.len();
+    pub fn qi_shuo(is_qi: bool, is_high: bool, jd: f64, pc: f64) -> f64 {
+        let w: f64;
+        if is_qi {
+            w = ((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI / 12.0;
+        } else {
+            w = ((jd + pc - 2451551.0) / 29.5306).floor() * PI_2;
+        }
+        let d: f64;
+        if is_qi {
+            if is_high {
+                d = Self::qi_high(w);
+            } else {
+                d = Self::qi_low(w);
+            }
+        } else {
+            if is_high {
+                d = Self::shuo_high(w);
+            } else {
+                d = Self::shuo_low(w);
+            }
+        }
+        (d + 0.5).floor()
+    }
+
+    pub fn calc(is_qi: bool, jd: f64, kb: &[f64], pc: f64, fkb: String) -> f64 {
+        let size: usize = kb.len();
         let mut d: f64 = 0.0;
-        let pc: f64 = 14.0;
-        let mut i: usize = 0;
-        let jd: f64 = pjd + 2451545.0;
-        let f1: f64 = SHUO_KB[0] - pc;
-        let f2: f64 = SHUO_KB[size - 1] - pc;
-        let f3: f64 = 2436935.0;
-        if jd < f1 || jd >= f3 {
-            d = (Self::shuo_high(((jd + pc - 2451551.0) / 29.5306).floor() * PI_2) + 0.5).floor();
-        } else if jd >= f1 && jd < f2 {
+        let j: f64 = jd + 2451545.0;
+        let f1: f64 = kb[0] - pc;
+        let f2: f64 = kb[size - 1] - pc;
+        if j < f1 || j >= 2436935.0 {
+            d = Self::qi_shuo(is_qi, true, j, pc);
+        } else if j >= f1 && j < f2 {
+            let mut i: usize = 0;
             while i < size {
-                if jd + pc < SHUO_KB[i + 2] {
+                if j + pc < kb[i + 2] {
                     break;
                 }
                 i += 2;
             }
-            d = SHUO_KB[i] + SHUO_KB[i + 1] * ((jd + pc - SHUO_KB[i]) / SHUO_KB[i + 1]).floor();
-            d = (d + 0.5).floor();
-            if d == 1683460.0 {
+            d = (kb[i] + kb[i + 1] * ((j + pc - kb[i]) / kb[i + 1]).floor() + 0.5).floor();
+            if !is_qi && d == 1683460.0 {
                 d += 1.0;
             }
             d -= 2451545.0;
-        } else if jd >= f2 {
-            d = (Self::shuo_low(((jd + pc - 2451551.0) / 29.5306).floor() * PI_2) + 0.5).floor();
-            let from: usize = ((jd - f2) / 29.5306) as usize;
-            let n: &str = &SB[from..from + 1];
+        } else if j >= f2 {
+            d = Self::qi_shuo(is_qi, false, j, pc);
+            let from: usize;
+            if is_qi {
+                from = ((jd - f2) / 365.2422 * 24.0) as usize;
+            } else {
+                from = ((jd - f2) / 29.5306) as usize;
+            }
+            let n: &str = &fkb[from..from + 1];
             if n == "1" {
                 d += 1.0;
             } else if n == "2" {
@@ -3178,44 +3204,12 @@ impl ShouXingUtil {
         d
     }
 
-    pub fn calc_qi(pjd: f64) -> f64 {
-        let size: usize = QI_KB.len();
-        let mut d: f64 = 0.0;
-        let pc: f64 = 7.0;
-        let mut i: usize = 0;
-        let jd: f64 = pjd + 2451545.0;
-        let f1: f64 = QI_KB[0] - pc;
-        let f2: f64 = QI_KB[size - 1] - pc;
-        let f3: f64 = 2436935.0;
-        if jd < f1 || jd >= f3 {
-            d = (Self::qi_high(((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI / 12.0)
-                + 0.5)
-                .floor();
-        } else if jd >= f1 && jd < f2 {
-            while i < size {
-                if jd + pc < QI_KB[i + 2] {
-                    break;
-                }
-                i += 2;
-            }
-            d = QI_KB[i] + QI_KB[i + 1] * ((jd + pc - QI_KB[i]) / QI_KB[i + 1]).floor();
-            d = (d + 0.5).floor();
-            if d == 1683460.0 {
-                d += 1.0;
-            }
-            d -= 2451545.0;
-        } else if jd >= f2 {
-            d = (Self::qi_low(((jd + pc - 2451259.0) / 365.2422 * 24.0).floor() * PI / 12.0) + 0.5)
-                .floor();
-            let from: usize = ((jd - f2) / 365.2422 * 24.0) as usize;
-            let n: &str = &QB[from..from + 1];
-            if n == "1" {
-                d += 1.0;
-            } else if n == "2" {
-                d -= 1.0;
-            }
-        }
-        d
+    pub fn calc_shuo(jd: f64) -> f64 {
+        Self::calc(false, jd, &SHUO_KB, 14.0, SB.clone())
+    }
+
+    pub fn calc_qi(jd: f64) -> f64 {
+        Self::calc(true, jd, &QI_KB, 7.0, QB.clone())
     }
 
     pub fn qi_accurate(w: f64) -> f64 {

@@ -1,59 +1,6 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum FestivalType {
-    DAY,
-    TERM,
-    EVE,
-}
-
-impl FestivalType {
-    #[deprecated(since = "1.4.3")]
-    pub fn from_code(code: usize) -> Result<Self, String> {
-        match code {
-            0 => Ok(Self::DAY),
-            1 => Ok(Self::TERM),
-            2 => Ok(Self::EVE),
-            _ => Err(format!("illegal FestivalType code: {}", code)),
-        }
-    }
-
-    #[deprecated(since = "1.4.3")]
-    pub fn from_name(name: &str) -> Result<Self, String> {
-        match name {
-            "日期" => Ok(Self::DAY),
-            "节气" => Ok(Self::TERM),
-            "除夕" => Ok(Self::EVE),
-            _ => Err(format!("illegal FestivalType name: {}", name)),
-        }
-    }
-
-    #[deprecated(since = "1.4.3")]
-    pub fn get_name(&self) -> String {
-        self.to_string()
-    }
-
-    #[deprecated(since = "1.4.3")]
-    pub fn get_code(&self) -> usize {
-        match self {
-            Self::DAY => 0,
-            Self::TERM => 1,
-            Self::EVE => 2,
-        }
-    }
-}
-
-impl Display for FestivalType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::DAY => f.write_str("日期"),
-            Self::TERM => f.write_str("节气"),
-            Self::EVE => f.write_str("除夕"),
-        }
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum HideHeavenStemType {
     RESIDUAL,
     MIDDLE,

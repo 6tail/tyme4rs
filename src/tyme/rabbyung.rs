@@ -2,7 +2,7 @@ use crate::tyme::culture::{Element, Zodiac, ELEMENT_NAMES, ZODIAC_NAMES};
 use crate::tyme::sixtycycle::SixtyCycle;
 use crate::tyme::solar::{SolarDay, SolarYear};
 use crate::tyme::unit::{DayUnit, MonthUnit};
-use crate::tyme::{Culture, Tyme};
+use crate::tyme::{AbstractCulture, Culture, Tyme};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
@@ -177,11 +177,7 @@ impl RabByungYear {
     }
 
     pub fn validate(year: isize) -> Result<(), String> {
-        if !(1027..=9999).contains(&year) {
-            Err(format!("illegal rab-byung year: {}", year))
-        } else {
-            Ok(())
-        }
+        AbstractCulture::validate_range(year, 1027, 9999, "rab-byung year")
     }
 
     /// 从饶迥序号和六十甲子创建
