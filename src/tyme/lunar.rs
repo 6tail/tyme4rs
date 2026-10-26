@@ -2074,4 +2074,12 @@ mod tests {
         assert_eq!("九运", year.get_twenty().get_name());
         assert_eq!("下元", year.get_twenty().get_sixty().get_name());
     }
+
+    #[test]
+    fn test101() {
+        assert_eq!(
+            "1954年2月3日",
+            LunarDay::from_ymd(1954, 1, 1).get_solar_day().to_string()
+        );
+    }
 }
