@@ -3190,9 +3190,9 @@ impl ShouXingUtil {
             d = Self::qi_shuo(is_qi, false, j, pc);
             let from: usize;
             if is_qi {
-                from = ((jd - f2) / 365.2422 * 24.0) as usize;
+                from = ((j - f2) / 365.2422 * 24.0) as usize;
             } else {
-                from = ((jd - f2) / 29.5306) as usize;
+                from = ((j - f2) / 29.5306) as usize;
             }
             let n: &str = &fkb[from..from + 1];
             if n == "1" {
